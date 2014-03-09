@@ -1,0 +1,194 @@
+module Lazy where
+  foreign import data  Lazy :: * -> *
+  foreign import lazy "function lazy(thunk) {\
+                      \    return {\
+                      \        force: function() {\
+                      \            var value = thunk();\
+                      \            this.force = function() {\
+                      \                return value;\
+                      \            };\
+                      \            return value;\
+                      \        }\
+                      \    };\
+                      \}" :: forall a. ({} -> a) -> Lazy a
+  foreign import force "function force(l) {\
+                       \    return l.force();\
+                       \}" :: forall a. (Lazy a) -> a
+
+module FingerTree where
+  import Data.Monoid
+  import Data.Array (concat, (:))
+  import Data.Maybe
+  import Lazy
+  import Prelude
+
+  class Reduce f where
+    reducer :: forall a b. (a -> b -> b) -> (f a -> b -> b)
+    reducel :: forall a b. (b -> a -> b) -> (b -> f a -> b)  
+    
+  instance arrayReduce :: Reduce [] where
+    reducer _ [] z = z
+    reducer f (x : xs) z = f x (reducer f xs z)
+
+    reducel _ z [] = z
+    reducel f z (x : xs) = reducel f (f z x) xs
+
+  toList :: forall f a. (Reduce f) => f a -> [a]
+  toList s =
+    let
+      cons' = reducer (:)
+    in
+     cons' s []
+
+  data Tree a = Zero a | Succ (Tree (Node a))
+
+  instance showTree :: (Show a) => Show (Tree a) where
+    show (Zero a) = "(Zero " ++ show a ++ ")"
+    show (Succ a) = "(Succ " ++ show a ++ ")"
+
+  data Node a = Node2 a a | Node3 a a a
+
+  instance nodeShow :: (Show a) => Show (Node a) where
+    show (Node2 a b) = "(Node2 "  ++ show a ++ " " ++ show b ++ ")"
+    show (Node3 a b c) =
+      "(Node3 "  ++ show a ++ " " ++ show b ++ " " ++ show c ++ ")"
+
+  data FingerTree a = Empty
+                    | Single a
+                    | Deep [a] (FingerTree (Node a)) [a]
+
+  instance fingreTreeShow :: (Show a) => Show (FingerTree a) where
+    show Empty = "Empty"
+    show (Single a) = "(Single " ++ show a ++ ")"
+    show (Deep pr m sf) =
+      "(Deep " ++ show pr ++ " " ++ show m ++ " " ++ show sf ++ ")"  
+
+  instance nodeReduce :: Reduce Node where
+    reducer (-<) (Node2 a b)   z  = a -< (b -< z)
+    reducer (-<) (Node3 a b c) z  = a -< (b -< (c -< z))
+    reducel (>-) z (Node2 a b)   = (z >- b) >- a
+    reducel (>-) z (Node3 a b c) = ((z >- c) >- b) >- a
+
+  instance fingreTreeReduce :: Reduce FingerTree where
+    reducer (-<) Empty          z = z
+    reducer (-<) (Single x)     z = x -< z
+    reducer (-<) (Deep pr m sf) z =
+      let
+        (-<<) = reducer (-<)
+      in
+       let
+         (-<<<) = reducer (reducer (-<))
+       in
+        pr -<< (m -<<< (sf -<< z))
+
+    reducel (>-) z Empty          = z
+    reducel (>-) z (Single x)     = z >- x
+    reducel (>-) z (Deep pr m sf) =
+      let
+        (>>-) = reducel (>-)
+      in
+       let
+         (>>>-) = reducel (reducel (>-))
+       in
+        ((z >>- pr) >>>- m) >>- sf
+
+  infixr 5 <|
+
+  (<|) :: forall a. a -> FingerTree a -> FingerTree a
+  (<|) a Empty                    = Single a
+  (<|) a (Single b)               = Deep [a] Empty [b]
+  (<|) a (Deep [b, c, d, e] m sf) = Deep [a, b] (Node3 c d e <| m) sf
+  (<|) a (Deep pr m sf)           = Deep ([a] `concat` pr) m sf
+
+  infixl 5 |>
+
+  (|>) :: forall a. FingerTree a -> a -> FingerTree a
+  (|>) Empty                    a = Single a
+  (|>) (Single b)               a = Deep [b] Empty [a]
+  (|>) (Deep pr m [e, d, c, b]) a = Deep pr (m |> Node3 e d c) [b, a]
+  (|>) (Deep pr m sf)           a = Deep pr m (sf `concat` [a])
+
+  (<<|) :: forall f a. (Reduce f) => f a -> FingerTree a -> FingerTree a
+  (<<|) = reducer (<|)
+  (|>>) :: forall f a. (Reduce f) => FingerTree a -> f a -> FingerTree a
+  (|>>) = reducel (|>)
+
+  toTree :: forall f a. (Reduce f) => f a -> FingerTree a
+  toTree s = s <<| Empty
+
+  data ViewL s a = NilL | ConsL a (s a)
+  
+  viewL :: forall a. FingerTree a -> ViewL FingerTree a
+  viewL Empty          = NilL
+  viewL (Single x)     = ConsL x Empty
+  viewL (Deep pr m sf) =
+    ConsL (Data.Array.Unsafe.head pr) (deepL (Data.Array.Unsafe.tail pr) m sf)
+
+  deepL :: forall a. [a] -> FingerTree (Node a) -> [a] -> FingerTree a
+  deepL [] m sf = case viewL m of
+    NilL       -> toTree sf
+    ConsL a m' -> Deep (toList a) m' sf
+  deepL pr m sf = Deep pr m sf
+
+  isEmpty :: forall a. FingerTree a -> Boolean
+  isEmpty x = case viewL x of
+    NilL      -> true
+    ConsL _ _ -> false
+
+  -- unsafe
+  headL :: forall a. FingerTree a -> a
+  headL x = case viewL x of
+    ConsL a _ -> a
+
+  -- unsafe
+  tailL :: forall a. FingerTree a -> FingerTree a
+  tailL x = case viewL x of
+    ConsL _ x' -> x'
+
+  -- TODO ViewR
+
+  app3 :: forall a. FingerTree a -> [a] -> FingerTree a -> FingerTree a
+  app3 Empty ts xs = ts <<| xs
+  app3 xs ts Empty = xs |>> ts
+  app3 (Single x) ts xs = x <| (ts <<| xs)
+  app3 xs ts (Single x) = (xs |>> ts) |> x
+  app3 (Deep pr1 m1 sf1) ts (Deep pr2 m2 sf2) =
+    Deep pr1 (app3 m1 (nodes (sf1 `concat` ts `concat` pr2)) m2) sf2
+
+  nodes :: forall a. [a] -> [Node a]
+  nodes [a, b] = [Node2 a b]
+  nodes [a, b, c] = [Node3 a b c]
+  nodes [a, b, c, d] = [Node2 a b, Node2 c d]
+  nodes (a : b : c : xs) = Node3 a b c : nodes xs
+
+  (|><|) :: forall a. FingerTree a -> FingerTree a -> FingerTree a
+  (|><|) xs ys = app3 xs [] ys
+
+  class Measured a v where
+    measure :: a -> v
+
+  -- TODO
+
+module Main where
+  import Prelude
+  import Data.Array (concat)
+  import Debug.Trace
+  import Control.Monad.Eff
+  import Global
+  import FingerTree
+
+  printTree :: forall a r. (Show a) => FingerTree a -> Eff (trace :: Trace | r) {}
+  printTree m = print $ show (toList m) ++ " " ++ (show m)
+  
+  main = do
+    printTree (Empty :: FingerTree Number)
+    printTree (1 <| 2 <| 3 <| Empty)
+    printTree (Empty |> 3 |> 2 |> 1)
+    printTree (1 <| 2 <| 3 <| 4 <| 5 <| 6 <| Empty)
+    printTree (Empty |> 6 |> 5 |> 4 |> 3 |> 2 |> 1)
+    printTree ((1 <| 2 <| 3 <| 4 <| 5 <| 6 <| Empty) |> 6 |> 5 |> 4 |> 3 |> 2 |> 1)
+    printTree ((1 <| 2 <| 3 <| 4 <| 5 <| 6 <| Empty) |><| (Empty |> 6 |> 5 |> 4 |> 3 |> 2 |> 1))
+    print (headL (1 <| 2 <| 3 <| Empty))
+    printTree (tailL (1 <| 2 <| 3 <| Empty))
+    print (headL (Empty |> 3 |> 2 |> 1))
+    printTree (tailL (Empty |> 3 |> 2 |> 1))
