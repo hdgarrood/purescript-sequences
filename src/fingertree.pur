@@ -26,8 +26,8 @@ module FingerTree where
   -- TODO use PureScript's standard class
   class Reduce f where
     reducer :: forall a b. (a -> b -> b) -> (f a -> b -> b)
-    reducel :: forall a b. (b -> a -> b) -> (b -> f a -> b)  
-    
+    reducel :: forall a b. (b -> a -> b) -> (b -> f a -> b)
+
   instance arrayReduce :: Reduce [] where
     reducer _ [] z = z
     reducer f (x : xs) z = f x (reducer f xs z)
@@ -48,15 +48,36 @@ module FingerTree where
   data Node v a = Node2 v a a | Node3 v a a a
 
   instance nodeShow :: (Show a, Show v) => Show (Node v a) where
-    show (Node2 v a b) = "(Node2 " ++ show v ++ " " ++ show a ++ " " ++ show b ++ ")"
+    show (Node2 v a b) =
+      ("(Node2 "
+       ++ show v
+       ++ " "
+       ++ show a
+       ++ " "
+       ++ show b
+       ++ ")")
     show (Node3 v a b c) =
-      "(Node3 " ++ show v ++ " " ++ show a ++ " " ++ show b ++ " " ++ show c ++ ")"
+      ("(Node3 "
+       ++ show v
+       ++ " "
+       ++ show a
+       ++ " "
+       ++ show b
+       ++ " "
+       ++ show c
+       ++ ")")
 
   node2 :: forall a v. (Monoid v, Measured a v) => a -> a -> Node v a
   node2 a b = Node2 (measure a <> measure b) a b
 
   node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
   node3 a b c = Node3 (measure a <> measure b <> measure c) a b c
+
+  instance nodeReduce :: Reduce (Node v) where
+    reducer (-<) (Node2 _ a b)   z  = a -< (b -< z)
+    reducer (-<) (Node3 _ a b c) z  = a -< (b -< (c -< z))
+    reducel (>-) z (Node2 _ a b)   = (z >- b) >- a
+    reducel (>-) z (Node3 _ a b c) = ((z >- c) >- b) >- a
 
   instance nodeMeasured :: Measured (Node v a) v where
     measure (Node2 v _ _) = v
@@ -70,7 +91,11 @@ module FingerTree where
                       | Single a
                       | Deep v (Digit a) (FingerTree v (Node v a)) (Digit a)
 
-  deep :: forall a v. (Monoid v, Measured a v) => Digit a -> FingerTree v (Node v a) -> Digit a -> FingerTree v a
+  deep :: forall a v. (Monoid v, Measured a v)
+       => Digit a
+       -> FingerTree v (Node v a)
+       -> Digit a
+       -> FingerTree v a
   deep pr m sf = Deep (measure pr <> measure m <> measure sf) pr m sf
 
   type Digit a = [a]
@@ -79,22 +104,19 @@ module FingerTree where
     show Empty = "Empty"
     show (Single a) = "(Single " ++ show a ++ ")"
     show (Deep v pr m sf) =
-      "(Deep " ++ show v ++ " " ++ show pr ++ " " ++ show m ++ " " ++ show sf ++ ")"  
-
-  instance nodeReduce :: Reduce (Node v) where
-    reducer (-<) (Node2 _ a b)   z  = a -< (b -< z)
-    reducer (-<) (Node3 _ a b c) z  = a -< (b -< (c -< z))
-    reducel (>-) z (Node2 _ a b)   = (z >- b) >- a
-    reducel (>-) z (Node3 _ a b c) = ((z >- c) >- b) >- a
-
-  instance fingerTreeMeasured :: (Monoid v, Measured a v) => Measured (FingerTree v a) v where
-    measure Empty = mempty
-    measure (Single x) = measure x
-    measure (Deep v _ _ _) = v
+      ("(Deep "
+       ++ show v
+       ++ " "
+       ++ show pr
+       ++ " "
+       ++ show m
+       ++ " "
+       ++ show sf
+       ++ ")")
 
   instance fingerTreeReduce :: Reduce (FingerTree v) where
-    reducer (-<) Empty          z = z
-    reducer (-<) (Single x)     z = x -< z
+    reducer (-<) Empty            z = z
+    reducer (-<) (Single x)       z = x -< z
     reducer (-<) (Deep _ pr m sf) z =
       let
         (-<<) = reducer (-<)
@@ -104,8 +126,8 @@ module FingerTree where
        in
         pr -<< (m -<<< (sf -<< z))
 
-    reducel (>-) z Empty          = z
-    reducel (>-) z (Single x)     = z >- x
+    reducel (>-) z Empty            = z
+    reducel (>-) z (Single x)       = z >- x
     reducel (>-) z (Deep _ pr m sf) =
       let
         (>>-) = reducel (>-)
@@ -114,7 +136,13 @@ module FingerTree where
          (>>>-) = reducel (reducel (>-))
        in
         ((z >>- pr) >>>- m) >>- sf
-  
+
+  instance fingerTreeMeasured :: (Monoid v, Measured a v)
+                              => Measured (FingerTree v a) v where
+    measure Empty = mempty
+    measure (Single x) = measure x
+    measure (Deep v _ _ _) = v
+
   infixr 5 <|
 
   (<|) :: forall a v. (Monoid v, Measured a v) => a -> FingerTree v a -> FingerTree v a
@@ -131,9 +159,12 @@ module FingerTree where
   (|>) (Deep _ pr m [e, d, c, b]) a = deep pr (m |> node3 e d c) [b, a]
   (|>) (Deep _ pr m sf)           a = deep pr m (sf `concat` [a])
 
-  (<<|) :: forall f a v. (Monoid v, Measured a v, Reduce f) => f a -> FingerTree v a -> FingerTree v a
+  (<<|) :: forall f a v. (Monoid v, Measured a v, Reduce f)
+        => f a -> FingerTree v a -> FingerTree v a
   (<<|) = reducer (<|)
-  (|>>) :: forall f a v. (Monoid v, Measured a v, Reduce f) => FingerTree v a -> f a -> FingerTree v a
+
+  (|>>) :: forall f a v. (Monoid v, Measured a v, Reduce f)
+        => FingerTree v a -> f a -> FingerTree v a
   (|>>) = reducel (|>)
 
   toTree :: forall f a v. (Monoid v, Measured a v, Reduce f) => f a -> FingerTree v a
@@ -148,12 +179,14 @@ module FingerTree where
   tailDigit :: forall a. Digit a -> Digit a
   tailDigit xs = slice 1 (length xs) xs
 
-  viewL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> ViewL (FingerTree v) a
-  viewL Empty          = NilL
-  viewL (Single x)     = ConsL x Empty
+  viewL :: forall a v. (Monoid v, Measured a v)
+        => FingerTree v a -> ViewL (FingerTree v) a
+  viewL Empty            = NilL
+  viewL (Single   x)     = ConsL x Empty
   viewL (Deep _ pr m sf) = ConsL (headDigit pr) (deepL (tailDigit pr) m sf)
 
-  deepL :: forall a v. (Monoid v, Measured a v) => [a] -> FingerTree v (Node v a) -> [a] -> FingerTree v a
+  deepL :: forall a v. (Monoid v, Measured a v)
+        => [a] -> FingerTree v (Node v a) -> [a] -> FingerTree v a
   deepL [] m sf = case viewL m of
     NilL       -> toTree sf
     ConsL a m' -> deep (toList a) m' sf
@@ -174,21 +207,22 @@ module FingerTree where
   tailL x = case viewL x of
     ConsL _ x' -> x'
 
-
   lastDigit :: forall a. Digit a -> a
   lastDigit xs = xs !! (Data.Array.length xs - 1)
 
   initDigit :: forall a. Digit a -> Digit a
   initDigit xs = slice 0 (length xs - 1) xs
-  
+
   data ViewR s a = NilR | SnocR (s a) a
 
-  viewR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> ViewR (FingerTree v) a
-  viewR Empty          = NilR
-  viewR (Single x)     = SnocR Empty x
+  viewR :: forall a v. (Monoid v, Measured a v)
+        => FingerTree v a -> ViewR (FingerTree v) a
+  viewR Empty            = NilR
+  viewR (Single x)       = SnocR Empty x
   viewR (Deep _ pr m sf) = SnocR (deepR pr m (initDigit sf)) (lastDigit sf)
 
-  deepR :: forall a v. (Monoid v, Measured a v) => [a] -> FingerTree v (Node v a) -> [a] -> FingerTree v a
+  deepR :: forall a v. (Monoid v, Measured a v)
+        => [a] -> FingerTree v (Node v a) -> [a] -> FingerTree v a
   deepR pr m [] = case viewR m of
     NilR       -> toTree pr
     SnocR m' a -> deep pr m' (toList a)
@@ -204,28 +238,31 @@ module FingerTree where
   tailR x = case viewR x of
     SnocR x' _ -> x'
 
-  app3 :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> [a] -> FingerTree v a -> FingerTree v a
-  app3 Empty ts xs = ts <<| xs
-  app3 xs ts Empty = xs |>> ts
+  app3 :: forall a v. (Monoid v, Measured a v)
+       => FingerTree v a -> [a] -> FingerTree v a -> FingerTree v a
+  app3 Empty ts xs      = ts <<| xs
+  app3 xs ts Empty      = xs |>> ts
   app3 (Single x) ts xs = x <| (ts <<| xs)
   app3 xs ts (Single x) = (xs |>> ts) |> x
   app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
     deep pr1 (app3 m1 (nodes (sf1 `concat` ts `concat` pr2)) m2) sf2
 
   nodes :: forall a v. (Monoid v, Measured a v) => [a] -> [Node v a]
-  nodes [a, b] = [node2 a b]
-  nodes [a, b, c] = [node3 a b c]
-  nodes [a, b, c, d] = [node2 a b, node2 c d]
+  nodes [a, b]           = [node2 a b]
+  nodes [a, b, c]        = [node3 a b c]
+  nodes [a, b, c, d]     = [node2 a b, node2 c d]
   nodes (a : b : c : xs) = node3 a b c : nodes xs
 
-  (><) :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> FingerTree v a -> FingerTree v a
+  (><) :: forall a v. (Monoid v, Measured a v)
+       => FingerTree v a -> FingerTree v a -> FingerTree v a
   (><) xs ys = app3 xs [] ys
 
   -- TODO lazy trees
   data Split f a = Split (f a) a (f a)
 
   -- unsafe
-  splitDigit :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> v -> Digit a -> Split [] a
+  splitDigit :: forall a v. (Monoid v, Measured a v)
+             => (v -> Boolean) -> v -> Digit a -> Split [] a
   splitDigit p i [a] = Split [] a []
   splitDigit p i (a:as) =
     let
@@ -240,7 +277,8 @@ module FingerTree where
         Split (a:l) x r
 
   -- unsafe
-  splitTree :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> v -> FingerTree v a -> Split (FingerTree v) a
+  splitTree :: forall a v. (Monoid v, Measured a v)
+            => (v -> Boolean) -> v -> FingerTree v a -> Split (FingerTree v) a
   splitTree p i (Single x) = Split Empty x Empty
   splitTree p i (Deep _ pr m sf) =
     let vpr = i <> measure pr
@@ -262,7 +300,10 @@ module FingerTree where
           let Split l x r = splitDigit p vm sf
           in Split (deepR pr m l) x (toTree r)
 
-  split :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> FingerTree v a -> Tuple (FingerTree v a) (FingerTree v a)
+  split :: forall a v. (Monoid v, Measured a v)
+        => (v -> Boolean)
+        -> FingerTree v a
+        -> Tuple (FingerTree v a) (FingerTree v a)
   split p Empty = Tuple Empty Empty
   split p xs =
     let Split l x r = splitTree p mempty xs
@@ -310,7 +351,8 @@ module Sequence where
   (!) :: forall a. Seq a -> Number -> a
   (!) xs i =
     let
-      FingerTree.Split _ x _ = FingerTree.splitTree (\n -> i < getSize n) (size 0) xs
+      FingerTree.Split _ x _ =
+        FingerTree.splitTree (\n -> i < getSize n) (size 0) xs
     in
      getElem x
 
@@ -346,7 +388,7 @@ module Main where
 
   printTree :: forall a v r. (Show a) => Seq a -> Eff (trace :: Trace | r) {}
   printTree m = print $ show (FingerTree.toList m) ++ " " ++ (show m)
-  
+
   main = do
     printTree (emptySeq :: Seq Number)
     printTree (1 <| 2 <| 3 <| emptySeq)
