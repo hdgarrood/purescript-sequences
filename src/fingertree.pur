@@ -32,11 +32,11 @@ module Lazy where
   foreign import force "function force(s) {\
                        \    return s.force();\
                        \}" :: forall a. (Lazy a) -> a
-  -- impure, for debbing
+  -- impure, for debugging
   foreign import isForced "function isForced(s) {\
                           \    return !('thunk' in s)\
                           \}" :: forall a. (Lazy a) -> Boolean
-  -- for debbing
+  -- for debugging
   foreign import withCallByName "function withCallByName(f) {\
                                 \    return function (s) {\
                                 \        return s.withCallByName(f);\
