@@ -1,19 +1,56 @@
 module Lazy where
+  import Prelude
+
   foreign import data  Lazy :: * -> *
-  foreign import lazy "function lazy(thunk) {\
-                      \    return {\
-                      \        force: function() {\
-                      \            var value = thunk();\
-                      \            this.force = function() {\
-                      \                return value;\
-                      \            };\
-                      \            return value;\
-                      \        }\
+  foreign import lazy "function Lazy(thunk) {\
+                      \    this.thunk = thunk;\
+                      \}\
+                      \Lazy.prototype.force = function () {\
+                      \    var value = this.thunk();\
+                      \    delete this.thunk;\
+                      \    this.force = function () {\
+                      \        return value;\
                       \    };\
+                      \    return value;\
+                      \};\
+                      \Lazy.prototype.withCallByName = function (f) {\
+                      \    var force = Lazy.prototype.force;\
+                      \    Lazy.prototype.force = function () {\
+                      \        return (isForced(this))\
+                      \               ? force.call(this) : this.thunk();\
+                      \    };\
+                      \    try {\
+                      \        var result = f(this);\
+                      \    } finally {\
+                      \        Lazy.prototype.force = force;\
+                      \    }\
+                      \    return result;\
+                      \};\
+                      \function lazy(thunk) {\
+                      \    return new Lazy(thunk);\
                       \}" :: forall a. ({} -> a) -> Lazy a
-  foreign import force "function force(l) {\
-                       \    return l.force();\
+  foreign import force "function force(s) {\
+                       \    return s.force();\
                        \}" :: forall a. (Lazy a) -> a
+  -- impure, for debbing
+  foreign import isForced "function isForced(s) {\
+                          \    return !('thunk' in s)\
+                          \}" :: forall a. (Lazy a) -> Boolean
+  -- for debbing
+  foreign import withCallByName "function withCallByName(f) {\
+                                \    return function (s) {\
+                                \        return s.withCallByName(f);\
+                                \    };\
+                                \}" :: forall a b. ((Lazy a) -> b) -> Lazy a -> b
+
+  instance showLazy :: (Show a) => Show (Lazy a) where
+    show s =
+      if isForced s
+      then show (force s)
+      else "(Lazy " ++ (show $ force s) ++ ")"
+
+  debugShowLazy :: forall a. (Show a) => Lazy a -> String
+  debugShowLazy s = withCallByName show s
 
 module FingerTree where
   import Data.Monoid
@@ -23,7 +60,6 @@ module FingerTree where
   import Lazy
   import Prelude
 
-  -- TODO use PureScript's standard class
   class Reduce f where
     reducer :: forall a b. (a -> b -> b) -> (f a -> b -> b)
     reducel :: forall a b. (b -> a -> b) -> (b -> f a -> b)
@@ -36,11 +72,7 @@ module FingerTree where
     reducel f z (x : xs) = reducel f (f z x) xs
 
   toList :: forall f a. (Reduce f) => f a -> [a]
-  toList s =
-    let
-      cons' = reducer (:)
-    in
-     cons' s []
+  toList s = reducer (:) s []
 
   class Measured a v where
     measure :: a -> v
@@ -86,18 +118,32 @@ module FingerTree where
   instance arrayMeasured :: (Monoid v, Measured a v) => Measured [a] v where
     measure xs = reducel (\i a -> i <> measure a) mempty xs
 
-  -- TODO lazy deep
+  instance lazyMeasured :: (Monoid v, Measured a v) => Measured (Lazy a) v where
+    measure s = measure (force s)
+
+  -- Deep node may have debits, the cost of suspended code, as many as safe
+  -- digits it has (i.e., 0, 1, or 2).
   data FingerTree v a = Empty
                       | Single a
-                      | Deep v (Digit a) (FingerTree v (Node v a)) (Digit a)
+                      | Deep
+                        (Lazy v)
+                        (Digit a)
+                        (Lazy (FingerTree v (Node v a)))
+                        (Digit a)
+
+  lazyEmpty :: forall v a. Lazy (FingerTree v a)
+  lazyEmpty = lazy (\_ -> Empty)
 
   deep :: forall a v. (Monoid v, Measured a v)
        => Digit a
-       -> FingerTree v (Node v a)
+       -> Lazy (FingerTree v (Node v a))
        -> Digit a
        -> FingerTree v a
-  deep pr m sf = Deep (measure pr <> measure m <> measure sf) pr m sf
+  deep pr m sf =
+    Deep (lazy (\_ -> measure pr <> measure m <> measure sf)) pr m sf
 
+  -- Digit has one to four elements.
+  -- If Digit has two or three elements, it is safe; otherwise it is dangerous.
   type Digit a = [a]
 
   instance fingerTreeShow :: (Show v, Show a) => Show (FingerTree v a) where
@@ -124,7 +170,7 @@ module FingerTree where
        let
          (-<<<) = reducer (reducer (-<))
        in
-        pr -<< (m -<<< (sf -<< z))
+        pr -<< ((force m) -<<< (sf -<< z))
 
     reducel (>-) z Empty            = z
     reducel (>-) z (Single x)       = z >- x
@@ -135,28 +181,45 @@ module FingerTree where
        let
          (>>>-) = reducel (reducel (>-))
        in
-        ((z >>- pr) >>>- m) >>- sf
+        ((z >>- pr) >>>- (force m)) >>- sf
 
   instance fingerTreeMeasured :: (Monoid v, Measured a v)
                               => Measured (FingerTree v a) v where
     measure Empty = mempty
     measure (Single x) = measure x
-    measure (Deep v _ _ _) = v
+    measure (Deep v _ _ _) = (force v)
 
   infixr 5 <|
 
   (<|) :: forall a v. (Monoid v, Measured a v) => a -> FingerTree v a -> FingerTree v a
   (<|) a Empty                      = Single a
-  (<|) a (Single b)                 = deep [a] Empty [b]
-  (<|) a (Deep _ [b, c, d, e] m sf) = deep [a, b] (node3 c d e <| m) sf
+  (<|) a (Single b)                 = deep [a] lazyEmpty [b]
+  (<|) a (Deep _ [b, c, d, e] m sf) =
+    let
+      -- If sf is safe, we pass one debit to the outer suspension to force the
+      -- suspension. If sf is dangerous, we have no debits, so that we can
+      -- freely force the suspension.
+      forcedM = force m
+    in
+     -- Since we turn a dangerous digit to safe digit, we will get one extra
+     -- debit allowance after prepend. We creates one debit for unshared cost
+     -- of recursive call. We receives another debit from recursive call.
+     -- If sf is safe, we now have two debit allowance, so that the constraint
+     -- is satisfied. if sf is dangerous, we can pass a debit to the outer
+     -- suspension to satisfy constraint.
+     deep [a, b] (lazy (\_ -> node3 c d e <| forcedM)) sf
   (<|) a (Deep _ pr m sf)           = deep ([a] `concat` pr) m sf
 
   infixl 5 |>
 
   (|>) :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> a -> FingerTree v a
   (|>) Empty                      a = Single a
-  (|>) (Single b)                 a = deep [b] Empty [a]
-  (|>) (Deep _ pr m [e, d, c, b]) a = deep pr (m |> node3 e d c) [b, a]
+  (|>) (Single b)                 a = deep [b] lazyEmpty [a]
+  (|>) (Deep _ pr m [e, d, c, b]) a =
+    let
+      forcedM = force m
+    in
+     deep pr (lazy (\_ -> forcedM |> node3 e d c)) [b, a]
   (|>) (Deep _ pr m sf)           a = deep pr m (sf `concat` [a])
 
   (<<|) :: forall f a v. (Monoid v, Measured a v, Reduce f)
@@ -170,8 +233,7 @@ module FingerTree where
   toTree :: forall f a v. (Monoid v, Measured a v, Reduce f) => f a -> FingerTree v a
   toTree s = s <<| Empty
 
-  -- TODO lazy tail
-  data ViewL s a = NilL | ConsL a (s a)
+  data ViewL s a = NilL | ConsL a (Lazy (s a))
 
   headDigit :: forall a. Digit a -> a
   headDigit xs = xs !! 0
@@ -182,12 +244,27 @@ module FingerTree where
   viewL :: forall a v. (Monoid v, Measured a v)
         => FingerTree v a -> ViewL (FingerTree v) a
   viewL Empty            = NilL
-  viewL (Single   x)     = ConsL x Empty
-  viewL (Deep _ pr m sf) = ConsL (headDigit pr) (deepL (tailDigit pr) m sf)
+  viewL (Single   x)     = ConsL x lazyEmpty
+  -- If pr has more than two elements, no debits are discharged.
+  -- If pr has exactly two elements, debit allowance is decreased  by one,
+  -- so that passes it to the outer suspension.
+  -- If pr has exactly one element, we further analyse sf:
+  -- - If sf is safe, we pass a debit to the outer suspension to force
+  --   the suspension. One debit is created for the unshared cost of the
+  --   recursive call. We receive another debit from recursive call.
+  --   We now have two debits and two debit allowance
+  --   (note that both digits are now safe), the constraint is satisfied.
+  -- - If sf is dangerous, the debits of the node is zero, so that we can
+  --   force the suspension for free. One debit is created for the unshared
+  --   cost of the recursive call. We receive another debit from recursive
+  --   call. We now have two debit and one debit allowance, so that passing
+  --   one debit to outer suspension satisfies the constraint.
+  viewL (Deep _ pr m sf) =
+    ConsL (headDigit pr) (lazy (\_ -> deepL (tailDigit pr) m sf))
 
   deepL :: forall a v. (Monoid v, Measured a v)
-        => [a] -> FingerTree v (Node v a) -> [a] -> FingerTree v a
-  deepL [] m sf = case viewL m of
+        => [a] -> Lazy (FingerTree v (Node v a)) -> [a] -> FingerTree v a
+  deepL [] m sf = case viewL (force m) of
     NilL       -> toTree sf
     ConsL a m' -> deep (toList a) m' sf
   deepL pr m sf = deep pr m sf
@@ -205,7 +282,7 @@ module FingerTree where
   -- unsafe
   tailL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> FingerTree v a
   tailL x = case viewL x of
-    ConsL _ x' -> x'
+    ConsL _ x' -> force x'
 
   lastDigit :: forall a. Digit a -> a
   lastDigit xs = xs !! (Data.Array.length xs - 1)
@@ -213,17 +290,18 @@ module FingerTree where
   initDigit :: forall a. Digit a -> Digit a
   initDigit xs = slice 0 (length xs - 1) xs
 
-  data ViewR s a = NilR | SnocR (s a) a
+  data ViewR s a = NilR | SnocR (Lazy (s a)) a
 
   viewR :: forall a v. (Monoid v, Measured a v)
         => FingerTree v a -> ViewR (FingerTree v) a
   viewR Empty            = NilR
-  viewR (Single x)       = SnocR Empty x
-  viewR (Deep _ pr m sf) = SnocR (deepR pr m (initDigit sf)) (lastDigit sf)
+  viewR (Single x)       = SnocR lazyEmpty x
+  viewR (Deep _ pr m sf) =
+    SnocR (lazy (\_ -> deepR pr m (initDigit sf))) (lastDigit sf)
 
   deepR :: forall a v. (Monoid v, Measured a v)
-        => [a] -> FingerTree v (Node v a) -> [a] -> FingerTree v a
-  deepR pr m [] = case viewR m of
+        => [a] -> Lazy (FingerTree v (Node v a)) -> [a] -> FingerTree v a
+  deepR pr m [] = case viewR (force m) of
     NilR       -> toTree pr
     SnocR m' a -> deep pr m' (toList a)
   deepR pr m sf = deep pr m sf
@@ -236,7 +314,7 @@ module FingerTree where
   -- unsafe
   tailR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> FingerTree v a
   tailR x = case viewR x of
-    SnocR x' _ -> x'
+    SnocR x' _ -> force x'
 
   app3 :: forall a v. (Monoid v, Measured a v)
        => FingerTree v a -> [a] -> FingerTree v a -> FingerTree v a
@@ -245,7 +323,11 @@ module FingerTree where
   app3 (Single x) ts xs = x <| (ts <<| xs)
   app3 xs ts (Single x) = (xs |>> ts) |> x
   app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
-    deep pr1 (app3 m1 (nodes (sf1 `concat` ts `concat` pr2)) m2) sf2
+    let
+      computeM' _ =
+        app3 (force m1) (nodes (sf1 `concat` ts `concat` pr2)) (force m2)
+    in
+     deep pr1 (lazy computeM') sf2
 
   nodes :: forall a v. (Monoid v, Measured a v) => [a] -> [Node v a]
   nodes [a, b]           = [node2 a b]
@@ -257,8 +339,8 @@ module FingerTree where
        => FingerTree v a -> FingerTree v a -> FingerTree v a
   (><) xs ys = app3 xs [] ys
 
-  -- TODO lazy trees
   data Split f a = Split (f a) a (f a)
+  data LazySplit f a = LazySplit (Lazy (f a)) a (Lazy (f a))
 
   -- unsafe
   splitDigit :: forall a v. (Monoid v, Measured a v)
@@ -278,41 +360,44 @@ module FingerTree where
 
   -- unsafe
   splitTree :: forall a v. (Monoid v, Measured a v)
-            => (v -> Boolean) -> v -> FingerTree v a -> Split (FingerTree v) a
-  splitTree p i (Single x) = Split Empty x Empty
+            => (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
+  splitTree p i (Single x) = LazySplit lazyEmpty x lazyEmpty
   splitTree p i (Deep _ pr m sf) =
     let vpr = i <> measure pr
     in
      if p vpr
      then
        let Split l x r = splitDigit p i pr
-       in Split (toTree l) x (deepL r m sf)
+       in LazySplit (lazy (\_ -> toTree l)) x (lazy (\_ -> deepL r m sf))
      else
        let vm = vpr <> measure m
        in
         if p vm
         then
-          let Split ml xs mr = splitTree p vpr m
+          let LazySplit ml xs mr = splitTree p vpr (force m)
           in
            let Split l x r = splitDigit p (vpr <> measure ml) (toList xs)
-           in Split (deepR pr ml l) x (deepL r mr sf)
+           in
+            LazySplit (lazy (\_ -> deepR pr ml l)) x (lazy (\_ -> deepL r mr sf))
         else
           let Split l x r = splitDigit p vm sf
-          in Split (deepR pr m l) x (toTree r)
+          in LazySplit (lazy (\_ -> deepR pr m l)) x (lazy (\_ -> toTree r))
 
   split :: forall a v. (Monoid v, Measured a v)
         => (v -> Boolean)
         -> FingerTree v a
-        -> Tuple (FingerTree v a) (FingerTree v a)
-  split p Empty = Tuple Empty Empty
+        -> Tuple (Lazy (FingerTree v a)) (Lazy (FingerTree v a))
+  split p Empty = Tuple lazyEmpty lazyEmpty
   split p xs =
-    let Split l x r = splitTree p mempty xs
-    in
-     if p (measure xs)
-     then Tuple l (x <| r)
-     else Tuple xs Empty
+    if p (measure xs)
+    then
+      let LazySplit l x r = splitTree p mempty xs
+      in Tuple l (lazy (\_ -> (x <| (force r))))
+    else
+      Tuple (lazy (\_ -> xs)) lazyEmpty
 
 module Sequence where
+  import Lazy
   import Data.Monoid
   import Data.Tuple
   import FingerTree ()
@@ -345,13 +430,13 @@ module Sequence where
   length :: forall a. Seq a -> Number
   length xs = getSize (FingerTree.measure xs)
 
-  splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
+  splitAt :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
   splitAt i xs = FingerTree.split (\n -> i < getSize n) xs
 
   (!) :: forall a. Seq a -> Number -> a
   (!) xs i =
     let
-      FingerTree.Split _ x _ =
+      FingerTree.LazySplit _ x _ =
         FingerTree.splitTree (\n -> i < getSize n) (size 0) xs
     in
      getElem x
@@ -370,6 +455,7 @@ module Sequence where
 
   headL :: forall a. Seq a -> a
   headL xs = getElem (FingerTree.headL xs)
+
   tailL :: forall a. Seq a -> Seq a
   tailL = FingerTree.tailL
 
@@ -380,21 +466,30 @@ module Sequence where
 module Main where
   import Prelude
   import Data.Array (concat)
+  import Data.Foldable (foldr)
   import Debug.Trace
   import Control.Monad.Eff
   import Global
+  import Lazy
   -- import FingerTree
   import Sequence
 
   printTree :: forall a v r. (Show a) => Seq a -> Eff (trace :: Trace | r) {}
-  printTree m = print $ show (FingerTree.toList m) ++ " " ++ (show m)
+  printTree m =
+    let lazyM = (lazy (\_ -> m))
+    in
+      let mString = debugShowLazy ((\a b -> a) lazyM (force lazyM))
+      in print $ show (FingerTree.toList m) ++ " " ++ mString
 
   main = do
     printTree (emptySeq :: Seq Number)
+    printTree (1 <| emptySeq)
+    printTree (1 <| 2 <| emptySeq)
     printTree (1 <| 2 <| 3 <| emptySeq)
     printTree (emptySeq |> 3 |> 2 |> 1)
     printTree (1 <| 2 <| 3 <| 4 <| 5 <| 6 <| emptySeq)
     printTree (emptySeq |> 6 |> 5 |> 4 |> 3 |> 2 |> 1)
+    printTree (foldr (<|) emptySeq [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33])
     printTree ((1 <| 2 <| 3 <| 4 <| 5 <| 6 <| emptySeq) |> 6 |> 5 |> 4 |> 3 |> 2 |> 1)
     printTree ((1 <| 2 <| 3 <| 4 <| 5 <| 6 <| emptySeq) >< (emptySeq |> 6 |> 5 |> 4 |> 3 |> 2 |> 1))
     print (headL (1 <| 2 <| 3 <| emptySeq))
