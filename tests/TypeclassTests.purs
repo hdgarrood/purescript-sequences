@@ -49,7 +49,7 @@ checkApplicative ta tb tc = do
 -- Monad
 --
 
-checkMonad :: forall m a. (Monad m, Arbitrary a, CoArbitrary a, Arbitrary (m a), Eq (m a)) => m a -> QC Unit
+checkMonad :: forall m a. (Monad m, Arbitrary a, CoArbitrary a, Arbitrary (m a), Eq (m a), Show a, Show (m a)) => m a -> QC Unit
 checkMonad t = do
   quickCheck $ leftIdentity t
   quickCheck $ rightIdentity t
@@ -57,11 +57,11 @@ checkMonad t = do
   
   where
   
-  leftIdentity :: forall m a. (Monad m, Arbitrary a, Eq (m a)) => m a -> a -> (a -> m a) -> Boolean
-  leftIdentity _ x f = (return x >>= f) == (f x)
+  leftIdentity :: forall m a. (Monad m, Arbitrary a, Eq (m a), Show a) => m a -> a -> (a -> m a) -> Result
+  leftIdentity _ x f = (return x >>= f) == (f x) <?> ("leftIdentity: x = " <> show x)
 
-  rightIdentity :: forall m a. (Monad m, Arbitrary a, Eq (m a)) => m a -> m a -> Boolean
-  rightIdentity _ m = (m >>= return) == m
+  rightIdentity :: forall m a. (Monad m, Arbitrary a, Eq (m a), Show (m a)) => m a -> m a -> Result
+  rightIdentity _ m = (m >>= return) == m <?> ("rightIdentity: m = " <> show m)
 
   associativity :: forall m a. (Monad m, Arbitrary a, Eq (m a)) => m a -> m a -> (a -> m a) -> (a -> m a) -> Boolean
   associativity _ m f g = ((m >>= f) >>= g) == (m >>= (\x -> f x >>= g))
