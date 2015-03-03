@@ -105,7 +105,7 @@ deep pr m sf =
 -- If Digit has two or three elements, it is safe; otherwise it is dangerous.
 type Digit a = [a]
 
-instance fingerTreeShow :: (Show v, Show a) => Show (FingerTree v a) where
+instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
   show Empty = "Empty"
   show (Single a) = "(Single " ++ show a ++ ")"
   show (Deep v pr m sf) =
@@ -119,7 +119,7 @@ instance fingerTreeShow :: (Show v, Show a) => Show (FingerTree v a) where
      ++ show sf
      ++ ")")
 
-instance fingerTreeReduce :: Reduce (FingerTree v) where
+instance reduceFingerTree :: Reduce (FingerTree v) where
   reducer (-<) Empty            z = z
   reducer (-<) (Single x)       z = x -< z
   reducer (-<) (Deep _ pr m sf) z =
@@ -142,7 +142,7 @@ instance fingerTreeReduce :: Reduce (FingerTree v) where
      in
       ((z >>- pr) >>>- (force m)) >>- sf
 
-instance fingerTreeMeasured :: (Monoid v, Measured a v)
+instance measuredFingerTree :: (Monoid v, Measured a v)
                             => Measured (FingerTree v a) v where
   measure Empty = mempty
   measure (Single x) = measure x
