@@ -13,6 +13,11 @@ instance arbSeq :: (Arbitrary a) => Arbitrary (S.Seq a) where
   arbitrary = (S.toSeq :: [a] -> S.Seq a) <$> arbitrary
 
 sequenceTests = do
+  trace "Test append"
+  quickCheck $ \x y ->
+    S.toArray (x <> y) == S.toArray x <> S.toArray (y :: S.Seq Number)
+    <?> ("x: " <> show x <> ", y: " <> show y)
+
   trace "Test semigroup law: associativity"
   quickCheck $ \x y z -> (x <> y) <> z == x <> (y <> z :: S.Seq Number)
     <?> ("x: " <> show x <> ", y: " <> show y <> ", z:" <> show z)

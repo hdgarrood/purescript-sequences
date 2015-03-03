@@ -48,8 +48,8 @@ instance functorNode :: Functor (Node v) where
 instance foldableNode :: Foldable (Node v) where
   foldr (-<) z (Node2 _ a b)   = a -< (b -< z)
   foldr (-<) z (Node3 _ a b c) = a -< (b -< (c -< z))
-  foldl (>-) z (Node2 _ a b)   = (z >- b) >- a
-  foldl (>-) z (Node3 _ a b c) = ((z >- c) >- b) >- a
+  foldl (>-) z (Node2 _ a b)   = (z >- a) >- b
+  foldl (>-) z (Node3 _ a b c) = ((z >- a) >- b) >- c
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
 instance traversableNode :: Traversable (Node v) where
