@@ -60,6 +60,9 @@ instance ordSeq :: (Ord a) => Ord (Seq a) where
 instance semigroupSeq :: Semigroup (Seq a) where
   (<>) = append
 
+instance monoidSeq :: Monoid (Seq a) where
+  mempty = empty
+
 instance functorSeq :: Functor Seq where
   (<$>) f (Seq xs) = Seq (g <$> xs)
     where
