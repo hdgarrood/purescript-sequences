@@ -169,9 +169,5 @@ tailL :: forall a. Seq a -> Maybe (Seq a)
 tailL (Seq xs) = Seq <$> FT.tailL xs
 
 -- TODO: This can be improved. See Hackage
-fromArray :: forall a. [a] -> Seq a
-fromArray = foldr (<|) empty
-
--- TODO
--- other operations
--- other instance declarations
+toSeq :: forall f a. (Foldable f) => f a -> Seq a
+toSeq = foldr (<|) empty

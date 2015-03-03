@@ -707,8 +707,8 @@ tailL :: forall a. Seq a -> Maybe (Seq a)
 ```
 
 
-#### `fromArray`
+#### `toSeq`
 
 ``` purescript
-fromArray :: forall a. [a] -> Seq a
+toSeq :: forall f a. (Foldable f) => f a -> Seq a
 ```
