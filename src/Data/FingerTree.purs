@@ -18,22 +18,11 @@ import Data.Array.Unsafe (head, tail, last, init)
 import Data.Maybe
 import Data.Tuple
 import Data.Lazy
-
-class Reduce f where
-  reducer :: forall a b. (a -> b -> b) -> (f a -> b -> b)
-  reducel :: forall a b. (b -> a -> b) -> (b -> f a -> b)
-
--- TODO: uncons patterns are O(n)
-instance arrayReduce :: Reduce [] where
-  reducer _ [] z = z
-  reducer f (x : xs) z = f x (reducer f xs z)
-
-  reducel _ z [] = z
-  reducel f z (x : xs) = reducel f (f z x) xs
+import Data.Foldable
 
 -- use STArray here?
-toArray :: forall f a. (Reduce f) => f a -> [a]
-toArray s = reducer (:) s []
+toArray :: forall f a. (Foldable f) => f a -> [a]
+toArray = foldr (:) []
 
 class Measured a v where
   measure :: a -> v
@@ -66,18 +55,19 @@ node2 a b = Node2 (measure a <> measure b) a b
 node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
 node3 a b c = Node3 (measure a <> measure b <> measure c) a b c
 
-instance reduceNode :: Reduce (Node v) where
-  reducer (-<) (Node2 _ a b)   z  = a -< (b -< z)
-  reducer (-<) (Node3 _ a b c) z  = a -< (b -< (c -< z))
-  reducel (>-) z (Node2 _ a b)   = (z >- b) >- a
-  reducel (>-) z (Node3 _ a b c) = ((z >- c) >- b) >- a
+instance foldableNode :: Foldable (Node v) where
+  foldr (-<) z (Node2 _ a b)   = a -< (b -< z)
+  foldr (-<) z (Node3 _ a b c) = a -< (b -< (c -< z))
+  foldl (>-) z (Node2 _ a b)   = (z >- b) >- a
+  foldl (>-) z (Node3 _ a b c) = ((z >- c) >- b) >- a
+  foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
 instance measuredNode :: Measured (Node v a) v where
   measure (Node2 v _ _) = v
   measure (Node3 v _ _ _) = v
 
 instance measuredArray :: (Monoid v, Measured a v) => Measured [a] v where
-  measure xs = reducel (\i a -> i <> measure a) mempty xs
+  measure xs = foldl (\i a -> i <> measure a) mempty xs
 
 instance measuredLazy :: (Monoid v, Measured a v) => Measured (Lazy a) v where
   measure s = measure (force s)
@@ -121,28 +111,25 @@ instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
      ++ show sf
      ++ ")")
 
-instance reduceFingerTree :: Reduce (FingerTree v) where
-  reducer (-<) Empty            z = z
-  reducer (-<) (Single x)       z = x -< z
-  reducer (-<) (Deep _ pr m sf) z =
-    let
-      (-<<) = reducer (-<)
-    in
-     let
-       (-<<<) = reducer (reducer (-<))
-     in
-      pr -<< ((force m) -<<< (sf -<< z))
+instance foldableFingerTree :: Foldable (FingerTree v) where
+  foldr (-<) z Empty            = z
+  foldr (-<) z (Single x)       = x -< z
+  foldr (-<) z (Deep _ pr m sf) = pr +<< ((force m) -<<< (sf -<< z))
+    where
+    (-<<) = flip (foldr (-<))
+    -- this is a hack to get type inference to work
+    (+<<) = flip (foldr (-<))
+    (-<<<) = flip (foldr (flip (foldr (-<))))
 
-  reducel (>-) z Empty            = z
-  reducel (>-) z (Single x)       = z >- x
-  reducel (>-) z (Deep _ pr m sf) =
-    let
-      (>>-) = reducel (>-)
-    in
-     let
-       (>>>-) = reducel (reducel (>-))
-     in
-      ((z >>- pr) >>>- (force m)) >>- sf
+
+  foldl (>-) z Empty            = z
+  foldl (>-) z (Single x)       = z >- x
+  foldl (>-) z (Deep _ pr m sf) = ((z >>- pr) >>>- (force m)) >>- sf
+    where
+    (>>-) = foldl (>-)
+    (>>>-) = foldl (foldl (>-))
+
+  foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
 instance measuredFingerTree :: (Monoid v, Measured a v)
                             => Measured (FingerTree v a) v where
@@ -184,15 +171,16 @@ infixl 5 |>
    deep pr (defer (\_ -> forcedM |> node3 e d c)) [b, a]
 (|>) (Deep _ pr m sf)           a = deep pr m (snoc sf a)
 
-(<<|) :: forall f a v. (Monoid v, Measured a v, Reduce f)
+(<<|) :: forall f a v. (Monoid v, Measured a v, Foldable f)
       => f a -> FingerTree v a -> FingerTree v a
-(<<|) = reducer (<|)
+(<<|) = flip (foldr (<|))
 
-(|>>) :: forall f a v. (Monoid v, Measured a v, Reduce f)
+(|>>) :: forall f a v. (Monoid v, Measured a v, Foldable f)
       => FingerTree v a -> f a -> FingerTree v a
-(|>>) = reducel (|>)
+(|>>) = foldl (|>)
 
-toTree :: forall f a v. (Monoid v, Measured a v, Reduce f) => f a -> FingerTree v a
+toTree :: forall f a v. (Monoid v, Measured a v, Foldable f) =>
+  f a -> FingerTree v a
 toTree s = s <<| Empty
 
 data ViewL s a = NilL | ConsL a (Lazy (s a))

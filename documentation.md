@@ -2,25 +2,10 @@
 
 ## Module Data.FingerTree
 
-#### `Reduce`
-
-``` purescript
-class Reduce f where
-  reducer :: forall a b. (a -> b -> b) -> f a -> b -> b
-  reducel :: forall a b. (b -> a -> b) -> b -> f a -> b
-```
-
-
-#### `arrayReduce`
-
-``` purescript
-instance arrayReduce :: Reduce Prim.Array
-```
-
 #### `toArray`
 
 ``` purescript
-toArray :: forall f a. (Reduce f) => f a -> [a]
+toArray :: forall f a. (Foldable f) => f a -> [a]
 ```
 
 #### `Measured`
@@ -61,10 +46,10 @@ node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
 ```
 
 
-#### `reduceNode`
+#### `foldableNode`
 
 ``` purescript
-instance reduceNode :: Reduce (Node v)
+instance foldableNode :: Foldable (Node v)
 ```
 
 
@@ -125,10 +110,10 @@ instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a)
 ```
 
 
-#### `reduceFingerTree`
+#### `foldableFingerTree`
 
 ``` purescript
-instance reduceFingerTree :: Reduce (FingerTree v)
+instance foldableFingerTree :: Foldable (FingerTree v)
 ```
 
 
@@ -156,21 +141,21 @@ instance measuredFingerTree :: (Monoid v, Measured a v) => Measured (FingerTree 
 #### `(<<|)`
 
 ``` purescript
-(<<|) :: forall f a v. (Monoid v, Measured a v, Reduce f) => f a -> FingerTree v a -> FingerTree v a
+(<<|) :: forall f a v. (Monoid v, Measured a v, Foldable f) => f a -> FingerTree v a -> FingerTree v a
 ```
 
 
 #### `(|>>)`
 
 ``` purescript
-(|>>) :: forall f a v. (Monoid v, Measured a v, Reduce f) => FingerTree v a -> f a -> FingerTree v a
+(|>>) :: forall f a v. (Monoid v, Measured a v, Foldable f) => FingerTree v a -> f a -> FingerTree v a
 ```
 
 
 #### `toTree`
 
 ``` purescript
-toTree :: forall f a v. (Monoid v, Measured a v, Reduce f) => f a -> FingerTree v a
+toTree :: forall f a v. (Monoid v, Measured a v, Foldable f) => f a -> FingerTree v a
 ```
 
 
@@ -340,7 +325,7 @@ split :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> FingerTree v 
 
 
 
-## Module Sequence
+## Module Data.Sequence
 
 #### `Size`
 
