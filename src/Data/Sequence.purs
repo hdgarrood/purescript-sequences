@@ -1,4 +1,4 @@
-module Sequence where
+module Data.Sequence where
 
 import Data.Lazy
 import Data.Monoid
@@ -18,7 +18,7 @@ instance monoidSize :: Monoid Size where
   mempty = Size 0
 
 instance showSize :: Show Size where
-  show x = "(Size " <> show (getSize x) <> ")"
+  show x = "Size (" <> show (getSize x) <> ")"
 
 newtype Elem a = Elem a
 
@@ -29,7 +29,7 @@ instance measuredElem :: FT.Measured (Elem a) Size where
   measure _ = Size 1
 
 instance showElem :: (Show a) => Show (Elem a) where
-  show x = "(Elem " ++ show (getElem x) <> ")"
+  show x = "Elem (" <> show (getElem x) <> ")"
 
 type Seq a = FT.FingerTree Size (Elem a)
 
