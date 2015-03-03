@@ -9,7 +9,7 @@ import qualified Data.Sequence as S
 import qualified Data.FingerTree as FT
 
 instance arbSeq :: (Arbitrary a) => Arbitrary (S.Seq a) where
-  arbitrary = S.fromArray <$> arbitrary
+  arbitrary = (S.toSeq :: [a] -> S.Seq a) <$> arbitrary
 
 sequenceTests = do
   trace "Test semigroup law: associativity"

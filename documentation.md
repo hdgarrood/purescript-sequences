@@ -389,21 +389,6 @@ split :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> FingerTree v 
 
 ## Module Data.Sequence
 
-#### `Size`
-
-``` purescript
-newtype Size
-  = Size Number
-```
-
-
-#### `getSize`
-
-``` purescript
-getSize :: Size -> Number
-```
-
-
 #### `semigroupSize`
 
 ``` purescript
@@ -422,21 +407,6 @@ instance monoidSize :: Monoid Size
 
 ``` purescript
 instance showSize :: Show Size
-```
-
-
-#### `Elem`
-
-``` purescript
-newtype Elem a
-  = Elem a
-```
-
-
-#### `getElem`
-
-``` purescript
-getElem :: forall a. Elem a -> a
 ```
 
 
@@ -489,25 +459,10 @@ instance traversableElem :: Traversable Elem
 ```
 
 
-#### `SeqInner`
-
-``` purescript
-type SeqInner a = FT.FingerTree Size (Elem a)
-```
-
-
 #### `Seq`
 
 ``` purescript
 newtype Seq a
-  = Seq (SeqInner a)
-```
-
-
-#### `getSeq`
-
-``` purescript
-getSeq :: forall a. Seq a -> SeqInner a
 ```
 
 
@@ -522,13 +477,6 @@ instance eqSeq :: (Eq a) => Eq (Seq a)
 
 ``` purescript
 instance showSeq :: (Show a) => Show (Seq a)
-```
-
-
-#### `strJoin`
-
-``` purescript
-strJoin :: String -> [String] -> String
 ```
 
 
@@ -609,6 +557,13 @@ length :: forall a. Seq a -> Number
 ```
 
 
+#### `null`
+
+``` purescript
+null :: forall a. Seq a -> Boolean
+```
+
+
 #### `toArray`
 
 ``` purescript
@@ -616,31 +571,10 @@ toArray :: forall a. Seq a -> [a]
 ```
 
 
-#### `(***)`
+#### `unconsL`
 
 ``` purescript
-(***) :: forall a b aa bb. (a -> aa) -> (b -> bb) -> Tuple a b -> Tuple aa bb
-```
-
-
-#### `fmap`
-
-``` purescript
-fmap :: forall f a b. (Functor f) => (a -> b) -> f a -> f b
-```
-
-
-#### `viewL`
-
-``` purescript
-viewL :: forall a. Seq a -> FT.ViewL Seq a
-```
-
-
-#### `splitAt'`
-
-``` purescript
-splitAt' :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
+unconsL :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 ```
 
 
@@ -651,10 +585,10 @@ splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
 ```
 
 
-#### `(!)`
+#### `index`
 
 ``` purescript
-(!) :: forall a. Seq a -> Number -> a
+index :: forall a. Seq a -> Number -> a
 ```
 
 

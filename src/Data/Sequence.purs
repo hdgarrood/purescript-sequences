@@ -1,4 +1,31 @@
-module Data.Sequence where
+module Data.Sequence
+  ( Seq()
+
+  -- construction
+  , empty
+  , singleton
+  , (<|)
+  , (|>)
+  , append
+  , toSeq
+
+  -- queries
+  , length
+  , null
+
+  -- deconstruction
+  , unconsL
+  , headL
+  , tailL
+
+  , splitAt
+
+  -- indexing
+  , index
+
+  -- other
+  , toArray
+  ) where
 
 import Data.Lazy
 import Data.Monoid
@@ -115,6 +142,10 @@ instance monadSeq :: Monad Seq
 length :: forall a. Seq a -> Number
 length (Seq xs) = getSize (FT.measure xs)
 
+null :: forall a. Seq a -> Boolean
+null (Seq FT.Empty) = true
+null _              = false
+
 toArray :: forall a. Seq a -> [a]
 toArray (Seq xs) = getElem <$> FT.toArray xs
 
@@ -124,11 +155,12 @@ toArray (Seq xs) = getElem <$> FT.toArray xs
 fmap :: forall f a b. (Functor f) => (a -> b) -> f a -> f b
 fmap = (<$>)
 
-viewL :: forall a. Seq a -> FT.ViewL Seq a
-viewL (Seq xs) = case FT.viewL xs of
-                   FT.NilL -> FT.NilL
-                   FT.ConsL y ys -> FT.ConsL (getElem y)
-                                             (defer (\_ -> Seq (force ys)))
+unconsL :: forall a. Seq a -> Maybe (Tuple a (Seq a))
+unconsL (Seq xs) =
+  case FT.viewL xs of
+      FT.NilL       -> Nothing
+      FT.ConsL y ys -> Just (Tuple (getElem y)
+                                   (Seq (force ys)))
 
 splitAt' :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
 splitAt' i (Seq xs) = seqify tuple
@@ -142,8 +174,8 @@ splitAt i xs = forceBoth tuple
   forceBoth = force *** force
   tuple = splitAt' i xs
 
-(!) :: forall a. Seq a -> Number -> a
-(!) (Seq xs) i =
+index :: forall a. Seq a -> Number -> a
+index (Seq xs) i =
   case FT.splitTree (\n -> i < getSize n) (Size 0) xs of
     FT.LazySplit _ x _ -> getElem x
 
