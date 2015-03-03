@@ -23,7 +23,6 @@ instance arrayReduce :: Reduce Prim.Array
 toArray :: forall f a. (Reduce f) => f a -> [a]
 ```
 
-
 #### `Measured`
 
 ``` purescript
@@ -333,4 +332,142 @@ splitTree :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> v -> Fing
 
 ``` purescript
 split :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> FingerTree v a -> Tuple (Lazy (FingerTree v a)) (Lazy (FingerTree v a))
+```
+
+
+
+## Module Sequence
+
+#### `Size`
+
+``` purescript
+newtype Size
+  = Size Number
+```
+
+
+#### `getSize`
+
+``` purescript
+getSize :: Size -> Number
+```
+
+
+#### `semigrouSize`
+
+``` purescript
+instance semigrouSize :: Semigroup Size
+```
+
+
+#### `monoidSize`
+
+``` purescript
+instance monoidSize :: Monoid Size
+```
+
+
+#### `showSize`
+
+``` purescript
+instance showSize :: Show Size
+```
+
+
+#### `Elem`
+
+``` purescript
+newtype Elem a
+  = Elem a
+```
+
+
+#### `getElem`
+
+``` purescript
+getElem :: forall a. Elem a -> a
+```
+
+
+#### `measuredElem`
+
+``` purescript
+instance measuredElem :: FT.Measured (Elem a) Size
+```
+
+
+#### `showElem`
+
+``` purescript
+instance showElem :: (Show a) => Show (Elem a)
+```
+
+
+#### `Seq`
+
+``` purescript
+type Seq a = FT.FingerTree Size (Elem a)
+```
+
+
+#### `length`
+
+``` purescript
+length :: forall a. Seq a -> Number
+```
+
+
+#### `splitAt`
+
+``` purescript
+splitAt :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
+```
+
+
+#### `(!)`
+
+``` purescript
+(!) :: forall a. Seq a -> Number -> a
+```
+
+
+#### `emptySeq`
+
+``` purescript
+emptySeq :: forall a. Seq a
+```
+
+
+#### `(<|)`
+
+``` purescript
+(<|) :: forall a. a -> Seq a -> Seq a
+```
+
+
+#### `(|>)`
+
+``` purescript
+(|>) :: forall a. Seq a -> a -> Seq a
+```
+
+
+#### `(><)`
+
+``` purescript
+(><) :: forall a. Seq a -> Seq a -> Seq a
+```
+
+
+#### `headL`
+
+``` purescript
+headL :: forall a. Seq a -> a
+```
+
+
+#### `tailL`
+
+``` purescript
+tailL :: forall a. Seq a -> Seq a
 ```
