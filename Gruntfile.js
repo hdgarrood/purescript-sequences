@@ -14,7 +14,9 @@ module.exports = function(grunt) {
     pscMake: {
       all: { src: libFiles }
     },
-    dotPsci: libFiles,
+    dotPsci: {
+      src: libFiles
+    },
     pscDocs: {
       readme: {
         src: "src/**/*.purs",
