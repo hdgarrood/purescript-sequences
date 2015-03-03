@@ -1,2 +1,6 @@
 *~
 tmp.js
+.psci
+output/
+bower_components/
+node_modules/

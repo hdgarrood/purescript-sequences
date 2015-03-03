@@ -1,0 +1,23 @@
+{
+  "name": "purescript-finger-trees",
+  "homepage": "https://github.com/hdgarrood/purescript-finger-trees",
+  "description": "A fast, general purpose, purely functional data structure.",
+  "keywords": [
+    "purescript"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "bower_components",
+    "node_modules",
+    "output",
+    "tests",
+    "tmp",
+    "bower.json",
+    "Gruntfile.js",
+    "package.json"
+  ],
+  "dependencies": {
+    "purescript-lazy": "^0.3.0"
+  }
+}
