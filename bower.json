@@ -25,5 +25,8 @@
     "purescript-monoid": "^0.2.0",
     "purescript-foldable-traversable": "^0.3.0"
   },
+  "devDependencies": {
+    "purescript-quickcheck": "^0.5.0"
+  },
   "version": "0.0.1"
 }
