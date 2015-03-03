@@ -4,6 +4,7 @@ import Data.Monoid
 import Data.Maybe
 import Debug.Trace
 import Test.QuickCheck
+import TypeclassTests
 
 import qualified Data.Sequence as S
 import qualified Data.FingerTree as FT
@@ -24,15 +25,12 @@ sequenceTests = do
   quickCheck $ \x -> (x <> mempty) == (x :: S.Seq Number)
     <?> ("x: " <> show x)
 
-  trace "Test functor law: identity"
-  quickCheck $ \x -> (id <$> x) == (x :: S.Seq Number)
-    <?> ("x: " <> show x)
+  let proxy = S.singleton 0
+  trace "Test functor laws"
+  checkFunctor proxy
 
-  trace "Test functor law: composition"
-  quickCheck $ \x f g ->
-    let fg :: Number -> Number
-        fg = f <<< (g :: Number -> Number)
-        mapfmapg :: S.Seq Number -> S.Seq Number
-        mapfmapg = ((<$>) f) <<< ((<$>) g)
-    in fg <$> x == mapfmapg (x :: S.Seq Number)
-         <?> ("x: " <> show x)
+  trace "Test applicative laws"
+  checkApplicative proxy proxy proxy
+
+  trace "Test monad laws"
+  checkMonad proxy

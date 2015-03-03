@@ -5,3 +5,4 @@ output/
 bower_components/
 node_modules/
 tmp
+.psci_modules/
