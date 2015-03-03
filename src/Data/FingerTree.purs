@@ -10,6 +10,7 @@ module Data.FingerTree where
 -- ok, because they have <= 4 elements.
 -- * Add tests (and test performance, somehow)
 -- * Partial functions (headL etc) should become total.
+-- * Use STArray in toArray
 
 import Data.Monoid
 import Data.Array (concat, length, snoc)
@@ -30,6 +31,7 @@ instance arrayReduce :: Reduce [] where
   reducel _ z [] = z
   reducel f z (x : xs) = reducel f (f z x) xs
 
+-- use STArray here?
 toArray :: forall f a. (Reduce f) => f a -> [a]
 toArray s = reducer (:) s []
 
