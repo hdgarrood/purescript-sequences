@@ -60,6 +60,13 @@ instance foldableNode :: Foldable (Node v)
 ```
 
 
+#### `traversableNode`
+
+``` purescript
+instance traversableNode :: Traversable (Node v)
+```
+
+
 #### `measuredNode`
 
 ``` purescript
@@ -148,6 +155,13 @@ instance functorFingerTree :: Functor (FingerTree v)
 
 ``` purescript
 instance foldableFingerTree :: Foldable (FingerTree v)
+```
+
+
+#### `traversableFingerTree`
+
+``` purescript
+instance traversableFingerTree :: Traversable (FingerTree v)
 ```
 
 
@@ -330,10 +344,10 @@ nodes :: forall a v. (Monoid v, Measured a v) => [a] -> [Node v a]
 ```
 
 
-#### `(><)`
+#### `append`
 
 ``` purescript
-(><) :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> FingerTree v a -> FingerTree v a
+append :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> FingerTree v a -> FingerTree v a
 ```
 
 
@@ -390,10 +404,10 @@ getSize :: Size -> Number
 ```
 
 
-#### `semigrouSize`
+#### `semigroupSize`
 
 ``` purescript
-instance semigrouSize :: Semigroup Size
+instance semigroupSize :: Semigroup Size
 ```
 
 
@@ -454,6 +468,27 @@ instance ordElem :: (Ord a) => Ord (Elem a)
 ```
 
 
+#### `foldableElem`
+
+``` purescript
+instance foldableElem :: Foldable Elem
+```
+
+
+#### `functorElem`
+
+``` purescript
+instance functorElem :: Functor Elem
+```
+
+
+#### `traversableElem`
+
+``` purescript
+instance traversableElem :: Traversable Elem
+```
+
+
 #### `SeqInner`
 
 ``` purescript
@@ -494,6 +529,34 @@ instance showSeq :: (Show a) => Show (Seq a)
 
 ``` purescript
 instance ordSeq :: (Ord a) => Ord (Seq a)
+```
+
+
+#### `semigroupSeq`
+
+``` purescript
+instance semigroupSeq :: Semigroup (Seq a)
+```
+
+
+#### `monoidSeq`
+
+``` purescript
+instance monoidSeq :: Monoid (Seq a)
+```
+
+
+#### `foldableSeq`
+
+``` purescript
+instance foldableSeq :: Foldable Seq
+```
+
+
+#### `traversableSeq`
+
+``` purescript
+instance traversableSeq :: Traversable Seq
 ```
 
 
@@ -552,6 +615,7 @@ viewL :: forall a. Seq a -> FT.ViewL Seq a
 splitAt' :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
 ```
 
+
 #### `splitAt`
 
 ``` purescript
@@ -587,10 +651,10 @@ empty :: forall a. Seq a
 ```
 
 
-#### `(><)`
+#### `append`
 
 ``` purescript
-(><) :: forall a. Seq a -> Seq a -> Seq a
+append :: forall a. Seq a -> Seq a -> Seq a
 ```
 
 

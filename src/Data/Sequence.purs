@@ -5,6 +5,7 @@ import Data.Monoid
 import Data.Tuple
 import Data.Maybe
 import Data.Foldable
+import Data.Traversable
 import qualified Data.FingerTree as FT
 
 newtype Size = Size Number
@@ -39,6 +40,18 @@ instance eqElem :: (Eq a) => Eq (Elem a) where
 instance ordElem :: (Ord a) => Ord (Elem a) where
   compare (Elem x) (Elem y) = compare x y
 
+instance foldableElem :: Foldable Elem where
+  foldr f z (Elem x) = f x z
+  foldl f z (Elem x) = f z x
+  foldMap f (Elem x) = f x
+
+instance functorElem :: Functor Elem where
+  (<$>) f (Elem x) = Elem (f x)
+
+instance traversableElem :: Traversable Elem where
+  traverse f (Elem x) = Elem <$> f x
+  sequence (Elem fx)  = Elem <$> fx
+
 type SeqInner a = FT.FingerTree Size (Elem a)
 newtype Seq a = Seq (SeqInner a)
 
@@ -46,6 +59,7 @@ getSeq :: forall a. Seq a -> SeqInner a
 getSeq (Seq a) = a
 
 instance eqSeq :: (Eq a) => Eq (Seq a) where
+  -- TODO: Optimise, probably with lazy list
   (==) xs ys = if length xs == length ys
                  then toArray xs == toArray ys
                  else false
@@ -62,6 +76,15 @@ instance semigroupSeq :: Semigroup (Seq a) where
 
 instance monoidSeq :: Monoid (Seq a) where
   mempty = empty
+
+instance foldableSeq :: Foldable Seq where
+  foldr f z (Seq xs) = foldr (f <<< getElem) z xs
+  foldl f z (Seq xs) = foldl (\b a -> f b (getElem a)) z xs
+  foldMap f (Seq xs) = foldMap (f <<< getElem) xs
+
+instance traversableSeq :: Traversable Seq where
+  traverse f (Seq xs) = Seq <$> traverse (traverse f) xs
+  sequence = traverse id
 
 instance functorSeq :: Functor Seq where
   (<$>) f (Seq xs) = Seq (g <$> xs)

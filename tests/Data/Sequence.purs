@@ -23,3 +23,5 @@ sequenceTests = do
   trace "Test monoid law: right identity"
   quickCheck $ \x -> (x <> mempty) == (x :: S.Seq Number)
     <?> ("x: " <> show x)
+
+  trace "Test functor law: ?"

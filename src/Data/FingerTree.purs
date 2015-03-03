@@ -11,6 +11,7 @@ import Data.Maybe
 import Data.Tuple
 import Data.Lazy
 import Data.Foldable
+import Data.Traversable
 
 -- use STArray here?
 toArray :: forall f a. (Foldable f) => f a -> [a]
@@ -48,8 +49,8 @@ node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
 node3 a b c = Node3 (measure a <> measure b <> measure c) a b c
 
 instance functorNode :: Functor (Node v) where
-  (<$>) f (Node2 v x y)   = Node2 v (f x) (f y)
-  (<$>) f (Node3 v x y z) = Node3 v (f x) (f y) (f z)
+  (<$>) f (Node2 v a b)   = Node2 v (f a) (f b)
+  (<$>) f (Node3 v a b c) = Node3 v (f a) (f b) (f c)
 
 instance foldableNode :: Foldable (Node v) where
   foldr (-<) z (Node2 _ a b)   = a -< (b -< z)
@@ -57,6 +58,11 @@ instance foldableNode :: Foldable (Node v) where
   foldl (>-) z (Node2 _ a b)   = (z >- b) >- a
   foldl (>-) z (Node3 _ a b c) = ((z >- c) >- b) >- a
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
+
+instance traversableNode :: Traversable (Node v) where
+  traverse f (Node2 v a b) = Node2 v <$> f a <*> f b
+  traverse f (Node3 v a b c) = Node3 v <$> f a <*> f b <*> f c
+  sequence = traverse id
 
 instance measuredNode :: Measured (Node v a) v where
   measure (Node2 v _ _) = v
@@ -157,6 +163,23 @@ instance foldableFingerTree :: Foldable (FingerTree v) where
     (>>>-) = foldl (foldl (>-))
 
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
+
+
+instance traversableFingerTree :: Traversable (FingerTree v) where
+  traverse f Empty            = pure Empty
+  traverse f (Single x)       = Single <$> f x
+  traverse f (Deep v pr m sf) =
+    Deep v <$> traverse f pr
+           <*> (defer <$> kl)
+           <*> traverse f sf
+    where
+    l :: m (FingerTree v (Node v a))
+    l = traverse (traverse f) (force m)
+
+    kl :: m (Unit -> FingerTree v (Node v a))
+    kl = const <$> l
+
+  sequence = traverse id
 
 instance measuredFingerTree :: (Monoid v, Measured a v)
                             => Measured (FingerTree v a) v where
