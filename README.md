@@ -6,6 +6,9 @@ The implementation uses 2-3 finger trees annotated with sizes, as described in
 the paper [_Finger Trees: A Simple General-Purpose Data Structure_][1], Ralf
 Hinze and Ross Paterson (2006).
 
+Big props also go to [taku0](https://github.com/taku0) who did most of the
+work on this. 
+
 ## When is this approach _not_ suitable?
 
 If you are using JavaScript libraries via the FFI, and passing Arrays back and
