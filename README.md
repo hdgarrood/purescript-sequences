@@ -36,7 +36,7 @@ Amortized complexities of other operations:
 | pop()         | O(1)         | O(1)                |
 | shift()       | O(n)         | O(1)                |
 | unshift()     | O(n)         | O(1)                |
-| get(i)/set(i) | O(1)         | O(log(min(i, n-1))) |
-| splitAt(i)    | O(n)         | O(log(min(i, n-1))) |
+| get(i)/set(i) | O(1)         | O(log(min(i, n-i))) |
+| splitAt(i)    | O(n)         | O(log(min(i, n-i))) |
 
 [1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
