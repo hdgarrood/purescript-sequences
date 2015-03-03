@@ -6,7 +6,16 @@ The implementation uses 2-3 finger trees annotated with sizes, as described in
 the paper [_Finger Trees: A Simple General-Purpose Data Structure_][1], Ralf
 Hinze and Ross Paterson (2006).
 
-## Why not just use Arrays?
+## When is this approach _not_ suitable?
+
+If you are using JavaScript libraries via the FFI, and passing Arrays back and
+forth between PureScript and JavaScript, you might find that it's easier and
+more efficient to just use Arrays. Generally, JavaScript libraries will not be
+able to use the Seq type in this library, and so you would have to convert
+between Seqs and Arrays at the PS/JS boundaries. The conversion in either
+direction is O(n).
+
+## Why not just use Arrays all the time?
 
 JavaScript's Array type is designed for use in an imperative programming
 environment, where anything can be mutated at any time. This means that reusing
