@@ -1,12 +1,13 @@
 module Tests.Data.Sequence where
 
 import Data.Maybe
+import Debug.Trace
 import Test.QuickCheck
 
 import qualified Data.Sequence as S
 import qualified Data.FingerTree as FT
 
-instance arbSeq :: Arbitrary (FT.FingerTree S.Size (S.Elem a)) where
+instance arbSeq :: (Arbitrary a) => Arbitrary (S.Seq a) where
   arbitrary = S.fromArray <$> arbitrary
 
 sequenceTests = do

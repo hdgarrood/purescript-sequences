@@ -46,6 +46,13 @@ node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
 ```
 
 
+#### `functorNode`
+
+``` purescript
+instance functorNode :: Functor (Node v)
+```
+
+
 #### `foldableNode`
 
 ``` purescript
@@ -110,6 +117,33 @@ instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a)
 ```
 
 
+#### `compareFingerTree`
+
+``` purescript
+compareFingerTree :: forall a v. (Monoid v, Measured a v, Ord a) => FingerTree v a -> FingerTree v a -> Ordering
+```
+
+#### `(<$$>)`
+
+``` purescript
+(<$$>) :: forall f g a b. (Functor f, Functor g) => (a -> b) -> f (g a) -> f (g b)
+```
+
+
+#### `(<$$$>)`
+
+``` purescript
+(<$$$>) :: forall f g h a b. (Functor f, Functor g, Functor h) => (a -> b) -> f (g (h a)) -> f (g (h b))
+```
+
+
+#### `functorFingerTree`
+
+``` purescript
+instance functorFingerTree :: Functor (FingerTree v)
+```
+
+
 #### `foldableFingerTree`
 
 ``` purescript
@@ -165,6 +199,20 @@ toTree :: forall f a v. (Monoid v, Measured a v, Foldable f) => f a -> FingerTre
 data ViewL s a
   = NilL 
   | ConsL a (Lazy (s a))
+```
+
+
+#### `functorViewL`
+
+``` purescript
+instance functorViewL :: (Functor s) => Functor (ViewL s)
+```
+
+
+#### `switchViewL`
+
+``` purescript
+switchViewL :: forall s t a b. (a -> b) -> (s a -> t b) -> ViewL s a -> ViewL t b
 ```
 
 
@@ -392,10 +440,74 @@ instance showElem :: (Show a) => Show (Elem a)
 ```
 
 
+#### `eqElem`
+
+``` purescript
+instance eqElem :: (Eq a) => Eq (Elem a)
+```
+
+
+#### `ordElem`
+
+``` purescript
+instance ordElem :: (Ord a) => Ord (Elem a)
+```
+
+
+#### `SeqInner`
+
+``` purescript
+type SeqInner a = FT.FingerTree Size (Elem a)
+```
+
+
 #### `Seq`
 
 ``` purescript
-type Seq a = FT.FingerTree Size (Elem a)
+newtype Seq a
+  = Seq (SeqInner a)
+```
+
+
+#### `getSeq`
+
+``` purescript
+getSeq :: forall a. Seq a -> SeqInner a
+```
+
+
+#### `eqSeq`
+
+``` purescript
+instance eqSeq :: (Eq a) => Eq (Seq a)
+```
+
+
+#### `showSeq`
+
+``` purescript
+instance showSeq :: (Show a) => Show (Seq a)
+```
+
+
+#### `ordSeq`
+
+``` purescript
+instance ordSeq :: (Ord a) => Ord (Seq a)
+```
+
+
+#### `functorSeq`
+
+``` purescript
+instance functorSeq :: Functor Seq
+```
+
+
+#### `strJoin`
+
+``` purescript
+strJoin :: String -> [String] -> String
 ```
 
 
@@ -406,10 +518,44 @@ length :: forall a. Seq a -> Number
 ```
 
 
+#### `toArray`
+
+``` purescript
+toArray :: forall a. Seq a -> [a]
+```
+
+
+#### `(***)`
+
+``` purescript
+(***) :: forall a b aa bb. (a -> aa) -> (b -> bb) -> Tuple a b -> Tuple aa bb
+```
+
+
+#### `fmap`
+
+``` purescript
+fmap :: forall f a b. (Functor f) => (a -> b) -> f a -> f b
+```
+
+
+#### `viewL`
+
+``` purescript
+viewL :: forall a. Seq a -> FT.ViewL Seq a
+```
+
+
+#### `splitAt'`
+
+``` purescript
+splitAt' :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
+```
+
 #### `splitAt`
 
 ``` purescript
-splitAt :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
+splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
 ```
 
 
@@ -459,4 +605,11 @@ headL :: forall a. Seq a -> Maybe a
 
 ``` purescript
 tailL :: forall a. Seq a -> Maybe (Seq a)
+```
+
+
+#### `fromArray`
+
+``` purescript
+fromArray :: forall a. [a] -> Seq a
 ```

@@ -4,14 +4,6 @@ module Data.FingerTree where
 -- General-Purpose Data Structure" (2006), Ralf Hinze and Ross Paterson.
 -- http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
 
--- TODO:
---
--- * Get rid of all uncons patterns - they're O(n). But the ones on digits are
--- ok, because they have <= 4 elements.
--- * Add tests (and test performance, somehow)
--- * Partial functions (headL etc) should become total.
--- * Use STArray in toArray
-
 import Data.Monoid
 import Data.Array (concat, length, snoc)
 import Data.Array.Unsafe (head, tail, last, init)
@@ -55,6 +47,10 @@ node2 a b = Node2 (measure a <> measure b) a b
 node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
 node3 a b c = Node3 (measure a <> measure b <> measure c) a b c
 
+instance functorNode :: Functor (Node v) where
+  (<$>) f (Node2 v x y)   = Node2 v (f x) (f y)
+  (<$>) f (Node3 v x y z) = Node3 v (f x) (f y) (f z)
+
 instance foldableNode :: Foldable (Node v) where
   foldr (-<) z (Node2 _ a b)   = a -< (b -< z)
   foldr (-<) z (Node3 _ a b c) = a -< (b -< (c -< z))
@@ -81,6 +77,7 @@ data FingerTree v a = Empty
                       (Digit a)
                       (Lazy (FingerTree v (Node v a)))
                       (Digit a)
+
 
 lazyEmpty :: forall v a. Lazy (FingerTree v a)
 lazyEmpty = defer (\_ -> Empty)
@@ -110,6 +107,36 @@ instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
      ++ " "
      ++ show sf
      ++ ")")
+
+-- We don't implement an Ord instance because we can't implement a good Eq
+-- instance, and because we expect actual uses of FingerTrees to use newtypes,
+-- so we provide this function instead to help with defining Ord instances.
+compareFingerTree :: forall a v. (Monoid v, Measured a v, Ord a) =>
+  FingerTree v a -> FingerTree v a -> Ordering
+compareFingerTree xs ys =
+  case Tuple (viewL xs) (viewL ys) of
+    Tuple NilL NilL -> EQ
+    Tuple NilL _    -> LT
+    Tuple _    NilL -> GT
+    Tuple (ConsL x xs') (ConsL y ys') ->
+      case compare x y of
+        EQ -> let xs'' = force xs'
+                  ys'' = force ys'
+              in compareFingerTree xs'' ys''
+        other -> other
+
+(<$$>) :: forall f g a b. (Functor f, Functor g) =>
+  (a -> b) -> f (g a) -> f (g b)
+(<$$>) = (<$>) <<< (<$>)
+
+(<$$$>) :: forall f g h a b. (Functor f, Functor g, Functor h) =>
+  (a -> b) -> f (g (h a)) -> f (g (h b))
+(<$$$>) = (<$$>) <<< (<$>)
+
+instance functorFingerTree :: Functor (FingerTree v) where
+  (<$>) f Empty = Empty
+  (<$>) f (Single x) = Single (f x)
+  (<$>) f (Deep v pr m sf) = Deep v (f <$> pr) (f <$$$> m) (f <$> sf)
 
 instance foldableFingerTree :: Foldable (FingerTree v) where
   foldr (-<) z Empty            = z
@@ -184,6 +211,15 @@ toTree :: forall f a v. (Monoid v, Measured a v, Foldable f) =>
 toTree s = s <<| Empty
 
 data ViewL s a = NilL | ConsL a (Lazy (s a))
+
+instance functorViewL :: (Functor s) => Functor (ViewL s) where
+  (<$>) f NilL = NilL
+  (<$>) f (ConsL x xs) = ConsL (f x) ((f <$>) <$> xs)
+
+switchViewL :: forall s t a b.
+  (a -> b) -> (s a -> t b) -> ViewL s a -> ViewL t b
+switchViewL f g NilL = NilL
+switchViewL f g (ConsL x xs) = ConsL (f x) (g <$> xs)
 
 headDigit :: forall a. Digit a -> a
 headDigit = head
@@ -287,9 +323,9 @@ nodes [a, b, c]        = [node3 a b c]
 nodes [a, b, c, d]     = [node2 a b, node2 c d]
 nodes (a : b : c : xs) = node3 a b c : nodes xs
 
-(><) :: forall a v. (Monoid v, Measured a v)
+append :: forall a v. (Monoid v, Measured a v)
      => FingerTree v a -> FingerTree v a -> FingerTree v a
-(><) xs ys = app3 xs [] ys
+append xs ys = app3 xs [] ys
 
 data Split f a = Split (f a) a (f a)
 data LazySplit f a = LazySplit (Lazy (f a)) a (Lazy (f a))
