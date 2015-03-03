@@ -9,8 +9,8 @@ Hinze and Ross Paterson (2006).
 ## Why not just use Arrays?
 
 JavaScript's Array type is designed for use in an imperative programming
-environment, where mutation is rife. This means that reusing them is usually
-not possible. For example:
+environment, where anything can be mutated at any time. This means that reusing
+them is usually not possible. For example:
 
 ```javascript
 var as = [1,2,3]
@@ -32,11 +32,9 @@ Amortized complexities of other operations:
 
 |               | Native array | Sequence            |
 |---------------|--------------|---------------------|
-| push()        | O(1)         | O(1)                |
-| pop()         | O(1)         | O(1)                |
-| shift()       | O(n)         | O(1)                |
-| unshift()     | O(n)         | O(1)                |
-| get(i)/set(i) | O(1)         | O(log(min(i, n-i))) |
-| splitAt(i)    | O(n)         | O(log(min(i, n-i))) |
+| push/pop      | O(1)         | O(1)                |
+| shift/unshift | O(n)         | O(1)                |
+| get i / set i | O(1)         | O(log(min(i, n-i))) |
+| splitAt i     | O(n)         | O(log(min(i, n-i))) |
 
 [1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
