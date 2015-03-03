@@ -525,6 +525,13 @@ instance showSeq :: (Show a) => Show (Seq a)
 ```
 
 
+#### `strJoin`
+
+``` purescript
+strJoin :: String -> [String] -> String
+```
+
+
 #### `ordSeq`
 
 ``` purescript
@@ -567,10 +574,31 @@ instance functorSeq :: Functor Seq
 ```
 
 
-#### `strJoin`
+#### `applySeq`
 
 ``` purescript
-strJoin :: String -> [String] -> String
+instance applySeq :: Apply Seq
+```
+
+
+#### `applicativeSeq`
+
+``` purescript
+instance applicativeSeq :: Applicative Seq
+```
+
+
+#### `bindSeq`
+
+``` purescript
+instance bindSeq :: Bind Seq
+```
+
+
+#### `monadSeq`
+
+``` purescript
+instance monadSeq :: Monad Seq
 ```
 
 
@@ -648,6 +676,13 @@ empty :: forall a. Seq a
 
 ``` purescript
 (|>) :: forall a. Seq a -> a -> Seq a
+```
+
+
+#### `singleton`
+
+``` purescript
+singleton :: forall a. a -> Seq a
 ```
 
 

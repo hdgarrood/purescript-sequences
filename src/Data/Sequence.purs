@@ -68,6 +68,14 @@ instance eqSeq :: (Eq a) => Eq (Seq a) where
 instance showSeq :: (Show a) => Show (Seq a) where
   show xs = "fromArray (" <> strJoin ", " (toArray (show <$> xs)) <> ")"
 
+foreign import strJoin """
+  function strJoin(glue) {
+    return function(array) {
+      return array.join(glue)
+    }
+  }
+  """ :: String -> [String] -> String
+
 instance ordSeq :: (Ord a) => Ord (Seq a) where
   compare (Seq xs) (Seq ys) = FT.compareFingerTree xs ys
 
@@ -91,13 +99,18 @@ instance functorSeq :: Functor Seq where
     where
     g (Elem x) = Elem (f x)
 
-foreign import strJoin """
-  function strJoin(glue) {
-    return function(array) {
-      return array.join(glue)
-    }
-  }
-  """ :: String -> [String] -> String
+instance applySeq :: Apply Seq where
+  -- TODO: Optimise (see Hackage)
+  (<*>) = ap
+
+instance applicativeSeq :: Applicative Seq where
+  pure = singleton
+
+instance bindSeq :: Bind Seq where
+  (>>=) xs f = foldl add empty xs
+    where add ys x = append ys (f x)
+
+instance monadSeq :: Monad Seq
 
 length :: forall a. Seq a -> Number
 length (Seq xs) = getSize (FT.measure xs)
@@ -142,6 +155,9 @@ empty = Seq FT.Empty
 
 (|>) :: forall a. Seq a -> a -> Seq a
 (|>) (Seq xs) x = Seq (FT.(|>) xs (Elem x))
+
+singleton :: forall a. a -> Seq a
+singleton x = x <| empty
 
 append :: forall a. Seq a -> Seq a -> Seq a
 append (Seq a) (Seq b) = Seq (FT.append a b)
