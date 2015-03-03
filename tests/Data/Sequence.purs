@@ -24,4 +24,15 @@ sequenceTests = do
   quickCheck $ \x -> (x <> mempty) == (x :: S.Seq Number)
     <?> ("x: " <> show x)
 
-  trace "Test functor law: ?"
+  trace "Test functor law: identity"
+  quickCheck $ \x -> (id <$> x) == (x :: S.Seq Number)
+    <?> ("x: " <> show x)
+
+  trace "Test functor law: composition"
+  quickCheck $ \x f g ->
+    let fg :: Number -> Number
+        fg = f <<< (g :: Number -> Number)
+        mapfmapg :: S.Seq Number -> S.Seq Number
+        mapfmapg = ((<$>) f) <<< ((<$>) g)
+    in fg <$> x == mapfmapg (x :: S.Seq Number)
+         <?> ("x: " <> show x)
