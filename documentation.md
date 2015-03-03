@@ -17,10 +17,10 @@ class Reduce f where
 instance arrayReduce :: Reduce Prim.Array
 ```
 
-#### `toList`
+#### `toArray`
 
 ``` purescript
-toList :: forall f a. (Reduce f) => f a -> [a]
+toArray :: forall f a. (Reduce f) => f a -> [a]
 ```
 
 
@@ -119,24 +119,24 @@ deep :: forall a v. (Monoid v, Measured a v) => Digit a -> Lazy (FingerTree v (N
 type Digit a = [a]
 ```
 
-#### `fingerTreeShow`
+#### `showFingerTree`
 
 ``` purescript
-instance fingerTreeShow :: (Show v, Show a) => Show (FingerTree v a)
+instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a)
 ```
 
 
-#### `fingerTreeReduce`
+#### `reduceFingerTree`
 
 ``` purescript
-instance fingerTreeReduce :: Reduce (FingerTree v)
+instance reduceFingerTree :: Reduce (FingerTree v)
 ```
 
 
-#### `fingerTreeMeasured`
+#### `measuredFingerTree`
 
 ``` purescript
-instance fingerTreeMeasured :: (Monoid v, Measured a v) => Measured (FingerTree v a) v
+instance measuredFingerTree :: (Monoid v, Measured a v) => Measured (FingerTree v a) v
 ```
 
 

@@ -30,8 +30,8 @@ instance arrayReduce :: Reduce [] where
   reducel _ z [] = z
   reducel f z (x : xs) = reducel f (f z x) xs
 
-toList :: forall f a. (Reduce f) => f a -> [a]
-toList s = reducer (:) s []
+toArray :: forall f a. (Reduce f) => f a -> [a]
+toArray s = reducer (:) s []
 
 class Measured a v where
   measure :: a -> v
@@ -226,7 +226,7 @@ deepL :: forall a v. (Monoid v, Measured a v)
       => [a] -> Lazy (FingerTree v (Node v a)) -> [a] -> FingerTree v a
 deepL [] m sf = case viewL (force m) of
   NilL       -> toTree sf
-  ConsL a m' -> deep (toList a) m' sf
+  ConsL a m' -> deep (toArray a) m' sf
 deepL pr m sf = deep pr m sf
 
 isEmpty :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Boolean
@@ -263,7 +263,7 @@ deepR :: forall a v. (Monoid v, Measured a v)
       => [a] -> Lazy (FingerTree v (Node v a)) -> [a] -> FingerTree v a
 deepR pr m [] = case viewR (force m) of
   NilR       -> toTree pr
-  SnocR m' a -> deep pr m' (toList a)
+  SnocR m' a -> deep pr m' (toArray a)
 deepR pr m sf = deep pr m sf
 
 -- unsafe
@@ -330,7 +330,7 @@ splitTree p i (Deep _ pr m sf) =
         then
           case splitTree p vpr (force m) of
             LazySplit ml xs mr ->
-              case splitDigit p (vpr <> measure ml) (toList xs) of
+              case splitDigit p (vpr <> measure ml) (toArray xs) of
                 Split l x r ->
                   LazySplit (defer (\_ -> deepR pr ml l))
                             x
