@@ -24,22 +24,15 @@ data Node v a = Node2 v a a | Node3 v a a a
 
 instance showNode :: (Show a, Show v) => Show (Node v a) where
   show (Node2 v a b) =
-    ("(Node2 "
-     ++ show v
-     ++ " "
-     ++ show a
-     ++ " "
-     ++ show b
+    ("Node2 (" ++ show v
+     ++ ") (" ++ show a
+     ++ ") (" ++ show b
      ++ ")")
   show (Node3 v a b c) =
-    ("(Node3 "
-     ++ show v
-     ++ " "
-     ++ show a
-     ++ " "
-     ++ show b
-     ++ " "
-     ++ show c
+    ("Node3 (" ++ show v
+     ++ ") (" ++ show a
+     ++ ") (" ++ show b
+     ++ ") (" ++ show c
      ++ ")")
 
 node2 :: forall a v. (Monoid v, Measured a v) => a -> a -> Node v a
@@ -102,16 +95,12 @@ type Digit a = [a]
 
 instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
   show Empty = "Empty"
-  show (Single a) = "(Single " ++ show a ++ ")"
+  show (Single a) = "Single (" ++ show a ++ ")"
   show (Deep v pr m sf) =
-    ("(Deep "
-     ++ show v
-     ++ " "
-     ++ show pr
-     ++ " "
-     ++ show m
-     ++ " "
-     ++ show sf
+    ("Deep (" ++ show v
+     ++ ") (" ++ show pr
+     ++ ") (" ++ show m
+     ++ ") (" ++ show sf
      ++ ")")
 
 -- We don't implement an Ord instance because we can't implement a good Eq
