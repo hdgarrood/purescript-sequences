@@ -236,15 +236,16 @@ isEmpty x = case viewL x of
   NilL      -> true
   ConsL _ _ -> false
 
--- unsafe
-headL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> a
+headL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
 headL x = case viewL x of
-  ConsL a _ -> a
+  ConsL a _ -> Just a
+  NilL      -> Nothing
 
--- unsafe
-tailL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> FingerTree v a
+tailL :: forall a v. (Monoid v, Measured a v) =>
+  FingerTree v a -> Maybe (FingerTree v a)
 tailL x = case viewL x of
-  ConsL _ x' -> force x'
+  ConsL _ x' -> Just (force x')
+  NilL       -> Nothing
 
 lastDigit :: forall a. Digit a -> a
 lastDigit = last
@@ -268,15 +269,16 @@ deepR pr m [] = case viewR (force m) of
   SnocR m' a -> deep pr m' (toArray a)
 deepR pr m sf = deep pr m sf
 
--- unsafe
-headR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> a
+headR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
 headR x = case viewR x of
-  SnocR _ a -> a
+  SnocR _ a -> Just a
+  NilR      -> Nothing
 
--- unsafe
-tailR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> FingerTree v a
+tailR :: forall a v. (Monoid v, Measured a v) =>
+  FingerTree v a -> Maybe (FingerTree v a)
 tailR x = case viewR x of
-  SnocR x' _ -> force x'
+  SnocR x' _ -> Just (force x')
+  NilR       -> Nothing
 
 app3 :: forall a v. (Monoid v, Measured a v)
      => FingerTree v a -> [a] -> FingerTree v a -> FingerTree v a

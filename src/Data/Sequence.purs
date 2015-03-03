@@ -3,6 +3,7 @@ module Sequence where
 import Data.Lazy
 import Data.Monoid
 import Data.Tuple
+import Data.Maybe
 import qualified Data.FingerTree as FT
 
 newtype Size = Size Number
@@ -43,8 +44,8 @@ splitAt i xs = FT.split (\n -> i < getSize n) xs
   case FT.splitTree (\n -> i < getSize n) (Size 0) xs of
     FT.LazySplit _ x _ -> getElem x
 
-emptySeq :: forall a. Seq a
-emptySeq = FT.Empty
+empty :: forall a. Seq a
+empty = FT.Empty
 
 (<|) :: forall a. a -> Seq a -> Seq a
 (<|) x xs = FT.(<|) (Elem x) xs
@@ -55,10 +56,10 @@ emptySeq = FT.Empty
 (><) :: forall a. Seq a -> Seq a -> Seq a
 (><) = FT.(><)
 
-headL :: forall a. Seq a -> a
-headL xs = getElem (FT.headL xs)
+headL :: forall a. Seq a -> Maybe a
+headL xs = getElem <$> FT.headL xs
 
-tailL :: forall a. Seq a -> Seq a
+tailL :: forall a. Seq a -> Maybe (Seq a)
 tailL = FT.tailL
 
 -- TODO

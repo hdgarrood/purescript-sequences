@@ -221,14 +221,16 @@ isEmpty :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Boolean
 #### `headL`
 
 ``` purescript
-headL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> a
+headL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
 ```
+
 
 #### `tailL`
 
 ``` purescript
-tailL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> FingerTree v a
+tailL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe (FingerTree v a)
 ```
+
 
 #### `lastDigit`
 
@@ -270,14 +272,16 @@ deepR :: forall a v. (Monoid v, Measured a v) => [a] -> Lazy (FingerTree v (Node
 #### `headR`
 
 ``` purescript
-headR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> a
+headR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
 ```
+
 
 #### `tailR`
 
 ``` purescript
-tailR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> FingerTree v a
+tailR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe (FingerTree v a)
 ```
+
 
 #### `app3`
 
@@ -431,10 +435,10 @@ splitAt :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
 ```
 
 
-#### `emptySeq`
+#### `empty`
 
 ``` purescript
-emptySeq :: forall a. Seq a
+empty :: forall a. Seq a
 ```
 
 
@@ -462,12 +466,12 @@ emptySeq :: forall a. Seq a
 #### `headL`
 
 ``` purescript
-headL :: forall a. Seq a -> a
+headL :: forall a. Seq a -> Maybe a
 ```
 
 
 #### `tailL`
 
 ``` purescript
-tailL :: forall a. Seq a -> Seq a
+tailL :: forall a. Seq a -> Maybe (Seq a)
 ```
