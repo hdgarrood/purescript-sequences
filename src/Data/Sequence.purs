@@ -93,7 +93,7 @@ instance eqSeq :: (Eq a) => Eq (Seq a) where
   (/=) xs ys = not (xs == ys)
 
 instance showSeq :: (Show a) => Show (Seq a) where
-  show xs = "fromArray (" <> strJoin ", " (toArray (show <$> xs)) <> ")"
+  show xs = "fromArray [" <> strJoin "," (toArray (show <$> xs)) <> "]"
 
 foreign import strJoin """
   function strJoin(glue) {
