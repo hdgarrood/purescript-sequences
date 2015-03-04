@@ -5,7 +5,7 @@ module Data.FingerTree where
 -- http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
 
 import Data.Monoid
-import Data.Array (concat, length, snoc)
+import Data.Array (snoc)
 import Data.Array.Unsafe (head, tail, last, init)
 import Data.Maybe
 import Data.Tuple
