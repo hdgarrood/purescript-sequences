@@ -550,6 +550,34 @@ instance monadSeq :: Monad Seq
 ```
 
 
+#### `altSeq`
+
+``` purescript
+instance altSeq :: Alt Seq
+```
+
+
+#### `plusSeq`
+
+``` purescript
+instance plusSeq :: Plus Seq
+```
+
+
+#### `alternativeSeq`
+
+``` purescript
+instance alternativeSeq :: Alternative Seq
+```
+
+
+#### `monadPlusSeq`
+
+``` purescript
+instance monadPlusSeq :: MonadPlus Seq
+```
+
+
 #### `length`
 
 ``` purescript
