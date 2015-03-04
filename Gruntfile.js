@@ -32,9 +32,13 @@ module.exports = function(grunt) {
       src: libFiles
     },
     pscDocs: {
-      readme: {
-        src: "src/**/*.purs",
-        dest: "documentation.md"
+      sequence: {
+        src: "src/Data/Sequence.purs",
+        dest: "docs/Data.Sequence.md"
+      },
+      fingertree: {
+        src: "src/Data/FingerTree.purs",
+        dest: "docs/Data.FingerTree.md"
       }
     },
 
