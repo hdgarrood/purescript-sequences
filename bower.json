@@ -1,6 +1,6 @@
 {
-  "name": "purescript-finger-trees",
-  "homepage": "https://github.com/hdgarrood/purescript-finger-trees",
+  "name": "purescript-sequences",
+  "homepage": "https://github.com/hdgarrood/purescript-sequences",
   "description": "An efficient, general purpose sequence type.",
   "keywords": [
     "purescript"
