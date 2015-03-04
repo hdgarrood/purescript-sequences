@@ -1,7 +1,7 @@
 {
   "name": "purescript-finger-trees",
   "homepage": "https://github.com/hdgarrood/purescript-finger-trees",
-  "description": "A fast, general purpose, purely functional data structure.",
+  "description": "An efficient, general purpose sequence type.",
   "keywords": [
     "purescript"
   ],
