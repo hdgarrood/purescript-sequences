@@ -15,8 +15,10 @@ module Data.Sequence
 
   -- deconstruction
   , unconsL
-  , headL
-  , tailL
+  , head
+  , tail
+  , init
+  , last
 
   , splitAt
 
@@ -215,11 +217,17 @@ singleton x = x <| empty
 append :: forall a. Seq a -> Seq a -> Seq a
 append (Seq a) (Seq b) = Seq (FT.append a b)
 
-headL :: forall a. Seq a -> Maybe a
-headL (Seq xs) = getElem <$> FT.headL xs
+head :: forall a. Seq a -> Maybe a
+head (Seq xs) = getElem <$> FT.head xs
 
-tailL :: forall a. Seq a -> Maybe (Seq a)
-tailL (Seq xs) = Seq <$> FT.tailL xs
+tail :: forall a. Seq a -> Maybe (Seq a)
+tail (Seq xs) = Seq <$> FT.tail xs
+
+init :: forall a. Seq a -> Maybe (Seq a)
+init (Seq xs) = Seq <$> FT.init xs
+
+last :: forall a. Seq a -> Maybe a
+last (Seq xs) = getElem <$> FT.last xs
 
 -- TODO: This can be improved. See Hackage
 toSeq :: forall f a. (Foldable f) => f a -> Seq a

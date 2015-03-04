@@ -266,17 +266,17 @@ isEmpty :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Boolean
 ```
 
 
-#### `headL`
+#### `head`
 
 ``` purescript
-headL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
+head :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
 ```
 
 
-#### `tailL`
+#### `tail`
 
 ``` purescript
-tailL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe (FingerTree v a)
+tail :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe (FingerTree v a)
 ```
 
 
@@ -317,17 +317,17 @@ deepR :: forall a v. (Monoid v, Measured a v) => [a] -> Lazy (FingerTree v (Node
 ```
 
 
-#### `headR`
+#### `last`
 
 ``` purescript
-headR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
+last :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
 ```
 
 
-#### `tailR`
+#### `init`
 
 ``` purescript
-tailR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe (FingerTree v a)
+init :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe (FingerTree v a)
 ```
 
 

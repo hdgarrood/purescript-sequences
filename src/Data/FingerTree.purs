@@ -5,8 +5,8 @@ module Data.FingerTree where
 -- http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
 
 import Data.Monoid
-import Data.Array (snoc)
-import Data.Array.Unsafe (head, tail, last, init)
+import qualified Data.Array as A
+import qualified Data.Array.Unsafe as AU
 import Data.Maybe
 import Data.Tuple
 import Data.Lazy
@@ -217,7 +217,7 @@ infixl 5 |>
     forcedM = force m
   in
    deep pr (defer (\_ -> forcedM |> node3 e d c)) [b, a]
-(|>) (Deep _ pr m sf)           a = deep pr m (snoc sf a)
+(|>) (Deep _ pr m sf)           a = deep pr m (A.snoc sf a)
 
 (<<|) :: forall f a v. (Monoid v, Measured a v, Foldable f)
       => f a -> FingerTree v a -> FingerTree v a
@@ -238,10 +238,10 @@ instance functorViewL :: (Functor s) => Functor (ViewL s) where
   (<$>) f (ConsL x xs) = ConsL (f x) ((f <$>) <$> xs)
 
 headDigit :: forall a. Digit a -> a
-headDigit = head
+headDigit = AU.head
 
 tailDigit :: forall a. Digit a -> Digit a
-tailDigit = tail
+tailDigit = AU.tail
 
 viewL :: forall a v. (Monoid v, Measured a v)
       => FingerTree v a -> ViewL (FingerTree v) a
@@ -276,22 +276,22 @@ isEmpty x = case viewL x of
   NilL      -> true
   ConsL _ _ -> false
 
-headL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
-headL x = case viewL x of
+head :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
+head x = case viewL x of
   ConsL a _ -> Just a
   NilL      -> Nothing
 
-tailL :: forall a v. (Monoid v, Measured a v) =>
+tail :: forall a v. (Monoid v, Measured a v) =>
   FingerTree v a -> Maybe (FingerTree v a)
-tailL x = case viewL x of
+tail x = case viewL x of
   ConsL _ x' -> Just (force x')
   NilL       -> Nothing
 
 lastDigit :: forall a. Digit a -> a
-lastDigit = last
+lastDigit = AU.last
 
 initDigit :: forall a. Digit a -> Digit a
-initDigit = init
+initDigit = AU.init
 
 data ViewR s a = NilR | SnocR (Lazy (s a)) a
 
@@ -309,14 +309,14 @@ deepR pr m [] = case viewR (force m) of
   SnocR m' a -> deep pr m' (nodeToDigit a)
 deepR pr m sf = deep pr m sf
 
-headR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
-headR x = case viewR x of
+last :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
+last x = case viewR x of
   SnocR _ a -> Just a
   NilR      -> Nothing
 
-tailR :: forall a v. (Monoid v, Measured a v) =>
+init :: forall a v. (Monoid v, Measured a v) =>
   FingerTree v a -> Maybe (FingerTree v a)
-tailR x = case viewR x of
+init x = case viewR x of
   SnocR x' _ -> Just (force x')
   NilR       -> Nothing
 

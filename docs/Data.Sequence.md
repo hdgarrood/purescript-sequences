@@ -275,17 +275,31 @@ append :: forall a. Seq a -> Seq a -> Seq a
 ```
 
 
-#### `headL`
+#### `head`
 
 ``` purescript
-headL :: forall a. Seq a -> Maybe a
+head :: forall a. Seq a -> Maybe a
 ```
 
 
-#### `tailL`
+#### `tail`
 
 ``` purescript
-tailL :: forall a. Seq a -> Maybe (Seq a)
+tail :: forall a. Seq a -> Maybe (Seq a)
+```
+
+
+#### `init`
+
+``` purescript
+init :: forall a. Seq a -> Maybe (Seq a)
+```
+
+
+#### `last`
+
+``` purescript
+last :: forall a. Seq a -> Maybe a
 ```
 
 
