@@ -43,6 +43,17 @@ import Control.MonadPlus
 
 import qualified Data.FingerTree as FT
 
+-- First: some utils
+(***) :: forall a b aa bb. (a -> aa) -> (b -> bb) -> Tuple a b -> Tuple aa bb
+(***) fa fb (Tuple a b) = Tuple (fa a) (fb b)
+
+fmap :: forall f a b. (Functor f) => (a -> b) -> f a -> f b
+fmap = (<$>)
+
+strJoin :: forall a. (Show a) => String -> [a] -> String
+strJoin glue = intercalate glue <<< fmap show
+
+-- On to the main attraction
 newtype Size = Size Number
 
 getSize :: Size -> Number
@@ -102,14 +113,6 @@ instance eqSeq :: (Eq a) => Eq (Seq a) where
 
 instance showSeq :: (Show a) => Show (Seq a) where
   show xs = "toSeq [" <> strJoin "," (fromSeq (show <$> xs)) <> "]"
-
-foreign import strJoin """
-  function strJoin(glue) {
-    return function(array) {
-      return array.join(glue)
-    }
-  }
-  """ :: String -> [String] -> String
 
 instance ordSeq :: (Ord a) => Ord (Seq a) where
   compare (Seq xs) (Seq ys) = FT.compareFingerTree xs ys
@@ -171,12 +174,6 @@ null _              = false
 
 fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 fromSeq (Seq xs) = getElem <$> FT.fromFingerTree xs
-
-(***) :: forall a b aa bb. (a -> aa) -> (b -> bb) -> Tuple a b -> Tuple aa bb
-(***) fa fb (Tuple a b) = Tuple (fa a) (fb b)
-
-fmap :: forall f a b. (Functor f) => (a -> b) -> f a -> f b
-fmap = (<$>)
 
 unconsL :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 unconsL (Seq xs) =
