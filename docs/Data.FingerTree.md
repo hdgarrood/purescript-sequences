@@ -344,7 +344,6 @@ app3 :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> [a] -> FingerT
 nodes :: forall a v. (Monoid v, Measured a v) => [a] -> [Node v a]
 ```
 
-
 #### `append`
 
 ``` purescript
