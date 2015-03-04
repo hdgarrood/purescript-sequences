@@ -4,19 +4,11 @@ An efficient, general-purpose sequence type for PureScript.
 
 The implementation uses 2-3 finger trees annotated with sizes, as described in
 the paper [_Finger Trees: A Simple General-Purpose Data Structure_][1], Ralf
-Hinze and Ross Paterson (2006).
+Hinze and Ross Paterson, Journal of Functional Programming 16:2 (2006) pp
+197-217.
 
 Big props also go to [taku0](https://github.com/taku0) who did most of the
 work on this. 
-
-## When is this approach _not_ suitable?
-
-If you are using JavaScript libraries via the FFI, and passing Arrays back and
-forth between PureScript and JavaScript, you might find that it's easier and
-more efficient to just use Arrays. Generally, JavaScript libraries will not be
-able to use the Seq type in this library, and so you would have to convert
-between Seqs and Arrays at the PS/JS boundaries. The conversion in either
-direction is O(n).
 
 ## Why not just use Arrays all the time?
 
@@ -48,5 +40,14 @@ Amortized complexities of other operations:
 | shift/unshift | O(n)         | O(1)                |
 | get i / set i | O(1)         | O(log(min(i, n-i))) |
 | splitAt i     | O(n)         | O(log(min(i, n-i))) |
+
+## Ok, so when is this approach _not_ suitable?
+
+If you are using JavaScript libraries via the FFI, and passing Arrays back and
+forth between PureScript and JavaScript, you might find that it's easier and
+more efficient to just use Arrays. Generally, JavaScript libraries will not be
+able to use the Seq type in this library, and so you would have to convert
+between Seqs and Arrays at the PS/JS boundaries. The conversion in either
+direction is O(n).
 
 [1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
