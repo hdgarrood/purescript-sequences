@@ -1,7 +1,11 @@
 module Tests.Data.Sequence where
 
+import qualified Data.Array as A
 import Data.Monoid
+import Data.Monoid.Additive
+import Data.Foldable
 import Data.Maybe
+import Data.Tuple
 import Debug.Trace
 import Test.QuickCheck
 import TypeclassTests
@@ -11,6 +15,9 @@ import qualified Data.FingerTree as FT
 
 instance arbSeq :: (Arbitrary a) => Arbitrary (S.Seq a) where
   arbitrary = (S.toSeq :: [a] -> S.Seq a) <$> arbitrary
+
+foldableSize :: forall f a. (Foldable f) => f a -> Number
+foldableSize = runAdditive <<< foldMap (const (Additive 1))
 
 sequenceTests = do
   trace "Test append"
@@ -39,3 +46,15 @@ sequenceTests = do
 
   trace "Test monad laws"
   checkMonad proxy
+
+  trace "Test foldable instance"
+  quickCheck $ \f z xs ->
+    let types = Tuple (f :: Number -> Number -> Number) (z :: Number)
+    in  foldr f z (S.toSeq xs) == foldr f z (xs :: [Number])
+
+  quickCheck $ \f z xs ->
+    let types = Tuple (f :: Number -> Number -> Number) (z :: Number)
+    in  foldl f z (S.toSeq xs) == foldl f z (xs :: [Number])
+
+  quickCheck $ \xs -> A.length xs == foldableSize (S.toSeq xs :: S.Seq Number)
+  quickCheck $ \xs -> A.length (S.fromSeq xs) == foldableSize (xs :: S.Seq Number)

@@ -47,6 +47,13 @@ node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
 ```
 
 
+#### `nodeToDigit`
+
+``` purescript
+nodeToDigit :: forall a v. Node v a -> Digit a
+```
+
+
 #### `functorNode`
 
 ``` purescript
@@ -506,6 +513,13 @@ instance foldableSeq :: Foldable Seq
 
 ``` purescript
 instance traversableSeq :: Traversable Seq
+```
+
+
+#### `unfoldableSeq`
+
+``` purescript
+instance unfoldableSeq :: Unfoldable Seq
 ```
 
 

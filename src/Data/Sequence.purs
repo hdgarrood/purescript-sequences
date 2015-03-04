@@ -127,6 +127,11 @@ instance traversableSeq :: Traversable Seq where
   traverse f (Seq xs) = Seq <$> traverse (traverse f) xs
   sequence = traverse id
 
+instance unfoldableSeq :: Unfoldable Seq where
+  unfoldr f xs = case f xs of
+                  Just (Tuple x ys) -> x <| unfoldr f ys
+                  Nothing           -> empty
+
 instance functorSeq :: Functor Seq where
   (<$>) f (Seq xs) = Seq (g <$> xs)
     where
