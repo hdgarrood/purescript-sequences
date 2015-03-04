@@ -53,7 +53,7 @@ import qualified Data.FingerTree as FT
 fmap :: forall f a b. (Functor f) => (a -> b) -> f a -> f b
 fmap = (<$>)
 
-strJoin :: forall a. (Show a) => String -> [a] -> String
+strJoin :: forall a. (Show a) => String -> Array a -> String
 strJoin glue = intercalate glue <<< fmap show
 
 -- With great power comes great responsibility. Always define an alias of
@@ -130,7 +130,7 @@ fmapSeq = unsafeCoerce
 instance eqSeq :: (Eq a) => Eq (Seq a) where
   -- TODO: Optimise, probably with lazy list
   (==) xs ys = if length xs == length ys
-                 then fromSeq xs == (fromSeq ys :: [a])
+                 then fromSeq xs == (fromSeq ys :: Array a)
                  else false
   (/=) xs ys = not (xs == ys)
 

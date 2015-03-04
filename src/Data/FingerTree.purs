@@ -70,7 +70,7 @@ instance measuredNode :: Measured (Node v a) v where
   measure (Node2 v _ _) = v
   measure (Node3 v _ _ _) = v
 
-instance measuredArray :: (Monoid v, Measured a v) => Measured [a] v where
+instance measuredArray :: (Monoid v, Measured a v) => Measured (Array a) v where
   measure xs = foldl (\i a -> i <> measure a) mempty xs
 
 instance measuredLazy :: (Monoid v, Measured a v) => Measured (Lazy a) v where
@@ -100,7 +100,7 @@ deep pr m sf =
 
 -- Digit has one to four elements.
 -- If Digit has two or three elements, it is safe; otherwise it is dangerous.
-type Digit a = [a]
+type Digit a = Array a
 
 instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
   show Empty = "Empty"
@@ -265,7 +265,7 @@ viewL (Deep _ pr m sf) =
   ConsL (headDigit pr) (defer (\_ -> deepL (tailDigit pr) m sf))
 
 deepL :: forall a v. (Monoid v, Measured a v)
-      => [a] -> Lazy (FingerTree v (Node v a)) -> [a] -> FingerTree v a
+      => Digit a -> Lazy (FingerTree v (Node v a)) -> Array a -> FingerTree v a
 deepL [] m sf = case viewL (force m) of
   NilL       -> toFingerTree sf
   ConsL a m' -> deep (nodeToDigit a) m' sf
@@ -303,7 +303,7 @@ viewR (Deep _ pr m sf) =
   SnocR (defer (\_ -> deepR pr m (initDigit sf))) (lastDigit sf)
 
 deepR :: forall a v. (Monoid v, Measured a v)
-      => [a] -> Lazy (FingerTree v (Node v a)) -> [a] -> FingerTree v a
+      => Array a -> Lazy (FingerTree v (Node v a)) -> Array a -> FingerTree v a
 deepR pr m [] = case viewR (force m) of
   NilR       -> toFingerTree pr
   SnocR m' a -> deep pr m' (nodeToDigit a)
@@ -321,7 +321,7 @@ init x = case viewR x of
   NilR       -> Nothing
 
 app3 :: forall a v. (Monoid v, Measured a v)
-     => FingerTree v a -> [a] -> FingerTree v a -> FingerTree v a
+     => FingerTree v a -> Array a -> FingerTree v a -> FingerTree v a
 app3 Empty ts xs      = ts <<| xs
 app3 xs ts Empty      = xs |>> ts
 app3 (Single x) ts xs = x <| (ts <<| xs)
@@ -334,7 +334,7 @@ app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
    deep pr1 (defer computeM') sf2
 
 -- TODO: potential performance issues here?
-nodes :: forall a v. (Monoid v, Measured a v) => [a] -> [Node v a]
+nodes :: forall a v. (Monoid v, Measured a v) => Array a -> [Node v a]
 nodes [a, b]           = [node2 a b]
 nodes [a, b, c]        = [node3 a b c]
 nodes [a, b, c, d]     = [node2 a b, node2 c d]
@@ -349,7 +349,7 @@ data LazySplit f a = LazySplit (Lazy (f a)) a (Lazy (f a))
 
 -- unsafe
 splitDigit :: forall a v. (Monoid v, Measured a v)
-           => (v -> Boolean) -> v -> Digit a -> Split [] a
+           => (v -> Boolean) -> v -> Digit a -> Split Array a
 splitDigit p i [a] = Split [] a []
 splitDigit p i (a:as) =
   if p i'

@@ -14,7 +14,7 @@ import qualified Data.Sequence as S
 import qualified Data.FingerTree as FT
 
 instance arbSeq :: (Arbitrary a) => Arbitrary (S.Seq a) where
-  arbitrary = (S.toSeq :: [a] -> S.Seq a) <$> arbitrary
+  arbitrary = (S.toSeq :: Array a -> S.Seq a) <$> arbitrary
 
 foldableSize :: forall f a. (Foldable f) => f a -> Number
 foldableSize = runAdditive <<< foldMap (const (Additive 1))
@@ -22,7 +22,7 @@ foldableSize = runAdditive <<< foldMap (const (Additive 1))
 sequenceTests = do
   trace "Test append"
   quickCheck $ \x y ->
-    S.fromSeq (x <> y) == S.fromSeq x <> (S.fromSeq y :: [Number])
+    S.fromSeq (x <> y) == S.fromSeq x <> (S.fromSeq y :: Array Number)
     <?> ("x: " <> show x <> ", y: " <> show y)
 
   trace "Test semigroup law: associativity"
@@ -50,11 +50,11 @@ sequenceTests = do
   trace "Test foldable instance"
   quickCheck $ \f z xs ->
     let types = Tuple (f :: Number -> Number -> Number) (z :: Number)
-    in  foldr f z (S.toSeq xs) == foldr f z (xs :: [Number])
+    in  foldr f z (S.toSeq xs) == foldr f z (xs :: Array Number)
 
   quickCheck $ \f z xs ->
     let types = Tuple (f :: Number -> Number -> Number) (z :: Number)
-    in  foldl f z (S.toSeq xs) == foldl f z (xs :: [Number])
+    in  foldl f z (S.toSeq xs) == foldl f z (xs :: Array Number)
 
   quickCheck $ \xs -> A.length xs == foldableSize (S.toSeq xs :: S.Seq Number)
   quickCheck $ \xs -> A.length (S.fromSeq xs) == foldableSize (xs :: S.Seq Number)
