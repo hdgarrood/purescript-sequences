@@ -219,10 +219,17 @@ fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 ```
 
 
-#### `unconsL`
+#### `uncons`
 
 ``` purescript
-unconsL :: forall a. Seq a -> Maybe (Tuple a (Seq a))
+uncons :: forall a. Seq a -> Maybe (Tuple a (Seq a))
+```
+
+
+#### `unsnoc`
+
+``` purescript
+unsnoc :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 ```
 
 
@@ -230,6 +237,20 @@ unconsL :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 
 ``` purescript
 splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
+```
+
+
+#### `take`
+
+``` purescript
+take :: forall a. Number -> Seq a -> Seq a
+```
+
+
+#### `drop`
+
+``` purescript
+drop :: forall a. Number -> Seq a -> Seq a
 ```
 
 

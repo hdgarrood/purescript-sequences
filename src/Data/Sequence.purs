@@ -14,13 +14,16 @@ module Data.Sequence
   , null
 
   -- deconstruction
-  , unconsL
+  , uncons
+  , unsnoc
   , head
   , tail
   , init
   , last
 
   , splitAt
+  , take
+  , drop
 
   -- indexing
   , index
@@ -202,11 +205,18 @@ null _              = false
 fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 fromSeq (Seq xs) = fmapGetElem (FT.fromFingerTree xs)
 
-unconsL :: forall a. Seq a -> Maybe (Tuple a (Seq a))
-unconsL (Seq xs) =
+uncons :: forall a. Seq a -> Maybe (Tuple a (Seq a))
+uncons (Seq xs) =
   case FT.viewL xs of
       FT.NilL       -> Nothing
       FT.ConsL y ys -> Just (Tuple (getElem y)
+                                   (Seq (force ys)))
+
+unsnoc :: forall a. Seq a -> Maybe (Tuple a (Seq a))
+unsnoc (Seq xs) =
+  case FT.viewR xs of
+      FT.NilR       -> Nothing
+      FT.SnocR ys y -> Just (Tuple (getElem y)
                                    (Seq (force ys)))
 
 splitAt' :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
@@ -223,6 +233,12 @@ splitAt i xs = forceBoth tuple
   where
   forceBoth = force *** force
   tuple = splitAt' i xs
+
+take :: forall a. Number -> Seq a -> Seq a
+take i = force <<< fst <<< splitAt' i
+
+drop :: forall a. Number -> Seq a -> Seq a
+drop i = force <<< snd <<< splitAt' i
 
 index :: forall a. Seq a -> Number -> a
 index (Seq xs) i =
