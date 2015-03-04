@@ -33,6 +33,11 @@ import Data.Tuple
 import Data.Maybe
 import Data.Foldable
 import Data.Traversable
+import Control.Alt
+import Control.Plus (Plus)
+import Control.Alternative
+import Control.MonadPlus
+
 import qualified Data.FingerTree as FT
 
 newtype Size = Size Number
@@ -138,6 +143,16 @@ instance bindSeq :: Bind Seq where
     where add ys x = append ys (f x)
 
 instance monadSeq :: Monad Seq
+
+instance altSeq :: Alt Seq where
+  (<|>) = append
+
+instance plusSeq :: Plus Seq where
+  empty = empty
+
+instance alternativeSeq :: Alternative Seq
+
+instance monadPlusSeq :: MonadPlus Seq
 
 length :: forall a. Seq a -> Number
 length (Seq xs) = getSize (FT.measure xs)
