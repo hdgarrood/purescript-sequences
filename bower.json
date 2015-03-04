@@ -24,6 +24,7 @@
     "purescript-tuples": "^0.3.0",
     "purescript-monoid": "^0.2.0",
     "purescript-foldable-traversable": "^0.3.0",
+    "purescript-unfoldable": "^0.3.0",
     "purescript-control": "^0.2.2"
   },
   "devDependencies": {

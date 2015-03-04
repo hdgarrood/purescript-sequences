@@ -2,11 +2,12 @@
 
 ## Module Data.FingerTree
 
-#### `toArray`
+#### `fromFingerTree`
 
 ``` purescript
-toArray :: forall f a. (Foldable f) => f a -> [a]
+fromFingerTree :: forall f a v. (Unfoldable f, Monoid v, Measured a v) => FingerTree v a -> f a
 ```
+
 
 #### `Measured`
 
@@ -200,10 +201,10 @@ instance measuredFingerTree :: (Monoid v, Measured a v) => Measured (FingerTree 
 ```
 
 
-#### `toTree`
+#### `toFingerTree`
 
 ``` purescript
-toTree :: forall f a v. (Monoid v, Measured a v, Foldable f) => f a -> FingerTree v a
+toFingerTree :: forall f a v. (Monoid v, Measured a v, Foldable f) => f a -> FingerTree v a
 ```
 
 
@@ -220,13 +221,6 @@ data ViewL s a
 
 ``` purescript
 instance functorViewL :: (Functor s) => Functor (ViewL s)
-```
-
-
-#### `switchViewL`
-
-``` purescript
-switchViewL :: forall s t a b. (a -> b) -> (s a -> t b) -> ViewL s a -> ViewL t b
 ```
 
 
@@ -592,10 +586,10 @@ null :: forall a. Seq a -> Boolean
 ```
 
 
-#### `toArray`
+#### `fromSeq`
 
 ``` purescript
-toArray :: forall a. Seq a -> [a]
+fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 ```
 
 

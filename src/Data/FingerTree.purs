@@ -11,11 +11,16 @@ import Data.Maybe
 import Data.Tuple
 import Data.Lazy
 import Data.Foldable
+import Data.Unfoldable
 import Data.Traversable
 
--- use STArray here?
-toArray :: forall f a. (Foldable f) => f a -> [a]
-toArray = foldr (:) []
+fromFingerTree :: forall f a v. (Unfoldable f, Monoid v, Measured a v) =>
+  FingerTree v a -> f a
+fromFingerTree = unfoldr step
+  where
+  step tree = case viewL tree of
+                ConsL x xs -> Just (Tuple x (force xs))
+                NilL       -> Nothing
 
 class Measured a v where
   measure :: a -> v
@@ -40,6 +45,10 @@ node2 a b = Node2 (measure a <> measure b) a b
 
 node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
 node3 a b c = Node3 (measure a <> measure b <> measure c) a b c
+
+nodeToDigit :: forall a v. Node v a -> Digit a
+nodeToDigit (Node2 _ a b) = [a, b]
+nodeToDigit (Node3 _ a b c) = [a, b, c]
 
 instance functorNode :: Functor (Node v) where
   (<$>) f (Node2 v a b)   = Node2 v (f a) (f b)
@@ -218,20 +227,15 @@ infixl 5 |>
       => FingerTree v a -> f a -> FingerTree v a
 (|>>) = foldl (|>)
 
-toTree :: forall f a v. (Monoid v, Measured a v, Foldable f) =>
+toFingerTree :: forall f a v. (Monoid v, Measured a v, Foldable f) =>
   f a -> FingerTree v a
-toTree s = s <<| Empty
+toFingerTree s = s <<| Empty
 
 data ViewL s a = NilL | ConsL a (Lazy (s a))
 
 instance functorViewL :: (Functor s) => Functor (ViewL s) where
   (<$>) f NilL = NilL
   (<$>) f (ConsL x xs) = ConsL (f x) ((f <$>) <$> xs)
-
-switchViewL :: forall s t a b.
-  (a -> b) -> (s a -> t b) -> ViewL s a -> ViewL t b
-switchViewL f g NilL = NilL
-switchViewL f g (ConsL x xs) = ConsL (f x) (g <$> xs)
 
 headDigit :: forall a. Digit a -> a
 headDigit = head
@@ -263,8 +267,8 @@ viewL (Deep _ pr m sf) =
 deepL :: forall a v. (Monoid v, Measured a v)
       => [a] -> Lazy (FingerTree v (Node v a)) -> [a] -> FingerTree v a
 deepL [] m sf = case viewL (force m) of
-  NilL       -> toTree sf
-  ConsL a m' -> deep (toArray a) m' sf
+  NilL       -> toFingerTree sf
+  ConsL a m' -> deep (nodeToDigit a) m' sf
 deepL pr m sf = deep pr m sf
 
 isEmpty :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Boolean
@@ -301,8 +305,8 @@ viewR (Deep _ pr m sf) =
 deepR :: forall a v. (Monoid v, Measured a v)
       => [a] -> Lazy (FingerTree v (Node v a)) -> [a] -> FingerTree v a
 deepR pr m [] = case viewR (force m) of
-  NilR       -> toTree pr
-  SnocR m' a -> deep pr m' (toArray a)
+  NilR       -> toFingerTree pr
+  SnocR m' a -> deep pr m' (nodeToDigit a)
 deepR pr m sf = deep pr m sf
 
 headR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
@@ -363,14 +367,14 @@ splitTree p i (Deep _ pr m sf) =
   in if p vpr
     then case splitDigit p i pr of
       Split l x r ->
-        LazySplit (defer (\_ -> toTree l)) x (defer (\_ -> deepL r m sf))
+        LazySplit (defer (\_ -> toFingerTree l)) x (defer (\_ -> deepL r m sf))
     else
       let vm = vpr <> measure m
       in if p vm
         then
           case splitTree p vpr (force m) of
             LazySplit ml xs mr ->
-              case splitDigit p (vpr <> measure ml) (toArray xs) of
+              case splitDigit p (vpr <> measure ml) (nodeToDigit xs) of
                 Split l x r ->
                   LazySplit (defer (\_ -> deepR pr ml l))
                             x
@@ -378,7 +382,9 @@ splitTree p i (Deep _ pr m sf) =
         else
           case splitDigit p vm sf of
            Split l x r ->
-             LazySplit (defer (\_ -> deepR pr m l)) x (defer (\_ -> toTree r))
+             LazySplit (defer (\_ -> deepR pr m l))
+                       x
+                       (defer (\_ -> toFingerTree r))
 
 split :: forall a v. (Monoid v, Measured a v)
       => (v -> Boolean)

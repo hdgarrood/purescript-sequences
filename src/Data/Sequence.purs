@@ -24,7 +24,7 @@ module Data.Sequence
   , index
 
   -- other
-  , toArray
+  , fromSeq
   ) where
 
 import Data.Lazy
@@ -32,6 +32,7 @@ import Data.Monoid
 import Data.Tuple
 import Data.Maybe
 import Data.Foldable
+import Data.Unfoldable
 import Data.Traversable
 import Control.Alt
 import Control.Plus (Plus)
@@ -93,12 +94,12 @@ getSeq (Seq a) = a
 instance eqSeq :: (Eq a) => Eq (Seq a) where
   -- TODO: Optimise, probably with lazy list
   (==) xs ys = if length xs == length ys
-                 then toArray xs == toArray ys
+                 then fromSeq xs == (fromSeq ys :: [a])
                  else false
   (/=) xs ys = not (xs == ys)
 
 instance showSeq :: (Show a) => Show (Seq a) where
-  show xs = "toSeq [" <> strJoin "," (toArray (show <$> xs)) <> "]"
+  show xs = "toSeq [" <> strJoin "," (fromSeq (show <$> xs)) <> "]"
 
 foreign import strJoin """
   function strJoin(glue) {
@@ -161,8 +162,8 @@ null :: forall a. Seq a -> Boolean
 null (Seq FT.Empty) = true
 null _              = false
 
-toArray :: forall a. Seq a -> [a]
-toArray (Seq xs) = getElem <$> FT.toArray xs
+fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
+fromSeq (Seq xs) = getElem <$> FT.fromFingerTree xs
 
 (***) :: forall a b aa bb. (a -> aa) -> (b -> bb) -> Tuple a b -> Tuple aa bb
 (***) fa fb (Tuple a b) = Tuple (fa a) (fb b)
