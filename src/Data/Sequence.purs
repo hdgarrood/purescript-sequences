@@ -53,6 +53,14 @@ fmap = (<$>)
 strJoin :: forall a. (Show a) => String -> [a] -> String
 strJoin glue = intercalate glue <<< fmap show
 
+-- With great power comes great responsibility. Always define an alias of
+-- this with a type signature which is as specific as possible, never use it
+-- directly.
+foreign import unsafeCoerce """
+  function unsafeCoerce(x) {
+    return x
+  } """ :: forall a b. a -> b
+
 -- On to the main attraction
 newtype Size = Size Number
 
@@ -72,6 +80,16 @@ newtype Elem a = Elem a
 
 getElem :: forall a. Elem a -> a
 getElem (Elem a) = a
+
+-- `fmap Elem` is a no-op, since Elem is a newtype. Use this function instead
+-- to avoid an unnecessary traversal of the structure.
+fmapElem :: forall f a. (Functor f) => f a -> f (Elem a)
+fmapElem = unsafeCoerce
+
+-- `fmap getElem` is a no-op, since Elem is a newtype. Use this function
+-- instead to avoid an unnecessary traversal of the structure.
+fmapGetElem :: forall f a. (Functor f) => f (Elem a) -> f a
+fmapGetElem = unsafeCoerce
 
 instance measuredElem :: FT.Measured (Elem a) Size where
   measure _ = Size 1
@@ -95,14 +113,16 @@ instance functorElem :: Functor Elem where
   (<$>) f (Elem x) = Elem (f x)
 
 instance traversableElem :: Traversable Elem where
-  traverse f (Elem x) = Elem <$> f x
-  sequence (Elem fx)  = Elem <$> fx
+  traverse f (Elem x) = fmapElem (f x)
+  sequence (Elem fx)  = fmapElem fx
 
 type SeqInner a = FT.FingerTree Size (Elem a)
 newtype Seq a = Seq (SeqInner a)
 
-getSeq :: forall a. Seq a -> SeqInner a
-getSeq (Seq a) = a
+-- `fmap Seq` is a no-op, since Seq is a newtype. Use this function instead
+-- to avoid an unnecessary traversal of the structure.
+fmapSeq :: forall f a. (Functor f) => f (SeqInner a) -> f (Seq a)
+fmapSeq = unsafeCoerce
 
 instance eqSeq :: (Eq a) => Eq (Seq a) where
   -- TODO: Optimise, probably with lazy list
@@ -123,13 +143,19 @@ instance semigroupSeq :: Semigroup (Seq a) where
 instance monoidSeq :: Monoid (Seq a) where
   mempty = empty
 
+lift2Elem :: forall a b. (b -> a -> b) -> b -> Elem a -> b
+lift2Elem = unsafeCoerce
+
+liftElem :: forall a b. (a -> b) -> Elem a -> b
+liftElem = unsafeCoerce
+
 instance foldableSeq :: Foldable Seq where
-  foldr f z (Seq xs) = foldr (f <<< getElem) z xs
-  foldl f z (Seq xs) = foldl (\b a -> f b (getElem a)) z xs
-  foldMap f (Seq xs) = foldMap (f <<< getElem) xs
+  foldr f z (Seq xs) = foldr (liftElem f) z xs
+  foldl f z (Seq xs) = foldl (lift2Elem f) z xs
+  foldMap f (Seq xs) = foldMap (liftElem f) xs
 
 instance traversableSeq :: Traversable Seq where
-  traverse f (Seq xs) = Seq <$> traverse (traverse f) xs
+  traverse f (Seq xs) = fmapSeq (traverse (traverse f) xs)
   sequence = traverse id
 
 instance unfoldableSeq :: Unfoldable Seq where
@@ -140,7 +166,8 @@ instance unfoldableSeq :: Unfoldable Seq where
 instance functorSeq :: Functor Seq where
   (<$>) f (Seq xs) = Seq (g <$> xs)
     where
-    g (Elem x) = Elem (f x)
+    g :: Elem a -> Elem b
+    g = unsafeCoerce f
 
 instance applySeq :: Apply Seq where
   -- TODO: Optimise (see Hackage)
@@ -173,7 +200,7 @@ null (Seq FT.Empty) = true
 null _              = false
 
 fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
-fromSeq (Seq xs) = getElem <$> FT.fromFingerTree xs
+fromSeq (Seq xs) = fmapGetElem (FT.fromFingerTree xs)
 
 unconsL :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 unconsL (Seq xs) =
@@ -186,7 +213,10 @@ splitAt' :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
 splitAt' i (Seq xs) = seqify tuple
   where
   tuple = FT.split (\n -> i < getSize n) xs
-  seqify = fmap Seq *** fmap Seq
+
+  seqify :: forall f. (Functor f) =>
+    Tuple (f (SeqInner a)) (f (SeqInner a)) -> Tuple (f (Seq a)) (f (Seq a))
+  seqify = unsafeCoerce
 
 splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
 splitAt i xs = forceBoth tuple
@@ -215,16 +245,16 @@ append :: forall a. Seq a -> Seq a -> Seq a
 append (Seq a) (Seq b) = Seq (FT.append a b)
 
 head :: forall a. Seq a -> Maybe a
-head (Seq xs) = getElem <$> FT.head xs
+head (Seq xs) = fmapGetElem (FT.head xs)
 
 tail :: forall a. Seq a -> Maybe (Seq a)
-tail (Seq xs) = Seq <$> FT.tail xs
+tail (Seq xs) = fmapSeq (FT.tail xs)
 
 init :: forall a. Seq a -> Maybe (Seq a)
-init (Seq xs) = Seq <$> FT.init xs
+init (Seq xs) = fmapSeq (FT.init xs)
 
 last :: forall a. Seq a -> Maybe a
-last (Seq xs) = getElem <$> FT.last xs
+last (Seq xs) = fmapGetElem (FT.last xs)
 
 -- TODO: This can be improved. See Hackage
 toSeq :: forall f a. (Foldable f) => f a -> Seq a
