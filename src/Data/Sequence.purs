@@ -12,6 +12,7 @@ module Data.Sequence
   -- queries
   , length
   , null
+  , inBounds
 
   -- deconstruction
   , uncons
@@ -49,10 +50,8 @@ import Control.MonadPlus
 
 import qualified Data.FingerTree as FT
 
--- TODO: Check safety of index
 -- TODO: Optimise Eq instance, probably with lazy list
 -- TODO: Optimise Apply instance (see Hackage)
--- TODO: adjust is unsafe
 -- TODO: adjust might be suboptimal, see Data.Sequence on Hackage
 -- TODO: toSeq can be improved. See Hackage
 
@@ -258,20 +257,32 @@ take i = force <<< fst <<< splitAt' i
 drop :: forall a. Number -> Seq a -> Seq a
 drop i = force <<< snd <<< splitAt' i
 
+-- | O(1). True if the given index specifies an element that exists in the
+-- | sequence, false otherwise.
+inBounds :: forall a. Seq a -> Number -> Boolean
+inBounds seq i = 0 <= i && i < length seq
+
 -- | O(log(min(i,n-i))). Retrieve the element at the given position in the 
 -- | sequence. This function is zero-based; that is, the first element in a
 -- | sequence `xs` can be retrieved with `index xs 0`.
 index :: forall a. Seq a -> Number -> Maybe a
-index (Seq xs) i
-  | 0 <= i && i < (length (Seq xs)) =
-    case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
-      FT.LazySplit _ x _ -> Just (getElem x)
-  | otherwise = Nothing
+index xs i = if inBounds xs i then Just (unsafeIndex xs i) else Nothing
+
+-- | O(log(min(i,n-i))). Like `index`, but this function will throw an error
+-- | instead of returning Nothing if no element exists at the specified
+-- | sequence.
+unsafeIndex :: forall a. Seq a -> Number -> a
+unsafeIndex (Seq xs) i =
+  case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
+    FT.LazySplit _ x _ -> getElem x
 
 -- | O(log(min(i,n-i))). Update the element at the specified position. If the
 -- | position is out of range, the original sequence is returned.
 adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
-adjust f i (Seq xs) =
+adjust f i xs = if inBounds xs i then unsafeAdjust f i xs else xs
+
+unsafeAdjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
+unsafeAdjust f i (Seq xs) =
   case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
     FT.LazySplit l x r ->
       let

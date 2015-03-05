@@ -80,3 +80,22 @@ sequenceTests = do
 
   trace "Test show instance"
   check1 $ \xs -> show (S.toSeq xs) == ("toSeq " <> show (xs :: Array Number))
+
+  trace "Test that adjust is safe"
+  quickCheck $ \seq ->
+    let f n = S.adjust id n (seq :: S.Seq Number)
+    in f (-1) == f (S.length seq)
+
+  trace "Test that index is safe"
+  quickCheck $ \seq ->
+    let f n = S.index (seq :: S.Seq Number) n
+    in f (-1) == Nothing && f (S.length seq) == Nothing
+
+  trace "Test inBounds"
+  quickCheck $ \seq ->
+    let seq' = S.cons 0 seq
+        lowerBound = 0
+        upperBound = S.length seq' - 1
+    in S.inBounds seq' lowerBound && S.inBounds seq' upperBound
+        && not (S.inBounds seq' (lowerBound - 1))
+        && not (S.inBounds seq' (upperBound + 1))

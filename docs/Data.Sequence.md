@@ -262,6 +262,15 @@ drop :: forall a. Number -> Seq a -> Seq a
 O(log(min(i,n-i))). Discard a given number of elements from the left side
 of a Seq.
 
+#### `inBounds`
+
+``` purescript
+inBounds :: forall a. Seq a -> Number -> Boolean
+```
+
+O(1). True if the given index specifies an element that exists in the
+sequence, false otherwise.
+
 #### `index`
 
 ``` purescript
