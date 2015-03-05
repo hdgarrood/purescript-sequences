@@ -250,8 +250,7 @@ unchanged).
 take :: forall a. Number -> Seq a -> Seq a
 ```
 
-O(log(min(i,n-i))). Discard all elements after the first n elements from a
-Seq.
+O(log(min(i,n-i))). Discard all elements from a Seq after the first n.
 
 #### `drop`
 
@@ -259,7 +258,7 @@ Seq.
 drop :: forall a. Number -> Seq a -> Seq a
 ```
 
-O(log(min(i,n-i))). Discard a given number of elements from the left size
+O(log(min(i,n-i))). Discard a given number of elements from the left side
 of a Seq.
 
 #### `index`

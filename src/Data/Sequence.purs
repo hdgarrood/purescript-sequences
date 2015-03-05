@@ -241,12 +241,11 @@ splitAt i xs = forceBoth tuple
   forceBoth = force *** force
   tuple = splitAt' i xs
 
--- | O(log(min(i,n-i))). Discard all elements after the first n elements from a
--- | Seq.
+-- | O(log(min(i,n-i))). Discard all elements from a Seq after the first n.
 take :: forall a. Number -> Seq a -> Seq a
 take i = force <<< fst <<< splitAt' i
 
--- | O(log(min(i,n-i))). Discard a given number of elements from the left size
+-- | O(log(min(i,n-i))). Discard a given number of elements from the left side
 -- | of a Seq.
 drop :: forall a. Number -> Seq a -> Seq a
 drop i = force <<< snd <<< splitAt' i
