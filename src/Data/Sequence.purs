@@ -198,29 +198,26 @@ instance alternativeSeq :: Alternative Seq
 
 instance monadPlusSeq :: MonadPlus Seq
 
+-- | O(1). The number of elements in the sequence.
 length :: forall a. Seq a -> Number
 length (Seq xs) = getSize (FT.measure xs)
 
+-- | O(1). True if the sequence has no elements, false otherwise.
 null :: forall a. Seq a -> Boolean
 null (Seq FT.Empty) = true
 null _              = false
-
-fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
-fromSeq (Seq xs) = fmapGetElem (FT.fromFingerTree xs)
 
 uncons :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 uncons (Seq xs) =
   case FT.viewL xs of
       FT.NilL       -> Nothing
-      FT.ConsL y ys -> Just (Tuple (getElem y)
-                                   (Seq (force ys)))
+      FT.ConsL y ys -> Just (Tuple (getElem y) (Seq (force ys)))
 
-unsnoc :: forall a. Seq a -> Maybe (Tuple a (Seq a))
+unsnoc :: forall a. Seq a -> Maybe (Tuple (Seq a) a)
 unsnoc (Seq xs) =
   case FT.viewR xs of
       FT.NilR       -> Nothing
-      FT.SnocR ys y -> Just (Tuple (getElem y)
-                                   (Seq (force ys)))
+      FT.SnocR ys y -> Just (Tuple (Seq (force ys)) (getElem y))
 
 splitAt' :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
 splitAt' i (Seq xs) = seqify tuple
@@ -320,3 +317,8 @@ last (Seq xs) = fmapGetElem (FT.last xs)
 -- TODO: This can be improved. See Hackage
 toSeq :: forall f a. (Foldable f) => f a -> Seq a
 toSeq = foldr cons empty
+
+-- | Probably O(n), but depends on the Unfoldable instance. Convert a Seq into
+-- | some other type, using its Unfoldable instance.
+fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
+fromSeq (Seq xs) = fmapGetElem (FT.fromFingerTree xs)

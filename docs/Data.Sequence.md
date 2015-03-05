@@ -204,6 +204,7 @@ instance monadPlusSeq :: MonadPlus Seq
 length :: forall a. Seq a -> Number
 ```
 
+O(1). The number of elements in the sequence.
 
 #### `null`
 
@@ -211,13 +212,7 @@ length :: forall a. Seq a -> Number
 null :: forall a. Seq a -> Boolean
 ```
 
-
-#### `fromSeq`
-
-``` purescript
-fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
-```
-
+O(1). True if the sequence has no elements, false otherwise.
 
 #### `uncons`
 
@@ -229,7 +224,7 @@ uncons :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 #### `unsnoc`
 
 ``` purescript
-unsnoc :: forall a. Seq a -> Maybe (Tuple a (Seq a))
+unsnoc :: forall a. Seq a -> Maybe (Tuple (Seq a) a)
 ```
 
 
@@ -344,3 +339,12 @@ O(1). Get the last element of a Seq. Equivalent to
 ``` purescript
 toSeq :: forall f a. (Foldable f) => f a -> Seq a
 ```
+
+#### `fromSeq`
+
+``` purescript
+fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
+```
+
+Probably O(n), but depends on the Unfoldable instance. Convert a Seq into
+some other type, using its Unfoldable instance.
