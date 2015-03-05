@@ -29,6 +29,7 @@ module Data.Sequence
   -- indexing
   , index
   , adjust
+  , replace
 
   -- other
   , fromSeq
@@ -262,7 +263,7 @@ drop i = force <<< snd <<< splitAt' i
 inBounds :: forall a. Seq a -> Number -> Boolean
 inBounds seq i = 0 <= i && i < length seq
 
--- | O(log(min(i,n-i))). Retrieve the element at the given position in the 
+-- | O(log(min(i,n-i))). Retrieve the element at the given index in the
 -- | sequence. This function is zero-based; that is, the first element in a
 -- | sequence `xs` can be retrieved with `index xs 0`.
 index :: forall a. Seq a -> Number -> Maybe a
@@ -276,8 +277,9 @@ unsafeIndex (Seq xs) i =
   case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
     FT.LazySplit _ x _ -> getElem x
 
--- | O(log(min(i,n-i))). Update the element at the specified position. If the
--- | position is out of range, the original sequence is returned.
+-- | O(log(min(i,n-i))). Adjust the element at the specified index by
+-- | applying the given function to it. If the index is out of range, the
+-- | sequence is returned unchanged.
 adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
 adjust f i xs = if inBounds xs i then unsafeAdjust f i xs else xs
 
@@ -292,6 +294,12 @@ unsafeAdjust f i (Seq xs) =
         l' = FT.cons (g x) (force l)
       in
         Seq (FT.append l' (force r))
+
+-- | O(log(min(i,n-i))). Replace the element at the specified index with
+-- | a new element. If the index is out of range, the sequence is returned
+-- | unchanged.
+replace :: forall a. a -> Number -> Seq a -> Seq a
+replace x = adjust (const x)
 
 -- | A sequence with no elements.
 empty :: forall a. Seq a
