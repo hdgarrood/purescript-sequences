@@ -6,13 +6,15 @@ module.exports = function(grunt) {
     "bower_components/purescript-*/src/**/*.purs",
   ]
   var testsFiles = ["tests/**/*.purs"].concat(libFiles)
+  var benchmarksFiles = ["benchmarks/**/*.purs"].concat(libFiles)
 
   grunt.initConfig({
     libFiles: libFiles,
 
     clean: {
       out: ["output"],
-      tests: ["tmp/tests.js", "output"]
+      tests: ["tmp/tests.js", "output"],
+      benchmarks: ["tmp/benchmarks.js", "output"]
     },
 
     pscMake: {
@@ -26,6 +28,13 @@ module.exports = function(grunt) {
         },
         src: testsFiles,
         dest: "tmp/tests.js"
+      },
+      benchmarks: {
+        options: {
+          module: "Benchmarks",
+        },
+        src: benchmarksFiles,
+        dest: "tmp/benchmarks.js"
       }
     },
     dotPsci: {
@@ -53,7 +62,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-purescript");
   grunt.loadNpmTasks("grunt-execute");
 
-  grunt.registerTask("test", ["clean:tests", "psc", "execute"]);
+  grunt.registerTask("test", ["clean:tests", "psc:tests", "execute"]);
+  grunt.registerTask("benchmarks", ["clean:benchmarks", "psc:benchmarks"]);
   grunt.registerTask("make", ["pscMake", "dotPsci", "pscDocs"]);
   grunt.registerTask("default", ["make"]);
 };

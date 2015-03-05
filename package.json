@@ -4,6 +4,7 @@
     "grunt": "~0.4.4",
     "grunt-purescript": "~0.6.0",
     "grunt-contrib-clean": "~0.6.0",
-    "grunt-execute": "~0.2.2"
+    "grunt-execute": "~0.2.2",
+    "benchmark": "~1.0.0"
   }
 }
