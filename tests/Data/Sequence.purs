@@ -79,7 +79,7 @@ sequenceTests = do
     let xs' = S.cons 0 xs -- ensure xs' has at least one element
     in S.length xs' - 1 == S.length (S.drop 1 xs')
 
-  trace "Test splitAt"
+  trace "Test splitAt/head/last"
   quickCheck $ \idx seq ->
     let idx' :: Number
         idx' = integerBetween 0 (S.length seq) idx
@@ -119,3 +119,13 @@ sequenceTests = do
         idx' = integerBetween 0 (S.length seq') idx
         result = sum (S.adjust (+1) idx' seq')
     in  result == 1 <?> "seq': " <> show seq' <> ", result: " <> show result
+
+  trace "Test take"
+  quickCheck $ \seq n ->
+    let result = S.length (S.take n (seq :: S.Seq Number))
+    in 0 <= result && result <= n
+
+  trace "Test drop"
+  quickCheck $ \seq n ->
+    let dropped = S.length (S.drop n seq) - S.length (seq :: S.Seq Number)
+    in 0 <= dropped && dropped <= n
