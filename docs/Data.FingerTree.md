@@ -173,17 +173,10 @@ instance traversableFingerTree :: Traversable (FingerTree v)
 ```
 
 
-#### `measureTree`
+#### `measuredFingerTree`
 
 ``` purescript
-measureTree :: forall a v. (Monoid v, Measured a v) => Lazy (FingerTree v a) -> v
-```
-
-
-#### `measureTree'`
-
-``` purescript
-measureTree' :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> v
+instance measuredFingerTree :: (Monoid v, Measured a v) => Measured (FingerTree v a) v
 ```
 
 

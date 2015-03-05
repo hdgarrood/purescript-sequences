@@ -2,6 +2,76 @@
 
 ## Module Data.Sequence
 
+#### `semigroupSize`
+
+``` purescript
+instance semigroupSize :: Semigroup Size
+```
+
+
+#### `monoidSize`
+
+``` purescript
+instance monoidSize :: Monoid Size
+```
+
+
+#### `showSize`
+
+``` purescript
+instance showSize :: Show Size
+```
+
+
+#### `measuredElem`
+
+``` purescript
+instance measuredElem :: FT.Measured (Elem a) Size
+```
+
+
+#### `showElem`
+
+``` purescript
+instance showElem :: (Show a) => Show (Elem a)
+```
+
+
+#### `eqElem`
+
+``` purescript
+instance eqElem :: (Eq a) => Eq (Elem a)
+```
+
+
+#### `ordElem`
+
+``` purescript
+instance ordElem :: (Ord a) => Ord (Elem a)
+```
+
+
+#### `foldableElem`
+
+``` purescript
+instance foldableElem :: Foldable Elem
+```
+
+
+#### `functorElem`
+
+``` purescript
+instance functorElem :: Functor Elem
+```
+
+
+#### `traversableElem`
+
+``` purescript
+instance traversableElem :: Traversable Elem
+```
+
+
 #### `Seq`
 
 ``` purescript

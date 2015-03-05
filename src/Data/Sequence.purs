@@ -48,7 +48,6 @@ import Control.Alternative
 import Control.MonadPlus
 
 import qualified Data.FingerTree as FT
-import Data.Sequence.Internal
 
 -- TODO: Check safety of index
 -- TODO: Optimise Eq instance, probably with lazy list
@@ -76,7 +75,61 @@ foreign import unsafeCoerce """
   } """ :: forall a b. a -> b
 
 -- On to the main attraction
-type SeqInner a = FT.FingerTree Size a
+newtype Size = Size Number
+
+getSize :: Size -> Number
+getSize (Size n) = n
+
+instance semigroupSize :: Semigroup Size where
+  (<>) m n = Size (getSize m + getSize n)
+
+instance monoidSize :: Monoid Size where
+  mempty = Size 0
+
+instance showSize :: Show Size where
+  show x = "Size (" <> show (getSize x) <> ")"
+
+newtype Elem a = Elem a
+
+getElem :: forall a. Elem a -> a
+getElem (Elem a) = a
+
+-- `fmap Elem` is a no-op, since Elem is a newtype. Use this function instead
+-- to avoid an unnecessary traversal of the structure.
+fmapElem :: forall f a. (Functor f) => f a -> f (Elem a)
+fmapElem = unsafeCoerce
+
+-- `fmap getElem` is a no-op, since Elem is a newtype. Use this function
+-- instead to avoid an unnecessary traversal of the structure.
+fmapGetElem :: forall f a. (Functor f) => f (Elem a) -> f a
+fmapGetElem = unsafeCoerce
+
+instance measuredElem :: FT.Measured (Elem a) Size where
+  measure _ = Size 1
+
+instance showElem :: (Show a) => Show (Elem a) where
+  show x = "Elem (" <> show (getElem x) <> ")"
+
+instance eqElem :: (Eq a) => Eq (Elem a) where
+  (==) (Elem x) (Elem y) = x == y
+  (/=) x y = not (x == y)
+
+instance ordElem :: (Ord a) => Ord (Elem a) where
+  compare (Elem x) (Elem y) = compare x y
+
+instance foldableElem :: Foldable Elem where
+  foldr f z (Elem x) = f x z
+  foldl f z (Elem x) = f z x
+  foldMap f (Elem x) = f x
+
+instance functorElem :: Functor Elem where
+  (<$>) f (Elem x) = Elem (f x)
+
+instance traversableElem :: Traversable Elem where
+  traverse f (Elem x) = fmapElem (f x)
+  sequence (Elem fx)  = fmapElem fx
+
+type SeqInner a = FT.FingerTree Size (Elem a)
 newtype Seq a = Seq (SeqInner a)
 
 -- `fmap Seq` is a no-op, since Seq is a newtype. Use this function instead
@@ -102,13 +155,19 @@ instance semigroupSeq :: Semigroup (Seq a) where
 instance monoidSeq :: Monoid (Seq a) where
   mempty = empty
 
+lift2Elem :: forall a b. (b -> a -> b) -> b -> Elem a -> b
+lift2Elem = unsafeCoerce
+
+liftElem :: forall a b. (a -> b) -> Elem a -> b
+liftElem = unsafeCoerce
+
 instance foldableSeq :: Foldable Seq where
-  foldr f z (Seq xs) = foldr f z xs
-  foldl f z (Seq xs) = foldl f z xs
-  foldMap f (Seq xs) = foldMap f xs
+  foldr f z (Seq xs) = foldr (liftElem f) z xs
+  foldl f z (Seq xs) = foldl (lift2Elem f) z xs
+  foldMap f (Seq xs) = foldMap (liftElem f) xs
 
 instance traversableSeq :: Traversable Seq where
-  traverse f (Seq xs) = fmapSeq (traverse f xs)
+  traverse f (Seq xs) = fmapSeq (traverse (traverse f) xs)
   sequence = traverse id
 
 instance unfoldableSeq :: Unfoldable Seq where
@@ -117,7 +176,10 @@ instance unfoldableSeq :: Unfoldable Seq where
                   Nothing           -> empty
 
 instance functorSeq :: Functor Seq where
-  (<$>) f (Seq xs) = Seq (f <$> xs)
+  (<$>) f (Seq xs) = Seq (g <$> xs)
+    where
+    g :: Elem a -> Elem b
+    g = unsafeCoerce f
 
 instance applySeq :: Apply Seq where
   (<*>) = ap
@@ -157,7 +219,7 @@ uncons :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 uncons (Seq xs) =
   case FT.viewL xs of
       FT.NilL       -> Nothing
-      FT.ConsL y ys -> Just (Tuple y (Seq (force ys)))
+      FT.ConsL y ys -> Just (Tuple (getElem y) (Seq (force ys)))
 
 -- | O(1). If the sequence is nonempty, take one element off its right side and
 -- | return that together with the rest of the original sequence. Otherwise,
@@ -166,7 +228,7 @@ unsnoc :: forall a. Seq a -> Maybe (Tuple (Seq a) a)
 unsnoc (Seq xs) =
   case FT.viewR xs of
       FT.NilR       -> Nothing
-      FT.SnocR ys y -> Just (Tuple (Seq (force ys)) y)
+      FT.SnocR ys y -> Just (Tuple (Seq (force ys)) (getElem y))
 
 splitAt' :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
 splitAt' i (Seq xs) = seqify tuple
@@ -203,7 +265,7 @@ index :: forall a. Seq a -> Number -> Maybe a
 index (Seq xs) i
   | 0 <= i && i < (length (Seq xs)) =
     case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
-      FT.LazySplit _ x _ -> Just x
+      FT.LazySplit _ x _ -> Just (getElem x)
   | otherwise = Nothing
 
 -- | O(log(min(i,n-i))). Update the element at the specified position. If the
@@ -213,7 +275,10 @@ adjust f i (Seq xs) =
   case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
     FT.LazySplit l x r ->
       let
-        l' = FT.cons (f x) (force l)
+        g :: Elem a -> Elem a
+        g = unsafeCoerce f
+
+        l' = FT.cons (g x) (force l)
       in
         Seq (FT.append l' (force r))
 
@@ -223,11 +288,11 @@ empty = Seq FT.Empty
 
 -- | O(1). Add an element to the left end of a Seq.
 cons :: forall a. a -> Seq a -> Seq a
-cons x (Seq xs) = Seq (FT.cons x xs)
+cons x (Seq xs) = Seq (FT.cons (Elem x) xs)
 
 -- | O(1). Add an element to the right end of a Seq.
 snoc :: forall a. Seq a -> a -> Seq a
-snoc (Seq xs) x = Seq (FT.snoc xs x)
+snoc (Seq xs) x = Seq (FT.snoc xs (Elem x))
 
 -- | O(1). Create a Seq with one element.
 singleton :: forall a. a -> Seq a
@@ -239,7 +304,7 @@ append (Seq a) (Seq b) = Seq (FT.append a b)
 
 -- | O(1). Get the first element of a Seq. Equivalent to `\seq -> index seq 0`.
 head :: forall a. Seq a -> Maybe a
-head (Seq xs) = FT.head xs
+head (Seq xs) = fmapGetElem (FT.head xs)
 
 -- | O(1). Get all but the first element of a Seq. Equivalent to `drop 1`.
 tail :: forall a. Seq a -> Maybe (Seq a)
@@ -253,7 +318,7 @@ init (Seq xs) = fmapSeq (FT.init xs)
 -- | O(1). Get the last element of a Seq. Equivalent to
 -- | `\seq -> index seq (length seq - 1)`.
 last :: forall a. Seq a -> Maybe a
-last (Seq xs) = FT.last xs
+last (Seq xs) = fmapGetElem (FT.last xs)
 
 -- | Probably O(n), but depends on the Foldable instance. Turn any `Foldable`
 -- | into a `Seq`.
@@ -263,4 +328,4 @@ toSeq = foldr cons empty
 -- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 -- | any `Unfoldable`.
 fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
-fromSeq (Seq xs) = FT.fromFingerTree xs
+fromSeq (Seq xs) = fmapGetElem (FT.fromFingerTree xs)
