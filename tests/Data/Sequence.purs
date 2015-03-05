@@ -26,6 +26,9 @@ check1 = quickCheck' 1
 integerBetween :: Number -> Number -> Number -> Number
 integerBetween lo hi x = (floor x % hi - lo) + lo
 
+isIntegral :: Number -> Boolean
+isIntegral x = complement (complement x) == x
+
 sequenceTests = do
   trace "Test append"
   quickCheck $ \x y ->
@@ -66,6 +69,16 @@ sequenceTests = do
   quickCheck $ \xs -> A.length xs == foldableSize (S.toSeq xs :: S.Seq Number)
   quickCheck $ \xs -> A.length (S.fromSeq xs) == foldableSize (xs :: S.Seq Number)
 
+  trace "Test length/null"
+  quickCheck $ \xs ->
+    if S.empty == (xs :: S.Seq Number) then S.null xs else S.length xs > 0
+
+  quickCheck $ \xs -> isIntegral (S.length (xs :: S.Seq Number))
+  quickCheck $ \xs -> S.length xs + 1 == S.length (S.cons 0 xs)
+  quickCheck $ \xs ->
+    let xs' = S.cons 0 xs -- ensure xs' has at least one element
+    in S.length xs' - 1 == S.length (S.drop 1 xs')
+
   trace "Test splitAt"
   quickCheck $ \idx seq ->
     let idx' :: Number
@@ -99,3 +112,10 @@ sequenceTests = do
     in S.inBounds seq' lowerBound && S.inBounds seq' upperBound
         && not (S.inBounds seq' (lowerBound - 1))
         && not (S.inBounds seq' (upperBound + 1))
+
+  trace "Test adjust"
+  quickCheck $ \seq idx ->
+    let seq' = const 0 <$> S.cons 0 seq
+        idx' = integerBetween 0 (S.length seq') idx
+        result = sum (S.adjust (+1) idx' seq')
+    in  result == 1 <?> "seq': " <> show seq' <> ", result: " <> show result
