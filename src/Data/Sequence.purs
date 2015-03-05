@@ -207,12 +207,18 @@ null :: forall a. Seq a -> Boolean
 null (Seq FT.Empty) = true
 null _              = false
 
+-- | O(1). If the sequence is nonempty, take one element off its left side and
+-- | return that together with the rest of the original sequence. Otherwise,
+-- | return Nothing.
 uncons :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 uncons (Seq xs) =
   case FT.viewL xs of
       FT.NilL       -> Nothing
       FT.ConsL y ys -> Just (Tuple (getElem y) (Seq (force ys)))
 
+-- | O(1). If the sequence is nonempty, take one element off its right side and
+-- | return that together with the rest of the original sequence. Otherwise,
+-- | return Nothing.
 unsnoc :: forall a. Seq a -> Maybe (Tuple (Seq a) a)
 unsnoc (Seq xs) =
   case FT.viewR xs of

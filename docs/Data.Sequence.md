@@ -220,6 +220,9 @@ O(1). True if the sequence has no elements, false otherwise.
 uncons :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 ```
 
+O(1). If the sequence is nonempty, take one element off its left side and
+return that together with the rest of the original sequence. Otherwise,
+return Nothing.
 
 #### `unsnoc`
 
@@ -227,6 +230,9 @@ uncons :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 unsnoc :: forall a. Seq a -> Maybe (Tuple (Seq a) a)
 ```
 
+O(1). If the sequence is nonempty, take one element off its right side and
+return that together with the rest of the original sequence. Otherwise,
+return Nothing.
 
 #### `splitAt`
 
