@@ -1,6 +1,6 @@
 {
   "name": "purescript-sequences",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "homepage": "https://github.com/hdgarrood/purescript-sequences",
   "description": "An efficient, general purpose sequence type.",
   "keywords": [
