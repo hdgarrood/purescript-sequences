@@ -258,9 +258,9 @@ take i = force <<< fst <<< splitAt' i
 drop :: forall a. Number -> Seq a -> Seq a
 drop i = force <<< snd <<< splitAt' i
 
--- | O(log(min(i,n-i))). Retrieve the element at the given position in the Seq
--- | Indexing on Seqs is zero-based; that is, the first element in a sequence
--- | `xs` can be retrieved with `index xs 0`.
+-- | O(log(min(i,n-i))). Retrieve the element at the given position in the 
+-- | sequence. This function is zero-based; that is, the first element in a
+-- | sequence `xs` can be retrieved with `index xs 0`.
 index :: forall a. Seq a -> Number -> Maybe a
 index (Seq xs) i
   | 0 <= i && i < (length (Seq xs)) =
@@ -320,12 +320,12 @@ init (Seq xs) = fmapSeq (FT.init xs)
 last :: forall a. Seq a -> Maybe a
 last (Seq xs) = fmapGetElem (FT.last xs)
 
--- | Probably O(n), but depends on the Foldable instance. Turn any `Foldable` -
+-- | Probably O(n), but depends on the Foldable instance. Turn any `Foldable`
 -- | into a `Seq`.
 toSeq :: forall f a. (Foldable f) => f a -> Seq a
 toSeq = foldr cons empty
 
--- | Probably O(n), but depends on the Unfoldable instance. Convert a Seq into
--- | some other type, using its Unfoldable instance.
+-- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
+-- | any `Unfoldable`.
 fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 fromSeq (Seq xs) = fmapGetElem (FT.fromFingerTree xs)

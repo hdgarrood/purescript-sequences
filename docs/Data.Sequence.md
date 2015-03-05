@@ -268,9 +268,9 @@ of a Seq.
 index :: forall a. Seq a -> Number -> Maybe a
 ```
 
-O(log(min(i,n-i))). Retrieve the element at the given position in the Seq
-Indexing on Seqs is zero-based; that is, the first element in a sequence
-`xs` can be retrieved with `index xs 0`.
+O(log(min(i,n-i))). Retrieve the element at the given position in the 
+sequence. This function is zero-based; that is, the first element in a
+sequence `xs` can be retrieved with `index xs 0`.
 
 #### `adjust`
 
@@ -361,7 +361,7 @@ O(1). Get the last element of a Seq. Equivalent to
 toSeq :: forall f a. (Foldable f) => f a -> Seq a
 ```
 
-Probably O(n), but depends on the Foldable instance. Turn any `Foldable` -
+Probably O(n), but depends on the Foldable instance. Turn any `Foldable`
 into a `Seq`.
 
 #### `fromSeq`
@@ -370,5 +370,5 @@ into a `Seq`.
 fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 ```
 
-Probably O(n), but depends on the Unfoldable instance. Convert a Seq into
-some other type, using its Unfoldable instance.
+Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
+any `Unfoldable`.
