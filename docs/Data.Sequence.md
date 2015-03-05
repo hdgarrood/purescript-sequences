@@ -268,11 +268,18 @@ of a Seq.
 index :: forall a. Seq a -> Number -> Maybe a
 ```
 
+O(log(min(i,n-i))). Retrieve the element at the given position in the Seq
+Indexing on Seqs is zero-based; that is, the first element in a sequence
+`xs` can be retrieved with `index xs 0`.
+
 #### `adjust`
 
 ``` purescript
 adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
 ```
+
+O(log(min(i,n-i))). Update the element at the specified position. If the
+position is out of range, the original sequence is returned.
 
 #### `empty`
 
@@ -353,6 +360,9 @@ O(1). Get the last element of a Seq. Equivalent to
 ``` purescript
 toSeq :: forall f a. (Foldable f) => f a -> Seq a
 ```
+
+Probably O(n), but depends on the Foldable instance. Turn any `Foldable` -
+into a `Seq`.
 
 #### `fromSeq`
 

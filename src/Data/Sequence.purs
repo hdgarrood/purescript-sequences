@@ -49,6 +49,13 @@ import Control.MonadPlus
 
 import qualified Data.FingerTree as FT
 
+-- TODO: Check safety of index
+-- TODO: Optimise Eq instance, probably with lazy list
+-- TODO: Optimise Apply instance (see Hackage)
+-- TODO: adjust is unsafe
+-- TODO: adjust might be suboptimal, see Data.Sequence on Hackage
+-- TODO: toSeq can be improved. See Hackage
+
 -- First: some utils
 (***) :: forall a b aa bb. (a -> aa) -> (b -> bb) -> Tuple a b -> Tuple aa bb
 (***) fa fb (Tuple a b) = Tuple (fa a) (fb b)
@@ -131,7 +138,6 @@ fmapSeq :: forall f a. (Functor f) => f (SeqInner a) -> f (Seq a)
 fmapSeq = unsafeCoerce
 
 instance eqSeq :: (Eq a) => Eq (Seq a) where
-  -- TODO: Optimise, probably with lazy list
   (==) xs ys = if length xs == length ys
                  then fromSeq xs == (fromSeq ys :: Array a)
                  else false
@@ -176,7 +182,6 @@ instance functorSeq :: Functor Seq where
     g = unsafeCoerce f
 
 instance applySeq :: Apply Seq where
-  -- TODO: Optimise (see Hackage)
   (<*>) = ap
 
 instance applicativeSeq :: Applicative Seq where
@@ -256,7 +261,6 @@ drop i = force <<< snd <<< splitAt' i
 -- | O(log(min(i,n-i))). Retrieve the element at the given position in the Seq
 -- | Indexing on Seqs is zero-based; that is, the first element in a sequence
 -- | `xs` can be retrieved with `index xs 0`.
--- TODO: Check safety
 index :: forall a. Seq a -> Number -> Maybe a
 index (Seq xs) i
   | 0 <= i && i < (length (Seq xs)) =
@@ -266,8 +270,6 @@ index (Seq xs) i
 
 -- | O(log(min(i,n-i))). Update the element at the specified position. If the
 -- | position is out of range, the original sequence is returned.
--- TODO: Unsafe
--- this might be suboptimal, see Data.Sequence on Hackage
 adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
 adjust f i (Seq xs) =
   case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
@@ -320,7 +322,6 @@ last (Seq xs) = fmapGetElem (FT.last xs)
 
 -- | Probably O(n), but depends on the Foldable instance. Turn any `Foldable` -
 -- | into a `Seq`.
--- TODO: This can be improved. See Hackage
 toSeq :: forall f a. (Foldable f) => f a -> Seq a
 toSeq = foldr cons empty
 
