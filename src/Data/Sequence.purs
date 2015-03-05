@@ -4,7 +4,7 @@ module Data.Sequence
   -- construction
   , empty
   , singleton
---  , cons
+  , cons
   , snoc
   , append
   , toSeq

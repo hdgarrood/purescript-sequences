@@ -282,6 +282,14 @@ empty :: forall a. Seq a
 
 A sequence with no elements.
 
+#### `cons`
+
+``` purescript
+cons :: forall a. a -> Seq a -> Seq a
+```
+
+O(1). Add an element to the left end of a Seq.
+
 #### `snoc`
 
 ``` purescript
