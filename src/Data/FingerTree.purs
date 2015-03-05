@@ -98,7 +98,9 @@ deep :: forall a v. (Monoid v, Measured a v)
      -> Digit a
      -> FingerTree v a
 deep pr m sf =
-  Deep (defer (\_ -> measure pr <> measure m <> measure sf)) pr m sf
+  Deep lazyMeasure pr m sf
+  where
+  lazyMeasure = (defer (\_ -> measure pr <> measureTree m <> measure sf))
 
 -- Digit has one to four elements.
 -- If Digit has two or three elements, it is safe; otherwise it is dangerous.
@@ -181,11 +183,16 @@ instance traversableFingerTree :: Traversable (FingerTree v) where
 
   sequence = traverse id
 
-instance measuredFingerTree :: (Monoid v, Measured a v)
-                            => Measured (FingerTree v a) v where
-  measure Empty = mempty
-  measure (Single x) = measure x
-  measure (Deep v _ _ _) = (force v)
+measureTree :: forall a v. (Monoid v, Measured a v) =>
+  Lazy (FingerTree v a) -> v
+measureTree = measureTree' <<< force
+
+measureTree' :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> v
+measureTree' tree =
+  case tree of
+        Empty        -> mempty
+        Single x     -> measure x
+        Deep v _ _ _ -> (force v)
 
 cons :: forall a v. (Monoid v, Measured a v) =>
   a -> FingerTree v a -> FingerTree v a
@@ -360,7 +367,7 @@ splitDigit p i (a:as) =
 
 -- unsafe
 unsafeSplitTree :: forall a v. (Monoid v, Measured a v)
-          => (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
+  => (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
 unsafeSplitTree p i (Single x) = LazySplit lazyEmpty x lazyEmpty
 unsafeSplitTree p i (Deep _ pr m sf) =
   let vpr = i <> measure pr
@@ -369,12 +376,12 @@ unsafeSplitTree p i (Deep _ pr m sf) =
       Split l x r ->
         LazySplit (defer (\_ -> toFingerTree l)) x (defer (\_ -> deepL r m sf))
     else
-      let vm = vpr <> measure m
+      let vm = vpr <> measureTree m
       in if p vm
         then
           case unsafeSplitTree p vpr (force m) of
             LazySplit ml xs mr ->
-              case splitDigit p (vpr <> measure ml) (nodeToDigit xs) of
+              case splitDigit p (vpr <> measureTree ml) (nodeToDigit xs) of
                 Split l x r ->
                   LazySplit (defer (\_ -> deepR pr ml l))
                             x
@@ -392,7 +399,7 @@ split :: forall a v. (Monoid v, Measured a v)
       -> Tuple (Lazy (FingerTree v a)) (Lazy (FingerTree v a))
 split p Empty = Tuple lazyEmpty lazyEmpty
 split p xs =
-  if p (measure xs)
+  if p (measureTree' xs)
   then
     case unsafeSplitTree p mempty xs of
       LazySplit l x r ->
