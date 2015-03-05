@@ -239,6 +239,10 @@ unsnoc :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
 ```
 
+O(log(min(i,n-i))). Split the sequence into two subsequences. The first
+subsequence will have i elements (unless there are not that many in the
+whole sequence, in which case the first element is the same sequence,
+unchanged).
 
 #### `take`
 
@@ -246,6 +250,8 @@ splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
 take :: forall a. Number -> Seq a -> Seq a
 ```
 
+O(log(min(i,n-i))). Discard all elements after the first n elements from a
+Seq.
 
 #### `drop`
 
@@ -253,13 +259,20 @@ take :: forall a. Number -> Seq a -> Seq a
 drop :: forall a. Number -> Seq a -> Seq a
 ```
 
+O(log(min(i,n-i))). Discard a given number of elements from the left size
+of a Seq.
 
 #### `index`
 
 ``` purescript
-index :: forall a. Seq a -> Number -> a
+index :: forall a. Seq a -> Number -> Maybe a
 ```
 
+#### `adjust`
+
+``` purescript
+adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
+```
 
 #### `empty`
 
@@ -267,20 +280,15 @@ index :: forall a. Seq a -> Number -> a
 empty :: forall a. Seq a
 ```
 
+A sequence with no elements.
 
-#### `(<|)`
-
-``` purescript
-(<|) :: forall a. a -> Seq a -> Seq a
-```
-
-
-#### `(|>)`
+#### `snoc`
 
 ``` purescript
-(|>) :: forall a. Seq a -> a -> Seq a
+snoc :: forall a. Seq a -> a -> Seq a
 ```
 
+O(1). Add an element to the right end of a Seq.
 
 #### `singleton`
 
@@ -288,6 +296,7 @@ empty :: forall a. Seq a
 singleton :: forall a. a -> Seq a
 ```
 
+O(1). Create a Seq with one element.
 
 #### `append`
 
@@ -295,6 +304,7 @@ singleton :: forall a. a -> Seq a
 append :: forall a. Seq a -> Seq a -> Seq a
 ```
 
+O(log(min(i,n-i))). Join two Seqs together.
 
 #### `head`
 
@@ -302,6 +312,7 @@ append :: forall a. Seq a -> Seq a -> Seq a
 head :: forall a. Seq a -> Maybe a
 ```
 
+O(1). Get the first element of a Seq. Equivalent to `\seq -> index seq 0`.
 
 #### `tail`
 
@@ -309,6 +320,7 @@ head :: forall a. Seq a -> Maybe a
 tail :: forall a. Seq a -> Maybe (Seq a)
 ```
 
+O(1). Get all but the first element of a Seq. Equivalent to `drop 1`.
 
 #### `init`
 
@@ -316,6 +328,8 @@ tail :: forall a. Seq a -> Maybe (Seq a)
 init :: forall a. Seq a -> Maybe (Seq a)
 ```
 
+O(1). Get all but the last element of a Seq. Equivalent to `\seq -> take
+(length seq - 1)`.
 
 #### `last`
 
@@ -323,6 +337,8 @@ init :: forall a. Seq a -> Maybe (Seq a)
 last :: forall a. Seq a -> Maybe a
 ```
 
+O(1). Get the last element of a Seq. Equivalent to
+`\seq -> index seq (length seq - 1)`.
 
 #### `toSeq`
 

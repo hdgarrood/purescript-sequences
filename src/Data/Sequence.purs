@@ -4,8 +4,8 @@ module Data.Sequence
   -- construction
   , empty
   , singleton
-  , (<|)
-  , (|>)
+--  , cons
+  , snoc
   , append
   , toSeq
 
@@ -27,10 +27,13 @@ module Data.Sequence
 
   -- indexing
   , index
+  , adjust
 
   -- other
   , fromSeq
   ) where
+
+import Prelude hiding (cons)
 
 import Data.Lazy
 import Data.Monoid
@@ -135,7 +138,7 @@ instance eqSeq :: (Eq a) => Eq (Seq a) where
   (/=) xs ys = not (xs == ys)
 
 instance showSeq :: (Show a) => Show (Seq a) where
-  show xs = "toSeq [" <> strJoin "," (fromSeq (show <$> xs)) <> "]"
+  show xs = "toSeq [" <> strJoin "," (fromSeq xs) <> "]"
 
 instance ordSeq :: (Ord a) => Ord (Seq a) where
   compare (Seq xs) (Seq ys) = FT.compareFingerTree xs ys
@@ -163,7 +166,7 @@ instance traversableSeq :: Traversable Seq where
 
 instance unfoldableSeq :: Unfoldable Seq where
   unfoldr f xs = case f xs of
-                  Just (Tuple x ys) -> x <| unfoldr f ys
+                  Just (Tuple x ys) -> cons x (unfoldr f ys)
                   Nothing           -> empty
 
 instance functorSeq :: Functor Seq where
@@ -228,50 +231,93 @@ splitAt' i (Seq xs) = seqify tuple
     Tuple (f (SeqInner a)) (f (SeqInner a)) -> Tuple (f (Seq a)) (f (Seq a))
   seqify = unsafeCoerce
 
+-- | O(log(min(i,n-i))). Split the sequence into two subsequences. The first
+-- | subsequence will have i elements (unless there are not that many in the
+-- | whole sequence, in which case the first element is the same sequence,
+-- | unchanged).
 splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
 splitAt i xs = forceBoth tuple
   where
   forceBoth = force *** force
   tuple = splitAt' i xs
 
+-- | O(log(min(i,n-i))). Discard all elements after the first n elements from a
+-- | Seq.
 take :: forall a. Number -> Seq a -> Seq a
 take i = force <<< fst <<< splitAt' i
 
+-- | O(log(min(i,n-i))). Discard a given number of elements from the left size
+-- | of a Seq.
 drop :: forall a. Number -> Seq a -> Seq a
 drop i = force <<< snd <<< splitAt' i
 
-index :: forall a. Seq a -> Number -> a
-index (Seq xs) i =
-  case FT.splitTree (\n -> i < getSize n) (Size 0) xs of
-    FT.LazySplit _ x _ -> getElem x
+-- | O(log(min(i,n-i))). Retrieve the element at the given position in the Seq
+-- | Indexing on Seqs is zero-based; that is, the first element in a sequence
+-- | `xs` can be retrieved with `index xs 0`.
+-- TODO: Check safety
+index :: forall a. Seq a -> Number -> Maybe a
+index (Seq xs) i
+  | 0 <= i && i < (length (Seq xs)) =
+    case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
+      FT.LazySplit _ x _ -> Just (getElem x)
+  | otherwise = Nothing
 
+-- | O(log(min(i,n-i))). Update the element at the specified position. If the
+-- | position is out of range, the original sequence is returned.
+-- TODO: Unsafe
+-- this might be suboptimal, see Data.Sequence on Hackage
+adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
+adjust f i (Seq xs) =
+  case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
+    FT.LazySplit l x r ->
+      let
+        g :: Elem a -> Elem a
+        g = unsafeCoerce f
+
+        l' = FT.cons (g x) (force l)
+      in
+        Seq (FT.append l' (force r))
+
+-- | A sequence with no elements.
 empty :: forall a. Seq a
 empty = Seq FT.Empty
 
-(<|) :: forall a. a -> Seq a -> Seq a
-(<|) x (Seq xs) = Seq (FT.(<|) (Elem x) xs)
+-- | O(1). Add an element to the left end of a Seq.
+cons :: forall a. a -> Seq a -> Seq a
+cons x (Seq xs) = Seq (FT.cons (Elem x) xs)
 
-(|>) :: forall a. Seq a -> a -> Seq a
-(|>) (Seq xs) x = Seq (FT.(|>) xs (Elem x))
+-- | O(1). Add an element to the right end of a Seq.
+snoc :: forall a. Seq a -> a -> Seq a
+snoc (Seq xs) x = Seq (FT.snoc xs (Elem x))
 
+-- | O(1). Create a Seq with one element.
 singleton :: forall a. a -> Seq a
-singleton x = x <| empty
+singleton x = cons x empty
 
+-- | O(log(min(i,n-i))). Join two Seqs together.
 append :: forall a. Seq a -> Seq a -> Seq a
 append (Seq a) (Seq b) = Seq (FT.append a b)
 
+-- | O(1). Get the first element of a Seq. Equivalent to `\seq -> index seq 0`.
 head :: forall a. Seq a -> Maybe a
 head (Seq xs) = fmapGetElem (FT.head xs)
 
+-- | O(1). Get all but the first element of a Seq. Equivalent to `drop 1`.
 tail :: forall a. Seq a -> Maybe (Seq a)
 tail (Seq xs) = fmapSeq (FT.tail xs)
 
+-- | O(1). Get all but the last element of a Seq. Equivalent to `\seq -> take
+-- | (length seq - 1)`.
 init :: forall a. Seq a -> Maybe (Seq a)
 init (Seq xs) = fmapSeq (FT.init xs)
 
+-- | O(1). Get the last element of a Seq. Equivalent to
+-- | `\seq -> index seq (length seq - 1)`.
 last :: forall a. Seq a -> Maybe a
 last (Seq xs) = fmapGetElem (FT.last xs)
 
+-- | Probably O(n), but depends on the Foldable instance. Turn any `Foldable` -
+-- | into a `Seq`.
 -- TODO: This can be improved. See Hackage
 toSeq :: forall f a. (Foldable f) => f a -> Seq a
-toSeq = foldr (<|) empty
+toSeq = foldr cons empty

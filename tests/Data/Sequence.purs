@@ -9,6 +9,7 @@ import Data.Tuple
 import Debug.Trace
 import Test.QuickCheck
 import TypeclassTests
+import Math (abs, floor)
 
 import qualified Data.Sequence as S
 import qualified Data.FingerTree as FT
@@ -18,6 +19,12 @@ instance arbSeq :: (Arbitrary a) => Arbitrary (S.Seq a) where
 
 foldableSize :: forall f a. (Foldable f) => f a -> Number
 foldableSize = runAdditive <<< foldMap (const (Additive 1))
+
+check1 :: forall p. (Testable p) => p -> QC Unit
+check1 = quickCheck' 1
+
+integerBetween :: Number -> Number -> Number -> Number
+integerBetween lo hi x = (floor x % hi - lo) + lo
 
 sequenceTests = do
   trace "Test append"
@@ -58,3 +65,18 @@ sequenceTests = do
 
   quickCheck $ \xs -> A.length xs == foldableSize (S.toSeq xs :: S.Seq Number)
   quickCheck $ \xs -> A.length (S.fromSeq xs) == foldableSize (xs :: S.Seq Number)
+
+  trace "Test splitAt"
+  quickCheck $ \idx seq ->
+    let idx' :: Number
+        idx' = integerBetween 0 (S.length seq) idx
+
+        split :: Tuple (S.Seq Number) (S.Seq Number)
+        split = S.splitAt idx' seq
+
+    in  S.last (fst split) == S.index seq (idx' - 1)
+          && S.head (snd split) == S.index seq idx'
+          <?> ("seq: " <> show seq <> ", idx':" <> show idx')
+
+  trace "Test show instance"
+  check1 $ \xs -> show (S.toSeq xs) == ("toSeq " <> show (xs :: Array Number))
