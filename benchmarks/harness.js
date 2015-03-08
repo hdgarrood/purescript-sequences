@@ -26,6 +26,15 @@ function getBenchByName(suite, name) {
                     ' was found in the suite.')
 }
 
+function takeProps(obj, props) {
+  var result = {}
+  for (var i = 0; i < props.length; i++) {
+    var p = props[i]
+    result[p] = obj[p]
+  }
+  return result
+}
+
 function seqBench(size) {
   var array = randomArray(size)
   var results = {}
@@ -40,14 +49,15 @@ function seqBench(size) {
   suite.run()
 
   // hopefully avoid memory leaks
-  var stats = {
-    "Seq":   getBenchByName(suite, "Seq").stats,
-    "Array": getBenchByName(suite, "Array").stats
+  var results = {
+    size:  size,
+    Seq:   getBenchByName(suite, "Seq").stats,
+    Array: getBenchByName(suite, "Array").stats,
   }
   suite = null
   array = null
 
-  return { size: size, stats: stats }
+  return results
 }
 
 function log(msg) {
@@ -83,10 +93,29 @@ function go() {
   window.Results = runAllBenchmarks()
 }
 
+function makeGraphData(results) {
+  var data = {Seq: [], Array: []}
+  for (var i = 0; i < results.length; i++) {
+    var r = results[i]
+    data.Seq.push({
+      n: r.size,
+      runtime: r.Seq.mean,
+      stdDev: r.Seq.deviation
+    })
+    data.Array.push({
+      n: r.size,
+      runtime: r.Array.mean,
+      stdDev: r.Array.deviation
+    })
+  }
+  return data
+}
+
 // in the browser, wait until a button is pressed
 if (isNode) {
   var fs = require('fs')
   var results = runAllBenchmarks()
   fs.writeFileSync('tmp/results.json', JSON.stringify(results))
+  fs.writeFileSync('tmp/results-graph.json', JSON.stringify(makeGraphData(results)))
   log('Results logged to tmp/results.json')
 }
