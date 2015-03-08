@@ -29,14 +29,20 @@ body {
   fill: crimson;
 }
 
+.error-bar {
+  fill: none;
+}
+
 </style>
 <body>
 <h1>Time to insert n elements into an empty Array/Seq</h1>
+<p>Error bars represent one standard deviation of uncertainty.</p>
 <h2>For n from 1,000 up to 10,000</h2>
 <div id="graph1"></div>
 <h2>For n from 1,000 up to 50,000</h2>
 <div id="graph2"></div>
-<script src="/bower_components/d3/d3.min.js"></script>
+
+<script src="d3.min.js"></script>
 <script>
 
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
@@ -104,6 +110,25 @@ d3.json("runtimes.json", function(error, data) {
             .attr("cx", function(d) { return x(d.n) })
             .attr("cy", function(d) { return y(d.runtime) })
             .attr("r", 2);
+
+        series.selectAll("path.error-bar")
+            .data(data)
+            .enter()
+              .append("path")
+              .attr("class", "error-bar")
+              .attr("x", function(d) { return x(d.n) })
+              .attr("y", function(d) { return y(d.runtime) })
+              .attr("d", function(d) {
+                    var mx = x(d.n),
+                        my = y(d.runtime),
+                        my1 = y(d.runtime + d.stdDev),
+                        my2 = y(d.runtime - d.stdDev),
+                        dx = 3
+                    return ["M", mx, my,
+                            "V", my1, "h", -dx, "h", 2 * dx, "h", -dx,
+                            "V", my2, "h", -dx, "h", 2 * dx
+                           ].join(' ')
+                  })
 
         series.append("path")
              .datum(data)
