@@ -109,7 +109,7 @@ d3.json("runtimes.json", function(error, data) {
             .append("circle")
             .attr("cx", function(d) { return x(d.n) })
             .attr("cy", function(d) { return y(d.runtime) })
-            .attr("r", 2);
+            .attr("r", 3);
 
         series.selectAll("path.error-bar")
             .data(data)
