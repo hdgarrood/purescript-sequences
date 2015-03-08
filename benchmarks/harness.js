@@ -1,40 +1,80 @@
 var isNode = typeof module !== 'undefined' && module.exports
 var Results = []
+var B = null
+if (isNode) {
+  B = require('benchmark')
+} else {
+  B = Benchmark
+}
+
+function randomArray(size) {
+  var arr = []
+  for (var i = 0; i < size; i++) {
+    arr.push(Math.random())
+  }
+  return arr
+}
+
+function getBenchByName(suite, name) {
+  var result = null
+  for (var i = 0; i < suite.length; i++) {
+    if (suite[i].name === name) {
+      return suite[i]
+    }
+  }
+  throw new Error('No bench object with name ' + name +
+                    ' was found in the suite.')
+}
+
+function seqBench(size) {
+  var array = randomArray(size)
+  var results = {}
+  var suite = new B.Suite()
+
+  suite.add("Seq", function() {
+    PS.Benchmarks.insertLotsSeq(array)
+  })
+  suite.add("Array", function() {
+    PS.Benchmarks.insertLotsArray(array)
+  })
+  suite.run()
+
+  // hopefully avoid memory leaks
+  var stats = {
+    "Seq":   getBenchByName(suite, "Seq").stats,
+    "Array": getBenchByName(suite, "Array").stats
+  }
+  suite = null
+  array = null
+
+  return { size: size, stats: stats }
+}
+
+function log(msg) {
+  var msg2 = msg + '\r\n'
+  if (isNode) {
+    process.stderr.write(msg2)
+  } else {
+    var n = document.createTextNode(msg2)
+    var el =  document.getElementById('log')
+    el.appendChild(n)
+  }
+}
 
 function go() {
-  var B = null
-  if (isNode) {
-    B = require('benchmark')
-  } else {
-    B = Benchmark
-  }
+  var values = [100, 1000, 2000, 5000, 10000]//, 12000] //, 50000]
 
-  var values = [1000, 10000]//, 1000000, 10000000]
-  var benches = PS.Benchmarks.benches
-
-  values.forEach(function(v) {
-    var suite = new B.Suite
-    benches.forEach(function(b) {
-      suite.add(b.name, b.test(v))
-    })
-    suite.run()
-    Results.push({
-      value: v,
-      suite: suite
-    })
-
-    var message = 'Fastest at ' + v + ' is ' +
-                      suite.filter('fastest').pluck('name') + '\r\n';
-    if (isNode) {
-      process.stderr.write(message)
-    } else {
-      console.log(message)
-    }
+  return values.map(function(v) {
+    var r = seqBench(v)
+    log('Done bench for array of size: ' + v)
+    return r
   })
 }
 
 // in the browser, wait until a button is pressed
 if (isNode) {
-  go()
-  process.stdout.write(JSON.stringify(Results))
+  var fs = require('fs')
+  var results = go()
+  fs.writeFileSync('tmp/results.json', JSON.stringify(results))
+  log('Results logged to tmp/results.json')
 }

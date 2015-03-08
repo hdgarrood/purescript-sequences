@@ -13,8 +13,8 @@ module.exports = function(grunt) {
 
     clean: {
       out: ["output"],
-      tests: ["tmp/tests.js", "output"],
-      benchmarks: ["tmp/benchmarks.js", "output"]
+      tests: ["tmp/tests.js"],
+      benchmarks: ["tmp/benchmarks.js"]
     },
 
     pscMake: {
@@ -50,7 +50,12 @@ module.exports = function(grunt) {
         dest: "docs/Data.FingerTree.md"
       }
     },
-
+    concat: {
+      benchmarks: {
+        src: ["tmp/benchmarks.js", "benchmarks/harness.js"],
+        dest: "tmp/benchmarks-all.js"
+      }
+    },
     execute: {
       tests: {
         src: "tmp/tests.js"
@@ -59,11 +64,12 @@ module.exports = function(grunt) {
   });
 
   grunt.loadNpmTasks("grunt-contrib-clean");
+  grunt.loadNpmTasks("grunt-contrib-concat");
   grunt.loadNpmTasks("grunt-purescript");
   grunt.loadNpmTasks("grunt-execute");
 
-  grunt.registerTask("test", ["clean:tests", "psc:tests", "execute"]);
-  grunt.registerTask("benchmarks", ["clean:benchmarks", "psc:benchmarks"]);
-  grunt.registerTask("make", ["pscMake", "dotPsci", "pscDocs"]);
+  grunt.registerTask("test",    ["clean", "psc:tests", "execute"]);
+  grunt.registerTask("bench",   ["clean", "psc:benchmarks", "concat:benchmarks"]);
+  grunt.registerTask("make",    ["pscMake", "dotPsci", "pscDocs"]);
   grunt.registerTask("default", ["make"]);
 };
