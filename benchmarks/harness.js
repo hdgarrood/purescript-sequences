@@ -62,7 +62,7 @@ function log(msg) {
 }
 
 function runAllBenchmarks() {
-  var values = [100, 1000, 2000, 5000, 10000]//, 12000] //, 50000]
+  var values = [100, 1000, 2000, 5000, 10000, 15000, 20000, 50000]
 
   return values.map(function(v) {
     var r = seqBench(v)
