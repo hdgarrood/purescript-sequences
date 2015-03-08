@@ -61,8 +61,16 @@ function log(msg) {
   }
 }
 
+function linearSpace(start, end, step) {
+  var arr = []
+  for (var i = start; i <= end; i += step) {
+    arr.push(i)
+  }
+  return arr
+}
+
 function runAllBenchmarks() {
-  var values = [100, 1000, 2000, 5000, 10000, 15000, 20000, 50000]
+  var values = linearSpace(1000, 50000, 1000)
 
   return values.map(function(v) {
     var r = seqBench(v)
