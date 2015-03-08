@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 14px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.line {
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+.Seq {
+  stroke: steelblue;
+  fill: steelblue;
+}
+
+.Array {
+  stroke: crimson;
+  fill: crimson;
+}
+
+</style>
+<body>
+<h1>Time to insert n elements into an empty Array/Seq</h1>
+<h2>For n from 1,000 up to 10,000</h2>
+<div id="graph1"></div>
+<h2>For n from 1,000 up to 50,000</h2>
+<div id="graph2"></div>
+<script src="/bower_components/d3/d3.min.js"></script>
+<script>
+
+var margin = {top: 20, right: 20, bottom: 30, left: 50},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+var x = d3.scale.linear()
+    .range([0, width]);
+
+var y = d3.scale.linear()
+    .range([height, 0]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left");
+
+var line = d3.svg.line()
+    .x(function(d) { return x(d.n); })
+    .y(function(d) { return y(d.runtime); });
+
+d3.json("runtimes.json", function(error, data) {
+  function drawGraph(minX, maxX, elId) {
+    var svg = d3.select(elId).append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      var seqData = data.Seq
+                      .filter(function(d) { return minX <= d.n && d.n <= maxX });
+      var arrData = data.Array
+                      .filter(function(d) { return minX <= d.n && d.n <= maxX });
+
+      var allData = seqData.concat(arrData);
+
+      x.domain(d3.extent(allData, function(d) { return d.n }))
+      y.domain(d3.extent(allData, function(d) { return d.runtime }))
+
+      svg.append("g")
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")")
+          .call(xAxis);
+
+      svg.append("g")
+          .attr("class", "y axis")
+          .call(yAxis)
+        .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("Mean running time (seconds)");
+
+      function renderSeries(seriesName, data) {
+        var series = svg.append("g").attr("class", seriesName)
+
+        series.selectAll("circle")
+            .data(data)
+            .enter()
+            .append("circle")
+            .attr("cx", function(d) { return x(d.n) })
+            .attr("cy", function(d) { return y(d.runtime) })
+            .attr("r", 2);
+
+        series.append("path")
+             .datum(data)
+             .attr("class", "line")
+             .attr("d", line);
+      }
+
+      renderSeries("Seq", seqData)
+      renderSeries("Array", arrData)
+
+      // Add the legend
+      var legend = svg.append("g")
+                      .attr("class", "legend")
+                      .attr("transform", "translate(50, 50)")
+
+      var legendData = ["Array", "Seq"]
+      legend.selectAll("rect")
+        .data(legendData)
+        .enter()
+          .append("rect")
+          .attr("x", 0)
+          .attr("y", function(_, i) { return i * 20 })
+          .attr("width", 15)
+          .attr("height", 15)
+          .attr("class", function(d) { return d })
+
+      legend.selectAll("text")
+        .data(legendData)
+        .enter()
+          .append("text")
+          .attr("x", 24)
+          .attr("y", function(_, i) { return i * 20 + 13 })
+          .text(function(d) { return d })
+  }
+
+  drawGraph(0, 10000, "#graph1");
+  drawGraph(1000, 50000, "#graph2");
+});
+
+</script>
+</html>
