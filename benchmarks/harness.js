@@ -1,9 +1,15 @@
+var isNode = typeof module !== 'undefined' && module.exports
+var Results = []
 
-var Results = (function(window) {
-  var B = require('benchmark');
+function go() {
+  var B = null
+  if (isNode) {
+    B = require('benchmark')
+  } else {
+    B = Benchmark
+  }
 
-  var values = [1, 10, 100, 1000, 10000, 1000000, 10000000]
-  var results = []
+  var values = [1000, 10000]//, 1000000, 10000000]
   var benches = PS.Benchmarks.benches
 
   values.forEach(function(v) {
@@ -12,11 +18,23 @@ var Results = (function(window) {
       suite.add(b.name, b.test(v))
     })
     suite.run()
-    results.push({
+    Results.push({
       value: v,
       suite: suite
     })
-  })
 
-  console.log(JSON.stringify(results))
-})(this)
+    var message = 'Fastest at ' + v + ' is ' +
+                      suite.filter('fastest').pluck('name') + '\r\n';
+    if (isNode) {
+      process.stderr.write(message)
+    } else {
+      console.log(message)
+    }
+  })
+}
+
+// in the browser, wait until a button is pressed
+if (isNode) {
+  go()
+  process.stdout.write(JSON.stringify(Results))
+}
