@@ -61,7 +61,7 @@ function log(msg) {
   }
 }
 
-function go() {
+function runAllBenchmarks() {
   var values = [100, 1000, 2000, 5000, 10000]//, 12000] //, 50000]
 
   return values.map(function(v) {
@@ -71,10 +71,14 @@ function go() {
   })
 }
 
+function go() {
+  window.Results = runAllBenchmarks()
+}
+
 // in the browser, wait until a button is pressed
 if (isNode) {
   var fs = require('fs')
-  var results = go()
+  var results = runAllBenchmarks()
   fs.writeFileSync('tmp/results.json', JSON.stringify(results))
   log('Results logged to tmp/results.json')
 }
