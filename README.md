@@ -8,7 +8,10 @@ Hinze and Ross Paterson, Journal of Functional Programming 16:2 (2006) pp
 197-217.
 
 Big props also go to [taku0](https://github.com/taku0) who did most of the
-work on this.
+initial work on this.
+
+Note that this project is currently **unstable**. The API might change
+significantly from one version to the next.
 
 ## Documentation
 
@@ -46,6 +49,11 @@ Amortized complexities of other operations:
 | shift/unshift | O(n)         | O(1)                |
 | get i / set i | O(1)         | O(log(min(i, n-i))) |
 | splitAt i     | O(n)         | O(log(min(i, n-i))) |
+
+## Is it faster?
+
+For large enough sequences, yes. See
+<http://harry.garrood.me/blog/announcing-purescript-sequences/benchmarks/>.
 
 ## Ok, so when is this approach _not_ suitable?
 
