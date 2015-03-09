@@ -15,6 +15,11 @@ function randomArray(size) {
   return arr
 }
 
+function randomSeq(size) {
+  var dict = PS.Data_Foldable.foldableArray
+  return PS.Data_Sequence.toSeq(dict)(randomArray(size))
+}
+
 function getBenchByName(suite, name) {
   var result = null
   for (var i = 0; i < suite.length; i++) {
