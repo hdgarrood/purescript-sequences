@@ -332,7 +332,6 @@ app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
   in
    deep pr1 (defer computeM') sf2
 
--- TODO: potential performance issues here?
 nodes :: forall a v. (Monoid v, Measured a v) => Array a -> [Node v a]
 nodes [a, b]           = [node2 a b]
 nodes [a, b, c]        = [node3 a b c]
