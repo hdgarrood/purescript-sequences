@@ -398,3 +398,7 @@ split p xs =
         Tuple l (defer (\_ -> cons x (force r)))
   else
     Tuple (defer (\_ -> xs)) lazyEmpty
+
+filter :: forall a v. (Monoid v, Measured a v)
+  => (a -> Boolean) -> FingerTree v a -> FingerTree v a
+filter p = foldr (\x acc -> if p x then cons x acc else acc) Empty

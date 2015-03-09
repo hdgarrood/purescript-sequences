@@ -25,6 +25,7 @@ module Data.Sequence
   , splitAt
   , take
   , drop
+  , filter
 
   -- indexing
   , index
@@ -348,3 +349,11 @@ toSeq = foldr cons empty
 -- | any `Unfoldable`.
 fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 fromSeq (Seq xs) = fmapGetElem (FT.fromFingerTree xs)
+
+-- | O(n). Create a new Seq which contains only those elements of the input
+-- | Seq which satisfy the given predicate.
+filter :: forall a. (a -> Boolean) -> Seq a -> Seq a
+filter p (Seq xs) = Seq (FT.filter q xs)
+  where
+  q :: Elem a -> Boolean
+  q = unsafeCoerce p

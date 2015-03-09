@@ -392,3 +392,12 @@ fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 
 Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 any `Unfoldable`.
+
+#### `filter`
+
+``` purescript
+filter :: forall a. (a -> Boolean) -> Seq a -> Seq a
+```
+
+O(n). Create a new Seq which contains only those elements of the input
+Seq which satisfy the given predicate.

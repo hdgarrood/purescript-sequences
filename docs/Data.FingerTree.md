@@ -344,6 +344,7 @@ app3 :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Array a -> Fin
 nodes :: forall a v. (Monoid v, Measured a v) => Array a -> [Node v a]
 ```
 
+
 #### `append`
 
 ``` purescript
@@ -383,4 +384,11 @@ unsafeSplitTree :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> v -
 
 ``` purescript
 split :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> FingerTree v a -> Tuple (Lazy (FingerTree v a)) (Lazy (FingerTree v a))
+```
+
+
+#### `filter`
+
+``` purescript
+filter :: forall a v. (Monoid v, Measured a v) => (a -> Boolean) -> FingerTree v a -> FingerTree v a
 ```

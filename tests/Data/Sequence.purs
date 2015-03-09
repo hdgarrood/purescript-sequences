@@ -129,3 +129,8 @@ sequenceTests = do
   quickCheck $ \seq n ->
     let dropped = S.length (S.drop n seq) - S.length (seq :: S.Seq Number)
     in 0 <= dropped && dropped <= n
+
+  trace "Test filter"
+  quickCheck $ \seq -> S.null (S.filter (const false) (seq :: S.Seq Number))
+  quickCheck $ \seq -> S.filter (const true) seq === (seq :: S.Seq Number)
+  quickCheck $ \seq f -> all f (S.filter f (seq :: S.Seq Number))
