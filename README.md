@@ -45,9 +45,9 @@ Amortized complexities of other operations:
 
 |               | Native array | Sequence            |
 |---------------|--------------|---------------------|
-| push/pop      | O(1)         | O(1)                |
-| shift/unshift | O(n)         | O(1)                |
-| get i / set i | O(1)         | O(log(min(i, n-i))) |
+| cons/uncons   | O(n)         | O(1)                |
+| getAt i       | O(1)         | O(log(min(i, n-i))) |
+| setAt i       | O(n)         | O(log(min(i, n-i))) |
 | splitAt i     | O(n)         | O(log(min(i, n-i))) |
 
 ## Is it faster?
