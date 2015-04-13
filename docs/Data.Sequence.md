@@ -32,7 +32,7 @@ instance monadPlusSeq :: MonadPlus Seq
 #### `length`
 
 ``` purescript
-length :: forall a. (Seq a) -> Number
+length :: forall a. Seq a -> Number
 ```
 
 O(1). The number of elements in the sequence.
@@ -40,7 +40,7 @@ O(1). The number of elements in the sequence.
 #### `null`
 
 ``` purescript
-null :: forall a. (Seq a) -> Boolean
+null :: forall a. Seq a -> Boolean
 ```
 
 O(1). True if the sequence has no elements, false otherwise.
@@ -48,7 +48,7 @@ O(1). True if the sequence has no elements, false otherwise.
 #### `uncons`
 
 ``` purescript
-uncons :: forall a. (Seq a) -> Maybe (Tuple a (Seq a))
+uncons :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 ```
 
 O(1). If the sequence is nonempty, take one element off its left side and
@@ -58,7 +58,7 @@ return Nothing.
 #### `unsnoc`
 
 ``` purescript
-unsnoc :: forall a. (Seq a) -> Maybe (Tuple (Seq a) a)
+unsnoc :: forall a. Seq a -> Maybe (Tuple (Seq a) a)
 ```
 
 O(1). If the sequence is nonempty, take one element off its right side and
@@ -68,7 +68,7 @@ return Nothing.
 #### `splitAt`
 
 ``` purescript
-splitAt :: forall a. Number -> (Seq a) -> Tuple (Seq a) (Seq a)
+splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
 ```
 
 O(log(min(i,n-i))). Split the sequence into two subsequences. The first
@@ -79,7 +79,7 @@ unchanged).
 #### `take`
 
 ``` purescript
-take :: forall a. Number -> (Seq a) -> Seq a
+take :: forall a. Number -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Discard all elements from a Seq after the first n.
@@ -87,7 +87,7 @@ O(log(min(i,n-i))). Discard all elements from a Seq after the first n.
 #### `drop`
 
 ``` purescript
-drop :: forall a. Number -> (Seq a) -> Seq a
+drop :: forall a. Number -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Discard a given number of elements from the left side
@@ -96,7 +96,7 @@ of a Seq.
 #### `inBounds`
 
 ``` purescript
-inBounds :: forall a. (Seq a) -> Number -> Boolean
+inBounds :: forall a. Seq a -> Number -> Boolean
 ```
 
 O(1). True if the given index specifies an element that exists in the
@@ -105,7 +105,7 @@ sequence, false otherwise.
 #### `index`
 
 ``` purescript
-index :: forall a. (Seq a) -> Number -> Maybe a
+index :: forall a. Seq a -> Number -> Maybe a
 ```
 
 O(log(min(i,n-i))). Retrieve the element at the given index in the
@@ -115,7 +115,7 @@ sequence `xs` can be retrieved with `index xs 0`.
 #### `adjust`
 
 ``` purescript
-adjust :: forall a. (a -> a) -> Number -> (Seq a) -> Seq a
+adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Adjust the element at the specified index by
@@ -125,7 +125,7 @@ sequence is returned unchanged.
 #### `replace`
 
 ``` purescript
-replace :: forall a. a -> Number -> (Seq a) -> Seq a
+replace :: forall a. a -> Number -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Replace the element at the specified index with
@@ -143,7 +143,7 @@ A sequence with no elements.
 #### `cons`
 
 ``` purescript
-cons :: forall a. a -> (Seq a) -> Seq a
+cons :: forall a. a -> Seq a -> Seq a
 ```
 
 O(1). Add an element to the left end of a Seq.
@@ -151,7 +151,7 @@ O(1). Add an element to the left end of a Seq.
 #### `snoc`
 
 ``` purescript
-snoc :: forall a. (Seq a) -> a -> Seq a
+snoc :: forall a. Seq a -> a -> Seq a
 ```
 
 O(1). Add an element to the right end of a Seq.
@@ -167,7 +167,7 @@ O(1). Create a Seq with one element.
 #### `append`
 
 ``` purescript
-append :: forall a. (Seq a) -> (Seq a) -> Seq a
+append :: forall a. Seq a -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Join two Seqs together.
@@ -175,7 +175,7 @@ O(log(min(i,n-i))). Join two Seqs together.
 #### `head`
 
 ``` purescript
-head :: forall a. (Seq a) -> Maybe a
+head :: forall a. Seq a -> Maybe a
 ```
 
 O(1). Get the first element of a Seq. Equivalent to `\seq -> index seq 0`.
@@ -183,7 +183,7 @@ O(1). Get the first element of a Seq. Equivalent to `\seq -> index seq 0`.
 #### `tail`
 
 ``` purescript
-tail :: forall a. (Seq a) -> Maybe (Seq a)
+tail :: forall a. Seq a -> Maybe (Seq a)
 ```
 
 O(1). Get all but the first element of a Seq. Equivalent to `drop 1`.
@@ -191,7 +191,7 @@ O(1). Get all but the first element of a Seq. Equivalent to `drop 1`.
 #### `init`
 
 ``` purescript
-init :: forall a. (Seq a) -> Maybe (Seq a)
+init :: forall a. Seq a -> Maybe (Seq a)
 ```
 
 O(1). Get all but the last element of a Seq. Equivalent to `\seq -> take
@@ -200,7 +200,7 @@ O(1). Get all but the last element of a Seq. Equivalent to `\seq -> take
 #### `last`
 
 ``` purescript
-last :: forall a. (Seq a) -> Maybe a
+last :: forall a. Seq a -> Maybe a
 ```
 
 O(1). Get the last element of a Seq. Equivalent to
@@ -209,7 +209,7 @@ O(1). Get the last element of a Seq. Equivalent to
 #### `toSeq`
 
 ``` purescript
-toSeq :: forall f a. (Foldable f) => (f a) -> Seq a
+toSeq :: forall f a. (Foldable f) => f a -> Seq a
 ```
 
 Probably O(n), but depends on the Foldable instance. Turn any `Foldable`
@@ -218,7 +218,7 @@ into a `Seq`.
 #### `fromSeq`
 
 ``` purescript
-fromSeq :: forall f a. (Functor f, Unfoldable f) => (Seq a) -> f a
+fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 ```
 
 Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
@@ -227,7 +227,7 @@ any `Unfoldable`.
 #### `filter`
 
 ``` purescript
-filter :: forall a. (a -> Boolean) -> (Seq a) -> Seq a
+filter :: forall a. (a -> Boolean) -> Seq a -> Seq a
 ```
 
 O(n). Create a new Seq which contains only those elements of the input
