@@ -35,6 +35,7 @@ instance monadPlusSeq :: MonadPlus Seq
 length :: forall a. (Seq a) -> Number
 ```
 
+O(1). The number of elements in the sequence.
 
 #### `null`
 
@@ -42,6 +43,7 @@ length :: forall a. (Seq a) -> Number
 null :: forall a. (Seq a) -> Boolean
 ```
 
+O(1). True if the sequence has no elements, false otherwise.
 
 #### `uncons`
 
@@ -49,6 +51,9 @@ null :: forall a. (Seq a) -> Boolean
 uncons :: forall a. (Seq a) -> Maybe (Tuple a (Seq a))
 ```
 
+O(1). If the sequence is nonempty, take one element off its left side and
+return that together with the rest of the original sequence. Otherwise,
+return Nothing.
 
 #### `unsnoc`
 
@@ -56,6 +61,9 @@ uncons :: forall a. (Seq a) -> Maybe (Tuple a (Seq a))
 unsnoc :: forall a. (Seq a) -> Maybe (Tuple (Seq a) a)
 ```
 
+O(1). If the sequence is nonempty, take one element off its right side and
+return that together with the rest of the original sequence. Otherwise,
+return Nothing.
 
 #### `splitAt`
 
@@ -63,6 +71,10 @@ unsnoc :: forall a. (Seq a) -> Maybe (Tuple (Seq a) a)
 splitAt :: forall a. Number -> (Seq a) -> Tuple (Seq a) (Seq a)
 ```
 
+O(log(min(i,n-i))). Split the sequence into two subsequences. The first
+subsequence will have i elements (unless there are not that many in the
+whole sequence, in which case the first element is the same sequence,
+unchanged).
 
 #### `take`
 
@@ -70,6 +82,7 @@ splitAt :: forall a. Number -> (Seq a) -> Tuple (Seq a) (Seq a)
 take :: forall a. Number -> (Seq a) -> Seq a
 ```
 
+O(log(min(i,n-i))). Discard all elements from a Seq after the first n.
 
 #### `drop`
 
@@ -77,6 +90,8 @@ take :: forall a. Number -> (Seq a) -> Seq a
 drop :: forall a. Number -> (Seq a) -> Seq a
 ```
 
+O(log(min(i,n-i))). Discard a given number of elements from the left side
+of a Seq.
 
 #### `inBounds`
 
@@ -84,6 +99,8 @@ drop :: forall a. Number -> (Seq a) -> Seq a
 inBounds :: forall a. (Seq a) -> Number -> Boolean
 ```
 
+O(1). True if the given index specifies an element that exists in the
+sequence, false otherwise.
 
 #### `index`
 
@@ -91,6 +108,9 @@ inBounds :: forall a. (Seq a) -> Number -> Boolean
 index :: forall a. (Seq a) -> Number -> Maybe a
 ```
 
+O(log(min(i,n-i))). Retrieve the element at the given index in the
+sequence. This function is zero-based; that is, the first element in a
+sequence `xs` can be retrieved with `index xs 0`.
 
 #### `adjust`
 
@@ -98,6 +118,9 @@ index :: forall a. (Seq a) -> Number -> Maybe a
 adjust :: forall a. (a -> a) -> Number -> (Seq a) -> Seq a
 ```
 
+O(log(min(i,n-i))). Adjust the element at the specified index by
+applying the given function to it. If the index is out of range, the
+sequence is returned unchanged.
 
 #### `replace`
 
@@ -105,6 +128,9 @@ adjust :: forall a. (a -> a) -> Number -> (Seq a) -> Seq a
 replace :: forall a. a -> Number -> (Seq a) -> Seq a
 ```
 
+O(log(min(i,n-i))). Replace the element at the specified index with
+a new element. If the index is out of range, the sequence is returned
+unchanged.
 
 #### `empty`
 
@@ -112,6 +138,7 @@ replace :: forall a. a -> Number -> (Seq a) -> Seq a
 empty :: forall a. Seq a
 ```
 
+A sequence with no elements.
 
 #### `cons`
 
@@ -119,6 +146,7 @@ empty :: forall a. Seq a
 cons :: forall a. a -> (Seq a) -> Seq a
 ```
 
+O(1). Add an element to the left end of a Seq.
 
 #### `snoc`
 
@@ -126,6 +154,7 @@ cons :: forall a. a -> (Seq a) -> Seq a
 snoc :: forall a. (Seq a) -> a -> Seq a
 ```
 
+O(1). Add an element to the right end of a Seq.
 
 #### `singleton`
 
@@ -133,6 +162,7 @@ snoc :: forall a. (Seq a) -> a -> Seq a
 singleton :: forall a. a -> Seq a
 ```
 
+O(1). Create a Seq with one element.
 
 #### `append`
 
@@ -140,6 +170,7 @@ singleton :: forall a. a -> Seq a
 append :: forall a. (Seq a) -> (Seq a) -> Seq a
 ```
 
+O(log(min(i,n-i))). Join two Seqs together.
 
 #### `head`
 
@@ -147,6 +178,7 @@ append :: forall a. (Seq a) -> (Seq a) -> Seq a
 head :: forall a. (Seq a) -> Maybe a
 ```
 
+O(1). Get the first element of a Seq. Equivalent to `\seq -> index seq 0`.
 
 #### `tail`
 
@@ -154,6 +186,7 @@ head :: forall a. (Seq a) -> Maybe a
 tail :: forall a. (Seq a) -> Maybe (Seq a)
 ```
 
+O(1). Get all but the first element of a Seq. Equivalent to `drop 1`.
 
 #### `init`
 
@@ -161,6 +194,8 @@ tail :: forall a. (Seq a) -> Maybe (Seq a)
 init :: forall a. (Seq a) -> Maybe (Seq a)
 ```
 
+O(1). Get all but the last element of a Seq. Equivalent to `\seq -> take
+(length seq - 1)`.
 
 #### `last`
 
@@ -168,6 +203,8 @@ init :: forall a. (Seq a) -> Maybe (Seq a)
 last :: forall a. (Seq a) -> Maybe a
 ```
 
+O(1). Get the last element of a Seq. Equivalent to
+`\seq -> index seq (length seq - 1)`.
 
 #### `toSeq`
 
@@ -175,6 +212,8 @@ last :: forall a. (Seq a) -> Maybe a
 toSeq :: forall f a. (Foldable f) => (f a) -> Seq a
 ```
 
+Probably O(n), but depends on the Foldable instance. Turn any `Foldable`
+into a `Seq`.
 
 #### `fromSeq`
 
@@ -182,6 +221,8 @@ toSeq :: forall f a. (Foldable f) => (f a) -> Seq a
 fromSeq :: forall f a. (Functor f, Unfoldable f) => (Seq a) -> f a
 ```
 
+Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
+any `Unfoldable`.
 
 #### `filter`
 
@@ -189,6 +230,8 @@ fromSeq :: forall f a. (Functor f, Unfoldable f) => (Seq a) -> f a
 filter :: forall a. (a -> Boolean) -> (Seq a) -> Seq a
 ```
 
+O(n). Create a new Seq which contains only those elements of the input
+Seq which satisfy the given predicate.
 
 
 
