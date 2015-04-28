@@ -10,9 +10,6 @@ Hinze and Ross Paterson, Journal of Functional Programming 16:2 (2006) pp
 Big props also go to [taku0](https://github.com/taku0) who did most of the
 initial work on this.
 
-Note that this project is currently **unstable**. The API might change
-significantly from one version to the next.
-
 ## Documentation
 
 You probably want [Data.Sequence][]. This package also provides
