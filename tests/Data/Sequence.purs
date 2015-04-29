@@ -12,7 +12,6 @@ import TypeclassTests
 import Math (abs, floor)
 
 import qualified Data.Sequence as S
-import qualified Data.FingerTree as FT
 
 instance arbSeq :: (Arbitrary a) => Arbitrary (S.Seq a) where
   arbitrary = (S.toSeq :: Array a -> S.Seq a) <$> arbitrary
@@ -30,6 +29,11 @@ isIntegral :: Number -> Boolean
 isIntegral x = complement (complement x) == x
 
 sequenceTests = do
+  trace ""
+  trace "Data.Sequence"
+  trace "============="
+  trace ""
+
   trace "Test append"
   quickCheck $ \x y ->
     S.fromSeq (x <> y) == S.fromSeq x <> (S.fromSeq y :: Array Number)

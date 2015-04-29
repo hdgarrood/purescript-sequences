@@ -1,5 +1,8 @@
 module Tests where
 
 import Tests.Data.Sequence (sequenceTests)
+import Tests.Data.Sequence.NonEmpty (nonEmptySequenceTests)
 
-main = sequenceTests
+main = do
+  sequenceTests
+  nonEmptySequenceTests

@@ -11,9 +11,9 @@ checkFunctor :: forall f a. (Functor f, Arbitrary a, CoArbitrary a, Arbitrary (f
 checkFunctor t = do
   quickCheck $ identity t
   quickCheck $ associativity t
-  
+
   where
-  
+
   identity :: forall f a. (Functor f, Arbitrary a, Eq (f a)) => f a -> f a -> Boolean
   identity _ f = id <$> f == id f
 
@@ -32,7 +32,7 @@ checkApplicative ta tb tc = do
   quickCheck $ interchange ta tb
 
   where
-  
+
   identity :: forall f a. (Applicative f, Arbitrary (f a), Eq (f a), Show (f a)) => f a -> f a -> Result
   identity _ v = (pure id <*> v) == v <?> "identity: v = " <> show v
 
@@ -54,9 +54,9 @@ checkMonad t = do
   quickCheck $ leftIdentity t
   quickCheck $ rightIdentity t
   quickCheck $ associativity t
-  
+
   where
-  
+
   leftIdentity :: forall m a. (Monad m, Arbitrary a, Eq (m a), Show a) => m a -> a -> (a -> m a) -> Result
   leftIdentity _ x f = (return x >>= f) == (f x) <?> ("leftIdentity: x = " <> show x)
 
