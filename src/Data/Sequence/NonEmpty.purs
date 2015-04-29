@@ -1,6 +1,6 @@
 
--- | This module contains a type, `Seq`, which can be thought of as a `Seq`
--- | which is guaranteed to contain at least one element.
+-- | This module contains a type, `Seq`, much like that from `Data.Sequence`,
+-- | but which is guaranteed to contain at least one element.
 -- |
 -- | This module is intended to be imported qualified, to avoid name clashes or
 -- | ambiguity. For example: `import qualified Data.Sequence.NonEmpty as NES`.
@@ -42,12 +42,15 @@ module Data.Sequence.NonEmpty
   ) where
 
 import Prelude hiding (cons)
+import Control.Alt
+import Data.Foldable
+import Data.Traversable
 import Data.Maybe
 import Data.Tuple
 import Data.Unfoldable
 import qualified Data.Sequence as S
 
--- | A `Seq` which is guaranteed to contain at least one element.
+-- | A sequence which is guaranteed to contain at least one element.
 data Seq a
   = Seq a (S.Seq a)
 
@@ -159,3 +162,39 @@ replace x = adjust (const x)
 -- | any `Unfoldable`.
 fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 fromSeq = S.fromSeq <<< toPlain
+
+fromPlainUnsafe :: forall a. S.Seq a -> Seq a
+fromPlainUnsafe xs =
+  case S.uncons xs of
+    Just (Tuple x xs) -> Seq x xs
+
+instance functorSeq :: Functor Seq where
+  (<$>) f (Seq x xs) = Seq (f x) (f <$> xs)
+
+instance applySeq :: Apply Seq where
+  (<*>) fs xs = fromPlainUnsafe (toPlain fs <*> toPlain xs)
+
+instance applicativeSeq :: Applicative Seq where
+  pure x = Seq x S.empty
+
+instance bindSeq :: Bind Seq where
+  (>>=) xs f = fromPlainUnsafe (toPlain xs >>= (toPlain <<< f))
+
+instance monadSeq :: Monad Seq
+
+instance semigroupSeq :: Semigroup (Seq a) where
+  (<>) (Seq x xs) (Seq y ys) = Seq x ((S.snoc xs y) <> ys)
+
+instance altSeq :: Alt Seq where
+  (<|>) = (<>)
+
+instance foldableSeq :: Foldable Seq where
+  foldr f z = toPlain >>> foldr f z
+  foldl f z = toPlain >>> foldl f z
+  foldMap f = toPlain >>> foldMap f
+
+fmap = (<$>)
+
+instance traversableSeq :: Traversable Seq where
+  sequence   = toPlain >>> sequence   >>> fmap fromPlainUnsafe
+  traverse f = toPlain >>> traverse f >>> fmap fromPlainUnsafe

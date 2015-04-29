@@ -45,6 +45,10 @@ module.exports = function(grunt) {
         src: "src/Data/Sequence.purs",
         dest: "docs/Data.Sequence.md"
       },
+      sequenceNonEmpty: {
+        src: "src/Data/Sequence/NonEmpty.purs",
+        dest: "docs/Data.Sequence.NonEmpty.md"
+      },
       fingertree: {
         src: "src/Data/FingerTree.purs",
         dest: "docs/Data.FingerTree.md"
