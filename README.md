@@ -28,7 +28,7 @@ var bs = as.concat([4,5,6])
 bs[0] = 10
 ```
 
-`as[0]` should still be 1 after executing these commands. Therefore, `concat`
+`as[0]` should still be 1 after executing these statements. Therefore, `concat`
 has to copy the whole array, and is therefore O(this.length + n), where n is
 the length of the argument.
 
