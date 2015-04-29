@@ -168,6 +168,13 @@ fromPlainUnsafe xs =
   case S.uncons xs of
     Just (Tuple x xs) -> Seq x xs
 
+instance showSeq :: (Show a) => Show (Seq a) where
+  show (Seq x xs) = "(Seq " <> show x <> " " <> show xs <> ")"
+
+instance eqSeq :: (Eq a) => Eq (Seq a) where
+  (==) (Seq x xs) (Seq y ys) = x == y && xs == ys
+  (/=) x y = not (x == y)
+
 instance functorSeq :: Functor Seq where
   (<$>) f (Seq x xs) = Seq (f x) (f <$> xs)
 
