@@ -1,0 +1,161 @@
+
+-- | This module contains a type, `Seq`, which can be thought of as a `Seq`
+-- | which is guaranteed to contain at least one element.
+-- |
+-- | This module is intended to be imported qualified, to avoid name clashes or
+-- | ambiguity. For example: `import qualified Data.Sequence.NonEmpty as NES`.
+
+module Data.Sequence.NonEmpty
+  ( Seq(..)
+
+  -- construction
+  , singleton
+  , cons
+  , snoc
+  , append
+
+  -- queries
+  , length
+  , inBounds
+
+  -- deconstruction
+  , uncons
+  , unsnoc
+  , head
+  , tail
+  , init
+  , last
+
+  , toPlain
+  , splitAt
+  , take
+  , drop
+  , filter
+
+  -- indexing
+  , index
+  , adjust
+  , replace
+
+  -- other
+  , fromSeq
+  ) where
+
+import Prelude hiding (cons)
+import Data.Maybe
+import Data.Tuple
+import Data.Unfoldable
+import qualified Data.Sequence as S
+
+-- | A `Seq` which is guaranteed to contain at least one element.
+data Seq a
+  = Seq a (S.Seq a)
+
+-- | O(1). Construct a sequence from a single element.
+singleton :: forall a. a -> Seq a
+singleton x = Seq x S.empty
+
+-- | O(1). Add an element to the left end of a sequence.
+cons :: forall a. a -> Seq a -> Seq a
+cons x (Seq y ys) = Seq x (S.cons y ys)
+
+-- | O(1). Add an element to the right end of a sequence.
+snoc :: forall a. Seq a -> a -> Seq a
+snoc (Seq x xs) y = Seq x (S.snoc xs y)
+
+-- | O(log(min(i,n-i))). Join two sequence values together.
+append :: forall a. Seq a -> Seq a -> Seq a
+append (Seq x xs) (Seq y ys) = Seq x ((S.snoc xs y) <> ys)
+
+-- | O(1). The number of elements in the sequence.
+length :: forall a. Seq a -> Number
+length (Seq _ xs) = S.length xs + 1
+
+-- | O(1). True if the given index specifies an element that exists in the
+-- | sequence, false otherwise.
+inBounds :: forall a. Seq a -> Number -> Boolean
+inBounds _ 0 = true
+inBounds (Seq _ xs) i = S.inBounds xs (i - 1)
+
+-- | O(1). Take one element off the left side of a Seq and return it, together
+-- | with the (possibly empty) remainder of the Seq.
+uncons :: forall a. Seq a -> Tuple a (S.Seq a)
+uncons (Seq x xs) = Tuple x xs
+
+-- | O(1). Take one element off the right side of a Seq and return it, together
+-- | with the (possibly empty) remainder of the Seq.
+unsnoc :: forall a. Seq a -> Tuple (S.Seq a) a
+unsnoc (Seq x xs) =
+  case S.unsnoc xs of
+    Nothing           -> Tuple S.empty x
+    Just (Tuple ys y) -> Tuple (S.cons x ys) y
+
+-- | O(1). Get the first element of a non-empty sequence. Equivalent to `\seq
+-- | -> index seq 0`.
+head :: forall a. Seq a -> a
+head (Seq x _) = x
+
+-- | O(1). Get all but the first element of a non-empty sequence. The returned
+-- | sequence is possibly empty. Equivalent to `drop 1`.
+tail :: forall a. Seq a -> S.Seq a
+tail (Seq _ xs) = xs
+
+-- | O(1). Get all but the last element of a non-empty sequence. Possibly empty.
+init :: forall a. Seq a -> S.Seq a
+init = fst <<< unsnoc
+
+-- | O(1). Get the last element of a non-empty sequence.
+last :: forall a. Seq a -> a
+last (Seq x xs) = maybe x id (S.last xs)
+
+-- | O(1). Turn a non-empty sequence into a "plain" sequence (i.e. one from
+-- | Data.Sequence), containing the same elements.
+toPlain :: forall a. Seq a -> S.Seq a
+toPlain (Seq x xs) = S.cons x xs
+
+-- | O(log(min(i,n-i))). Split the sequence into two (possibly empty) subsequences.
+-- | The first subsequence will have i elements (unless there are not that many in
+-- | the whole sequence, in which case the first element is the same sequence,
+-- | unchanged).
+splitAt :: forall a. Number -> Seq a -> Tuple (S.Seq a) (S.Seq a)
+splitAt i = S.splitAt i <<< toPlain
+
+-- | O(log(min(i,n-i))). Take a certain number of values from the left end of
+-- | a sequence, and discard the rest, returning a possibly empty sequence.
+take :: forall a. Number -> Seq a -> S.Seq a
+take i = S.take i <<< toPlain
+
+-- | O(log(min(i,n-i))). Discard a given number of elements from the left end
+-- | of a sequence, returning a possibly empty sequence.
+drop :: forall a. Number -> Seq a -> S.Seq a
+drop i = S.drop i <<< toPlain
+
+-- | O(n). Create a new (possibly empty) sequence which contains only those
+-- | elements of the input sequence which satisfy the given predicate.
+filter :: forall a. (a -> Boolean) -> Seq a -> S.Seq a
+filter p = S.filter p <<< toPlain
+
+-- | O(log(min(i,n-i))). Retrieve the element at the given index in the
+-- | sequence. This function is zero-based; that is, the first element in a
+-- | sequence `xs` can be retrieved with `index xs 0`.
+index :: forall a. Seq a -> Number -> Maybe a
+index (Seq x _)  0 = Just x
+index (Seq _ xs) i = S.index xs (i - 1)
+
+-- | O(log(min(i,n-i))). Adjust the element at the specified index by
+-- | applying the given function to it. If the index is out of range, the
+-- | sequence is returned unchanged.
+adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
+adjust f 0 (Seq x xs) = Seq (f x) xs
+adjust f i (Seq x xs) = Seq x (S.adjust f (i - 1) xs)
+
+-- | O(log(min(i,n-i))). Replace the element at the specified index with
+-- | a new element. If the index is out of range, the sequence is returned
+-- | unchanged.
+replace :: forall a. a -> Number -> Seq a -> Seq a
+replace x = adjust (const x)
+
+-- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
+-- | any `Unfoldable`.
+fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
+fromSeq = S.fromSeq <<< toPlain
