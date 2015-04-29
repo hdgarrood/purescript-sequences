@@ -2,6 +2,7 @@
 
 ## Module Data.Sequence
 
+
 This module provides a Sequence data type, intended for the same sort of
 tasks as an Array would be in JavaScript, except with better asymptotic
 complexity for many operations.
@@ -16,32 +17,201 @@ ambiguity. For example: `import qualified Data.Sequence as S`.
 
 [1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
 
+#### `semigroupSize`
+
+``` purescript
+instance semigroupSize :: Semigroup Size
+```
+
+
+#### `monoidSize`
+
+``` purescript
+instance monoidSize :: Monoid Size
+```
+
+
+#### `showSize`
+
+``` purescript
+instance showSize :: Show Size
+```
+
+
+#### `measuredElem`
+
+``` purescript
+instance measuredElem :: FT.Measured (Elem a) Size
+```
+
+
+#### `showElem`
+
+``` purescript
+instance showElem :: (Show a) => Show (Elem a)
+```
+
+
+#### `eqElem`
+
+``` purescript
+instance eqElem :: (Eq a) => Eq (Elem a)
+```
+
+
+#### `ordElem`
+
+``` purescript
+instance ordElem :: (Ord a) => Ord (Elem a)
+```
+
+
+#### `foldableElem`
+
+``` purescript
+instance foldableElem :: Foldable Elem
+```
+
+
+#### `functorElem`
+
+``` purescript
+instance functorElem :: Functor Elem
+```
+
+
+#### `traversableElem`
+
+``` purescript
+instance traversableElem :: Traversable Elem
+```
+
+
 #### `Seq`
 
 ``` purescript
 newtype Seq a
 ```
 
-##### Instances
+
+#### `eqSeq`
+
 ``` purescript
 instance eqSeq :: (Eq a) => Eq (Seq a)
+```
+
+
+#### `showSeq`
+
+``` purescript
 instance showSeq :: (Show a) => Show (Seq a)
+```
+
+
+#### `ordSeq`
+
+``` purescript
 instance ordSeq :: (Ord a) => Ord (Seq a)
+```
+
+
+#### `semigroupSeq`
+
+``` purescript
 instance semigroupSeq :: Semigroup (Seq a)
+```
+
+
+#### `monoidSeq`
+
+``` purescript
 instance monoidSeq :: Monoid (Seq a)
+```
+
+
+#### `foldableSeq`
+
+``` purescript
 instance foldableSeq :: Foldable Seq
+```
+
+
+#### `traversableSeq`
+
+``` purescript
 instance traversableSeq :: Traversable Seq
+```
+
+
+#### `unfoldableSeq`
+
+``` purescript
 instance unfoldableSeq :: Unfoldable Seq
+```
+
+
+#### `functorSeq`
+
+``` purescript
 instance functorSeq :: Functor Seq
+```
+
+
+#### `applySeq`
+
+``` purescript
 instance applySeq :: Apply Seq
+```
+
+
+#### `applicativeSeq`
+
+``` purescript
 instance applicativeSeq :: Applicative Seq
+```
+
+
+#### `bindSeq`
+
+``` purescript
 instance bindSeq :: Bind Seq
+```
+
+
+#### `monadSeq`
+
+``` purescript
 instance monadSeq :: Monad Seq
+```
+
+
+#### `altSeq`
+
+``` purescript
 instance altSeq :: Alt Seq
+```
+
+
+#### `plusSeq`
+
+``` purescript
 instance plusSeq :: Plus Seq
+```
+
+
+#### `alternativeSeq`
+
+``` purescript
 instance alternativeSeq :: Alternative Seq
+```
+
+
+#### `monadPlusSeq`
+
+``` purescript
 instance monadPlusSeq :: MonadPlus Seq
 ```
+
 
 #### `length`
 
@@ -247,6 +417,3 @@ filter :: forall a. (a -> Boolean) -> Seq a -> Seq a
 
 O(n). Create a new Seq which contains only those elements of the input
 Seq which satisfy the given predicate.
-
-
-

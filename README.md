@@ -12,9 +12,13 @@ initial work on this.
 
 ## Documentation
 
-You probably want [Data.Sequence][]. This package also provides
-[Data.FingerTree][], which is what Seq is based on, and may be useful for
-implementing other data structures.
+You probably want one of:
+
+* [Data.Sequence][]
+* [Data.Sequence.Nonempty][]
+
+This package also provides [Data.FingerTree][], which is what Seq is based on,
+and may be useful for implementing other data structures.
 
 ## Why not just use Arrays all the time?
 
@@ -63,4 +67,5 @@ direction is O(n).
 
 [1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
 [Data.Sequence]: docs/Data.Sequence.md
+[Data.Sequence.NonEmpty]: docs/Data.Sequence.NonEmpty.md
 [Data.FingerTree]: docs/Data.FingerTree.md
