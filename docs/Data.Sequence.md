@@ -2,6 +2,20 @@
 
 ## Module Data.Sequence
 
+This module provides a Sequence data type, intended for the same sort of
+tasks as an Array would be in JavaScript, except with better asymptotic
+complexity for many operations.
+
+The implementation uses 2-3 finger trees annotated with sizes, as
+described in the paper [_Finger Trees: A Simple General-Purpose Data
+Structure_][1], Ralf Hinze and Ross Paterson, Journal of Functional
+Programming 16:2 (2006) pp 197-217.
+
+This module is intended to be imported qualified, to avoid name clashes or
+ambiguity. For example: `import qualified Data.Sequence as S`.
+
+[1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
+
 #### `Seq`
 
 ``` purescript
@@ -82,7 +96,8 @@ unchanged).
 take :: forall a. Number -> Seq a -> Seq a
 ```
 
-O(log(min(i,n-i))). Discard all elements from a Seq after the first n.
+O(log(min(i,n-i))). Take a certain number of values from the left end of
+a sequence, and discard the rest.
 
 #### `drop`
 
