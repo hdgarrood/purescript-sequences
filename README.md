@@ -15,7 +15,7 @@ initial work on this.
 You probably want one of:
 
 * [Data.Sequence][]
-* [Data.Sequence.Nonempty][]
+* [Data.Sequence.NonEmpty][]
 
 This package also provides [Data.FingerTree][], which is what Seq is based on,
 and may be useful for implementing other data structures.
