@@ -1,5 +1,5 @@
 
--- | This module defines a sequence where elements are always kept in ascending
+-- | This module defines a sequence where elements are always kept in
 -- | order. This enables constant time access to the least and greatest
 -- | elements, in addition to logarithmic time partitioning.
 -- |
@@ -46,9 +46,18 @@ instance monoidKey :: Monoid (Key a) where
 instance measuredElemKey :: Measured (Elem a) (Key a) where
   measure (Elem x) = Key x
 
--- | An ordered sequence.
+-- | An ordered sequence. The Semigroup instance uses the `merge` function.
 newtype OrdSeq a
   = OrdSeq (FT.FingerTree (Key a) (Elem a))
+
+empty :: forall a. OrdSeq a
+empty = OrdSeq FT.Empty
+
+instance semigroupOrdSeq :: (Ord a) => Semigroup (OrdSeq a) where
+  (<>) = merge
+
+instance monoidOrdSeq :: (Ord a) => Monoid (OrdSeq a) where
+  mempty = empty
 
 partition :: forall a. (Ord a) => a -> OrdSeq a -> Tuple (OrdSeq a) (OrdSeq a)
 partition k (OrdSeq xs) = Tuple (OrdSeq (force l)) (OrdSeq (force r))
@@ -57,6 +66,7 @@ partition k (OrdSeq xs) = Tuple (OrdSeq (force l)) (OrdSeq (force r))
   l = fst t
   r = snd t
 
+-- | O(log(n)). Insert the given value into the correct place in the sequence.
 insert :: forall a. (Ord a) => a -> OrdSeq a -> OrdSeq a
 insert x (OrdSeq xs) = OrdSeq (FT.append (force l) (FT.cons (Elem x) (force r)))
   where
@@ -64,6 +74,8 @@ insert x (OrdSeq xs) = OrdSeq (FT.append (force l) (FT.cons (Elem x) (force r)))
   l = fst t
   r = snd t
 
+-- | O(log(n)). Delete all elements from the sequence which compare EQ to the
+-- | given value.
 deleteAll :: forall a. (Ord a) => a -> OrdSeq a -> OrdSeq a
 deleteAll x (OrdSeq xs) = OrdSeq (l <> r')
   where
@@ -73,6 +85,9 @@ deleteAll x (OrdSeq xs) = OrdSeq (l <> r')
   t' = FT.split (\y -> y > Key x) r
   r' = force (snd t')
 
+-- | O(m*log(n/m)), where m and n are the lengths of the longer and shorter
+-- | sequences respectively. Create a new sequence containing every element
+-- | in both of the given sequences.
 merge :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
 merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (merge' xs ys)
   where
@@ -85,3 +100,23 @@ merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (merge' xs ys)
             r = force (snd t)
         in l <> (FT.cons a (merge' (force bs') r))
 
+-- | O(1). Access the least element of the sequence, or Nothing if the sequence
+-- | is empty.
+least :: forall a. (Ord a) => OrdSeq a -> Maybe a
+least (OrdSeq xs) =
+  case FT.viewL xs of
+    FT.NilL      -> Nothing
+    FT.ConsL x _ -> Just (getElem x)
+
+-- | O(1). Access the least element of the sequence, or Nothing if the sequence
+-- | is empty.
+greatest :: forall a. (Ord a) => OrdSeq a -> Maybe a
+greatest (OrdSeq xs) =
+  case FT.viewR xs of
+    FT.NilR      -> Nothing
+    FT.SnocR _ x -> Just (getElem x)
+
+-- | Probably O(n), but depends on the Foldable instance. Consruct an ordered
+-- | sequence from any any `Foldable`.
+toSeq :: forall f a. (Foldable f, Ord a) => f a -> OrdSeq a
+toSeq = foldr insert empty
