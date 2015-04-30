@@ -1,11 +1,10 @@
 # purescript-sequences
 
-An efficient, general-purpose sequence type for PureScript.
+Various efficient sequence types for PureScript.
 
-The implementation uses 2-3 finger trees annotated with sizes, as described in
-the paper [_Finger Trees: A Simple General-Purpose Data Structure_][1], Ralf
-Hinze and Ross Paterson, Journal of Functional Programming 16:2 (2006) pp
-197-217.
+The implementations are based on 2-3 finger trees, as described in the paper
+[_Finger Trees: A Simple General-Purpose Data Structure_][1], Ralf Hinze and
+Ross Paterson, Journal of Functional Programming 16:2 (2006) pp 197-217.
 
 Big props also go to [taku0](https://github.com/taku0) who did most of the
 initial work on this.
@@ -16,9 +15,10 @@ You probably want one of:
 
 * [Data.Sequence][]
 * [Data.Sequence.NonEmpty][]
+* [Data.Sequence.Ordered][]
 
-This package also provides [Data.FingerTree][], which is what Seq is based on,
-and may be useful for implementing other data structures.
+This package also provides [Data.FingerTree][], which is what these are based
+on, and may be useful for implementing other data structures.
 
 ## Why not just use Arrays all the time?
 
@@ -68,4 +68,5 @@ direction is O(n).
 [1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
 [Data.Sequence]: docs/Data.Sequence.md
 [Data.Sequence.NonEmpty]: docs/Data.Sequence.NonEmpty.md
+[Data.Sequence.Ordered]: docs/Data.Sequence.Ordered.md
 [Data.FingerTree]: docs/Data.FingerTree.md
