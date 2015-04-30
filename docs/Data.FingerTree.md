@@ -119,6 +119,12 @@ instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTre
 ```
 
 
+#### `eqFingerTree`
+
+``` purescript
+eqFingerTree :: forall a v. (Monoid v, Measured a v, Eq a) => FingerTree v a -> FingerTree v a -> Boolean
+```
+
 #### `compareFingerTree`
 
 ``` purescript

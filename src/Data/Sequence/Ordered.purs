@@ -65,11 +65,7 @@ empty :: forall a. OrdSeq a
 empty = OrdSeq FT.Empty
 
 instance eqOrdSeq :: (Eq a) => Eq (OrdSeq a) where
-  (==) xs ys =
-    if length xs == length ys
-      then fromOrdSeq xs == (fromOrdSeq ys :: Array a)
-      else false
-
+  (==) (OrdSeq xs) (OrdSeq ys) = FT.eqFingerTree xs ys
   (/=) x y = not (x == y)
 
 instance showOrdSeq :: (Show a) => Show (OrdSeq a) where

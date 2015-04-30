@@ -69,7 +69,6 @@ import Control.MonadPlus
 import Data.Sequence.Internal
 import qualified Data.FingerTree as FT
 
--- TODO: Optimise Eq instance, probably with lazy list
 -- TODO: Optimise Apply instance (see Hackage)
 -- TODO: adjust might be suboptimal, see Data.Sequence on Hackage
 -- TODO: toSeq can be improved. See Hackage
@@ -82,17 +81,15 @@ newtype Seq a = Seq (SeqInner a)
 fmapSeq :: forall f a. (Functor f) => f (SeqInner a) -> f (Seq a)
 fmapSeq = unsafeCoerce
 
+instance ordSeq :: (Ord a) => Ord (Seq a) where
+  compare (Seq xs) (Seq ys) = FT.compareFingerTree xs ys
+
 instance eqSeq :: (Eq a) => Eq (Seq a) where
-  (==) xs ys = if length xs == length ys
-                 then fromSeq xs == (fromSeq ys :: Array a)
-                 else false
+  (==) (Seq xs) (Seq ys) = FT.eqFingerTree xs ys
   (/=) xs ys = not (xs == ys)
 
 instance showSeq :: (Show a) => Show (Seq a) where
   show xs = "(toSeq [" <> strJoin "," (fromSeq xs) <> "])"
-
-instance ordSeq :: (Ord a) => Ord (Seq a) where
-  compare (Seq xs) (Seq ys) = FT.compareFingerTree xs ys
 
 instance semigroupSeq :: Semigroup (Seq a) where
   (<>) = append

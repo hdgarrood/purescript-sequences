@@ -18,7 +18,6 @@ data Key a
   | Key a
 ```
 
-
 #### `eqKey`
 
 ``` purescript
@@ -177,6 +176,15 @@ merge :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
 O(m*log(n/m)), where m and n are the lengths of the longer and shorter
 sequences respectively. Create a new sequence containing every element
 in both of the given sequences.
+
+#### `intersection`
+
+``` purescript
+intersection :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
+```
+
+O(n), where n is the length of the longer sequence. Create a new sequence
+containing only elements which are common to both sequences.
 
 #### `least`
 

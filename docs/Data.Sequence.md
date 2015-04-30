@@ -24,6 +24,13 @@ newtype Seq a
 ```
 
 
+#### `ordSeq`
+
+``` purescript
+instance ordSeq :: (Ord a) => Ord (Seq a)
+```
+
+
 #### `eqSeq`
 
 ``` purescript
@@ -35,13 +42,6 @@ instance eqSeq :: (Eq a) => Eq (Seq a)
 
 ``` purescript
 instance showSeq :: (Show a) => Show (Seq a)
-```
-
-
-#### `ordSeq`
-
-``` purescript
-instance ordSeq :: (Ord a) => Ord (Seq a)
 ```
 
 

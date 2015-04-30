@@ -107,6 +107,26 @@ instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
 instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTree v a) where
   (<>) = append
 
+-- We don't implement an Eq instance because we don't want to make assumptions
+-- about the meaning of the data, and because we expect actual uses of
+-- FingerTrees to use newtypes, so we provide this function instead to help
+-- with defining Ord instances.
+eqFingerTree :: forall a v. (Monoid v, Measured a v, Eq a) =>
+  FingerTree v a -> FingerTree v a -> Boolean
+eqFingerTree xs ys =
+  case Tuple (viewL xs) (viewL ys) of
+    Tuple NilL NilL -> true
+    Tuple NilL _    -> false
+    Tuple _    NilL -> false
+    Tuple (ConsL x xs') (ConsL y ys') ->
+      if x == y
+         then
+           let xs'' = force xs'
+               ys'' = force ys'
+           in eqFingerTree xs'' ys''
+         else
+           false
+
 -- We don't implement an Ord instance because we can't implement a good Eq
 -- instance, and because we expect actual uses of FingerTrees to use newtypes,
 -- so we provide this function instead to help with defining Ord instances.
