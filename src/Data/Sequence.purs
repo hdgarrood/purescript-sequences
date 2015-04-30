@@ -293,7 +293,7 @@ toSeq = foldr cons empty
 -- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 -- | any `Unfoldable`.
 fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
-fromSeq (Seq xs) = fmapGetElem (FT.fromFingerTree xs)
+fromSeq (Seq xs) = fmapGetElem (FT.unfoldLeft xs)
 
 -- | O(n). Create a new Seq which contains only those elements of the input
 -- | Seq which satisfy the given predicate.

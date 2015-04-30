@@ -143,11 +143,29 @@ greatest :: forall a. (Ord a) => OrdSeq a -> Maybe a
 O(1). Access the least element of the sequence, or Nothing if the sequence
 is empty.
 
-#### `toSeq`
+#### `toOrdSeq`
 
 ``` purescript
-toSeq :: forall f a. (Foldable f, Ord a) => f a -> OrdSeq a
+toOrdSeq :: forall f a. (Foldable f, Ord a) => f a -> OrdSeq a
 ```
 
 Probably O(n), but depends on the Foldable instance. Consruct an ordered
 sequence from any any `Foldable`.
+
+#### `fromOrdSeq`
+
+``` purescript
+fromOrdSeq :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
+```
+
+Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
+sequence in ascending order.
+
+#### `fromOrdSeqDescending`
+
+``` purescript
+fromOrdSeqDescending :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
+```
+
+Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
+sequence in descending order.

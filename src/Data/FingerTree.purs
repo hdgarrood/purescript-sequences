@@ -1,8 +1,13 @@
-module Data.FingerTree where
 
--- An implementation of finger trees, based on "Finger Trees: A Simple,
--- General-Purpose Data Structure" (2006), Ralf Hinze and Ross Paterson.
--- http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
+-- | An implementation of finger trees, based on "Finger Trees: A Simple,
+-- | General-Purpose Data Structure" (2006), Ralf Hinze and Ross Paterson.
+-- | http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
+-- |
+-- | This module defines a general-purpose data structure, intended to be
+-- | used as an aid for implementing other data structures. See, for example,
+-- | `Seq` from `Data.Sequence`.
+
+module Data.FingerTree where
 
 import Prelude hiding (cons)
 
@@ -17,14 +22,6 @@ import Data.Unfoldable
 import Data.Traversable
 
 import Data.Sequence.Internal
-
-fromFingerTree :: forall f a v. (Unfoldable f, Monoid v, Measured a v) =>
-  FingerTree v a -> f a
-fromFingerTree = unfoldr step
-  where
-  step tree = case viewL tree of
-                ConsL x xs -> Just (Tuple x (force xs))
-                NilL       -> Nothing
 
 data Node v a = Node2 v a a | Node3 v a a a
 
@@ -390,3 +387,19 @@ split p xs =
 filter :: forall a v. (Monoid v, Measured a v)
   => (a -> Boolean) -> FingerTree v a -> FingerTree v a
 filter p = foldr (\x acc -> if p x then cons x acc else acc) Empty
+
+unfoldLeft :: forall f a v. (Unfoldable f, Monoid v, Measured a v) =>
+  FingerTree v a -> f a
+unfoldLeft = unfoldr step
+  where
+  step tree = case viewL tree of
+                ConsL x xs -> Just (Tuple x (force xs))
+                NilL       -> Nothing
+
+unfoldRight :: forall f a v. (Unfoldable f, Monoid v, Measured a v) =>
+  FingerTree v a -> f a
+unfoldRight = unfoldr step
+  where
+  step tree = case viewR tree of
+                SnocR xs x -> Just (Tuple x (force xs))
+                NilR       -> Nothing

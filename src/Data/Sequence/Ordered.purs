@@ -14,6 +14,7 @@ import Data.Maybe
 import Data.Monoid
 import Data.Foldable
 import Data.Traversable
+import Data.Unfoldable
 
 import Data.Sequence.Internal
 import qualified Data.FingerTree as FT
@@ -118,5 +119,15 @@ greatest (OrdSeq xs) =
 
 -- | Probably O(n), but depends on the Foldable instance. Consruct an ordered
 -- | sequence from any any `Foldable`.
-toSeq :: forall f a. (Foldable f, Ord a) => f a -> OrdSeq a
-toSeq = foldr insert empty
+toOrdSeq :: forall f a. (Foldable f, Ord a) => f a -> OrdSeq a
+toOrdSeq = foldr insert empty
+
+-- | Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
+-- | sequence in ascending order.
+fromOrdSeq :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
+fromOrdSeq (OrdSeq xs) = fmapGetElem (FT.unfoldLeft xs)
+
+-- | Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
+-- | sequence in descending order.
+fromOrdSeqDescending :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
+fromOrdSeqDescending (OrdSeq xs) = fmapGetElem (FT.unfoldRight xs)

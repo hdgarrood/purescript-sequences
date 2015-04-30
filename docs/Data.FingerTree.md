@@ -2,12 +2,14 @@
 
 ## Module Data.FingerTree
 
-#### `fromFingerTree`
 
-``` purescript
-fromFingerTree :: forall f a v. (Unfoldable f, Monoid v, Measured a v) => FingerTree v a -> f a
-```
+An implementation of finger trees, based on "Finger Trees: A Simple,
+General-Purpose Data Structure" (2006), Ralf Hinze and Ross Paterson.
+http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
 
+This module defines a general-purpose data structure, intended to be
+used as an aid for implementing other data structures. See, for example,
+`Seq` from `Data.Sequence`.
 
 #### `Node`
 
@@ -362,4 +364,18 @@ split :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> FingerTree v 
 
 ``` purescript
 filter :: forall a v. (Monoid v, Measured a v) => (a -> Boolean) -> FingerTree v a -> FingerTree v a
+```
+
+
+#### `unfoldLeft`
+
+``` purescript
+unfoldLeft :: forall f a v. (Unfoldable f, Monoid v, Measured a v) => FingerTree v a -> f a
+```
+
+
+#### `unfoldRight`
+
+``` purescript
+unfoldRight :: forall f a v. (Unfoldable f, Monoid v, Measured a v) => FingerTree v a -> f a
 ```
