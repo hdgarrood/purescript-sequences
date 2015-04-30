@@ -219,6 +219,13 @@ instance eqSeq :: (Eq a) => Eq (Seq a)
 ```
 
 
+#### `ordSeq`
+
+``` purescript
+instance ordSeq :: (Ord a) => Ord (Seq a)
+```
+
+
 #### `functorSeq`
 
 ``` purescript

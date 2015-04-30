@@ -48,6 +48,7 @@ import Data.Traversable
 import Data.Maybe
 import Data.Tuple
 import Data.Unfoldable
+
 import qualified Data.Sequence as S
 
 -- | A sequence which is guaranteed to contain at least one element.
@@ -174,6 +175,12 @@ instance showSeq :: (Show a) => Show (Seq a) where
 instance eqSeq :: (Eq a) => Eq (Seq a) where
   (==) (Seq x xs) (Seq y ys) = x == y && xs == ys
   (/=) x y = not (x == y)
+
+instance ordSeq :: (Ord a) => Ord (Seq a) where
+  compare (Seq x xs) (Seq y ys) =
+    case compare x y of
+      EQ    -> compare xs ys
+      other -> other
 
 instance functorSeq :: Functor Seq where
   (<$>) f (Seq x xs) = Seq (f x) (f <$> xs)
