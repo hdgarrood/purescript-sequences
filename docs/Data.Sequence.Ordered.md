@@ -10,14 +10,6 @@ elements, in addition to logarithmic time partitioning.
 The module is intended to be imported qualified, to avoid ambiguity or
 name clashes. For example, `import Data.Sequence.Ordered as OS`.
 
-#### `Key`
-
-``` purescript
-data Key a
-  = NoKey 
-  | Key a
-```
-
 #### `eqKey`
 
 ``` purescript
@@ -60,27 +52,13 @@ instance measuredElemKey :: Measured (Elem a) (Key a)
 ```
 
 
-#### `fmapOrdSeq`
-
-``` purescript
-fmapOrdSeq :: forall f a. (Functor f) => f (OrdSeqInner a) -> f (OrdSeq a)
-```
-
 #### `OrdSeq`
 
 ``` purescript
 newtype OrdSeq a
-  = OrdSeq (OrdSeqInner a)
 ```
 
 An ordered sequence. The Semigroup instance uses the `merge` function.
-
-#### `OrdSeqInner`
-
-``` purescript
-type OrdSeqInner a = FT.FingerTree (Key a) (Elem a)
-```
-
 
 #### `empty`
 

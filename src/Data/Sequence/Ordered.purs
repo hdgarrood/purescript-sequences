@@ -6,7 +6,36 @@
 -- | The module is intended to be imported qualified, to avoid ambiguity or
 -- | name clashes. For example, `import Data.Sequence.Ordered as OS`.
 
-module Data.Sequence.Ordered where
+module Data.Sequence.Ordered
+  ( OrdSeq()
+
+  -- construction
+  , empty
+  , toOrdSeq
+  , insert
+
+  -- queries
+  , null
+  , length
+  , least
+  , greatest
+
+  -- deconstruction
+  , popLeast
+  , popGreatest
+  , partition
+
+  -- combination
+  , merge
+  , intersection
+
+  -- modification
+  , deleteAll
+
+  -- other
+  , fromOrdSeq
+  , fromOrdSeqDescending
+  ) where
 
 import Data.Lazy
 import Data.Tuple
