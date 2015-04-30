@@ -10,26 +10,10 @@ import Data.Tuple
 import Debug.Trace
 import Test.QuickCheck
 import TypeclassTests
-import Math (abs, floor)
 
 import qualified Data.Sequence as S
 import qualified Data.Sequence.NonEmpty as NES
-import Tests.Data.Sequence ()
-
-instance arbSeq :: (Arbitrary a) => Arbitrary (NES.Seq a) where
-  arbitrary = NES.Seq <$> arbitrary <*> arbitrary
-
-foldableSize :: forall f a. (Foldable f) => f a -> Number
-foldableSize = runAdditive <<< foldMap (const (Additive 1))
-
-check1 :: forall p. (Testable p) => p -> QC Unit
-check1 = quickCheck' 1
-
-integerBetween :: Number -> Number -> Number -> Number
-integerBetween lo hi x = (floor x % hi - lo) + lo
-
-isIntegral :: Number -> Boolean
-isIntegral x = complement (complement x) == x
+import Tests.Utils
 
 nonEmptySequenceTests = do
   trace ""

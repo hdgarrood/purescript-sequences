@@ -12,21 +12,7 @@ import TypeclassTests
 import Math (abs, floor)
 
 import qualified Data.Sequence as S
-
-instance arbSeq :: (Arbitrary a) => Arbitrary (S.Seq a) where
-  arbitrary = (S.toSeq :: Array a -> S.Seq a) <$> arbitrary
-
-foldableSize :: forall f a. (Foldable f) => f a -> Number
-foldableSize = runAdditive <<< foldMap (const (Additive 1))
-
-check1 :: forall p. (Testable p) => p -> QC Unit
-check1 = quickCheck' 1
-
-integerBetween :: Number -> Number -> Number -> Number
-integerBetween lo hi x = (floor x % hi - lo) + lo
-
-isIntegral :: Number -> Boolean
-isIntegral x = complement (complement x) == x
+import Tests.Utils
 
 sequenceTests = do
   trace ""
