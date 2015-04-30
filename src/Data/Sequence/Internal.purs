@@ -95,3 +95,32 @@ instance functorElem :: Functor Elem where
 instance traversableElem :: Traversable Elem where
   traverse f (Elem x) = fmapElem (f x)
   sequence (Elem fx)  = fmapElem fx
+
+data Key a = NoKey | Key a
+
+instance eqKey :: (Eq a) => Eq (Key a) where
+  (==) (Key a) (Key b) = a == b
+  (==) NoKey NoKey = true
+  (==) _ _ = false
+
+  (/=) x y = not (x == y)
+
+instance showKey :: (Show a) => Show (Key a) where
+  show (Key a) = "(Key " <> show a <> ")"
+  show NoKey = "NoKey"
+
+instance semigroupKey :: Semigroup (Key a) where
+  (<>) k NoKey = k
+  (<>) _ k = k
+
+instance ordKey :: (Ord a) => Ord (Key a) where
+  compare NoKey _ = LT
+  compare _ NoKey = GT
+  compare (Key a) (Key b) = compare a b
+
+instance monoidKey :: Monoid (Key a) where
+  mempty = NoKey
+
+instance measuredElemKey :: Measured (Elem a) (Key a) where
+  measure (Elem x) = Key x
+

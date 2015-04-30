@@ -10,48 +10,6 @@ elements, in addition to logarithmic time partitioning.
 The module is intended to be imported qualified, to avoid ambiguity or
 name clashes. For example, `import Data.Sequence.Ordered as OS`.
 
-#### `eqKey`
-
-``` purescript
-instance eqKey :: (Eq a) => Eq (Key a)
-```
-
-
-#### `showKey`
-
-``` purescript
-instance showKey :: (Show a) => Show (Key a)
-```
-
-
-#### `semigroupKey`
-
-``` purescript
-instance semigroupKey :: Semigroup (Key a)
-```
-
-
-#### `ordKey`
-
-``` purescript
-instance ordKey :: (Ord a) => Ord (Key a)
-```
-
-
-#### `monoidKey`
-
-``` purescript
-instance monoidKey :: Monoid (Key a)
-```
-
-
-#### `measuredElemKey`
-
-``` purescript
-instance measuredElemKey :: Measured (Elem a) (Key a)
-```
-
-
 #### `OrdSeq`
 
 ``` purescript
