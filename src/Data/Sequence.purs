@@ -55,6 +55,7 @@ import Prelude hiding (cons)
 
 import Data.Lazy
 import Data.Monoid
+import Data.Monoid.Additive
 import Data.Tuple
 import Data.Maybe
 import Data.Foldable
@@ -65,6 +66,7 @@ import Control.Plus (Plus)
 import Control.Alternative
 import Control.MonadPlus
 
+import Data.Sequence.Internal
 import qualified Data.FingerTree as FT
 
 -- TODO: Optimise Eq instance, probably with lazy list
@@ -72,80 +74,7 @@ import qualified Data.FingerTree as FT
 -- TODO: adjust might be suboptimal, see Data.Sequence on Hackage
 -- TODO: toSeq can be improved. See Hackage
 
--- First: some utils
-(***) :: forall a b aa bb. (a -> aa) -> (b -> bb) -> Tuple a b -> Tuple aa bb
-(***) fa fb (Tuple a b) = Tuple (fa a) (fb b)
-
-fmap :: forall f a b. (Functor f) => (a -> b) -> f a -> f b
-fmap = (<$>)
-
-strJoin :: forall a. (Show a) => String -> Array a -> String
-strJoin glue = intercalate glue <<< fmap show
-
--- With great power comes great responsibility. Always define an alias of
--- this with a type signature which is as specific as possible, never use it
--- directly.
-foreign import unsafeCoerce """
-  function unsafeCoerce(x) {
-    return x
-  } """ :: forall a b. a -> b
-
--- On to the main attraction
-newtype Size = Size Number
-
-getSize :: Size -> Number
-getSize (Size n) = n
-
-instance semigroupSize :: Semigroup Size where
-  (<>) m n = Size (getSize m + getSize n)
-
-instance monoidSize :: Monoid Size where
-  mempty = Size 0
-
-instance showSize :: Show Size where
-  show x = "Size (" <> show (getSize x) <> ")"
-
-newtype Elem a = Elem a
-
-getElem :: forall a. Elem a -> a
-getElem (Elem a) = a
-
--- `fmap Elem` is a no-op, since Elem is a newtype. Use this function instead
--- to avoid an unnecessary traversal of the structure.
-fmapElem :: forall f a. (Functor f) => f a -> f (Elem a)
-fmapElem = unsafeCoerce
-
--- `fmap getElem` is a no-op, since Elem is a newtype. Use this function
--- instead to avoid an unnecessary traversal of the structure.
-fmapGetElem :: forall f a. (Functor f) => f (Elem a) -> f a
-fmapGetElem = unsafeCoerce
-
-instance measuredElem :: FT.Measured (Elem a) Size where
-  measure _ = Size 1
-
-instance showElem :: (Show a) => Show (Elem a) where
-  show x = "Elem (" <> show (getElem x) <> ")"
-
-instance eqElem :: (Eq a) => Eq (Elem a) where
-  (==) (Elem x) (Elem y) = x == y
-  (/=) x y = not (x == y)
-
-instance ordElem :: (Ord a) => Ord (Elem a) where
-  compare (Elem x) (Elem y) = compare x y
-
-instance foldableElem :: Foldable Elem where
-  foldr f z (Elem x) = f x z
-  foldl f z (Elem x) = f z x
-  foldMap f (Elem x) = f x
-
-instance functorElem :: Functor Elem where
-  (<$>) f (Elem x) = Elem (f x)
-
-instance traversableElem :: Traversable Elem where
-  traverse f (Elem x) = fmapElem (f x)
-  sequence (Elem fx)  = fmapElem fx
-
-type SeqInner a = FT.FingerTree Size (Elem a)
+type SeqInner a = FT.FingerTree (Additive Number) (Elem a)
 newtype Seq a = Seq (SeqInner a)
 
 -- `fmap Seq` is a no-op, since Seq is a newtype. Use this function instead
@@ -221,7 +150,7 @@ instance monadPlusSeq :: MonadPlus Seq
 
 -- | O(1). The number of elements in the sequence.
 length :: forall a. Seq a -> Number
-length (Seq xs) = getSize (FT.measure xs)
+length (Seq xs) = runAdditive (FT.measure xs)
 
 -- | O(1). True if the sequence has no elements, false otherwise.
 null :: forall a. Seq a -> Boolean
@@ -249,7 +178,7 @@ unsnoc (Seq xs) =
 splitAt' :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
 splitAt' i (Seq xs) = seqify tuple
   where
-  tuple = FT.split (\n -> i < getSize n) xs
+  tuple = FT.split (\n -> i < runAdditive n) xs
 
   seqify :: forall f. (Functor f) =>
     Tuple (f (SeqInner a)) (f (SeqInner a)) -> Tuple (f (Seq a)) (f (Seq a))
@@ -291,7 +220,7 @@ index xs i = if inBounds xs i then Just (unsafeIndex xs i) else Nothing
 -- | sequence.
 unsafeIndex :: forall a. Seq a -> Number -> a
 unsafeIndex (Seq xs) i =
-  case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
+  case FT.unsafeSplitTree (\n -> i < runAdditive n) (Additive 0) xs of
     FT.LazySplit _ x _ -> getElem x
 
 -- | O(log(min(i,n-i))). Adjust the element at the specified index by
@@ -302,7 +231,7 @@ adjust f i xs = if inBounds xs i then unsafeAdjust f i xs else xs
 
 unsafeAdjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
 unsafeAdjust f i (Seq xs) =
-  case FT.unsafeSplitTree (\n -> i < getSize n) (Size 0) xs of
+  case FT.unsafeSplitTree (\n -> i < runAdditive n) (Additive 0) xs of
     FT.LazySplit l x r ->
       let
         g :: Elem a -> Elem a
