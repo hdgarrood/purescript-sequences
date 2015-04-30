@@ -123,20 +123,6 @@ instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTre
 compareFingerTree :: forall a v. (Monoid v, Measured a v, Ord a) => FingerTree v a -> FingerTree v a -> Ordering
 ```
 
-#### `(<$$>)`
-
-``` purescript
-(<$$>) :: forall f g a b. (Functor f, Functor g) => (a -> b) -> f (g a) -> f (g b)
-```
-
-
-#### `(<$$$>)`
-
-``` purescript
-(<$$$>) :: forall f g h a b. (Functor f, Functor g, Functor h) => (a -> b) -> f (g (h a)) -> f (g (h b))
-```
-
-
 #### `functorFingerTree`
 
 ``` purescript

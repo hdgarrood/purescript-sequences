@@ -127,14 +127,6 @@ compareFingerTree xs ys =
               in compareFingerTree xs'' ys''
         other -> other
 
-(<$$>) :: forall f g a b. (Functor f, Functor g) =>
-  (a -> b) -> f (g a) -> f (g b)
-(<$$>) = (<$>) <<< (<$>)
-
-(<$$$>) :: forall f g h a b. (Functor f, Functor g, Functor h) =>
-  (a -> b) -> f (g (h a)) -> f (g (h b))
-(<$$$>) = (<$$>) <<< (<$>)
-
 instance functorFingerTree :: Functor (FingerTree v) where
   (<$>) f Empty = Empty
   (<$>) f (Single x) = Single (f x)

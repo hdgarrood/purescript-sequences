@@ -19,6 +19,14 @@ import Data.Lazy
 fmap :: forall f a b. (Functor f) => (a -> b) -> f a -> f b
 fmap = (<$>)
 
+(<$$>) :: forall f g a b. (Functor f, Functor g) =>
+  (a -> b) -> f (g a) -> f (g b)
+(<$$>) = (<$>) <<< (<$>)
+
+(<$$$>) :: forall f g h a b. (Functor f, Functor g, Functor h) =>
+  (a -> b) -> f (g (h a)) -> f (g (h b))
+(<$$$>) = (<$$>) <<< (<$>)
+
 strJoin :: forall a. (Show a) => String -> Array a -> String
 strJoin glue = intercalate glue <<< fmap show
 
