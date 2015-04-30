@@ -128,3 +128,9 @@ nonEmptySequenceTests = do
 
   trace "Test length"
   quickCheck $ \seq -> NES.length (seq :: NES.Seq Number) >= 1 <?> show seq
+
+  trace "Test cons/uncons"
+  quickCheck $ \seq x ->
+    NES.uncons (NES.cons x seq) === Tuple (x :: Number) (NES.toPlain seq)
+  quickCheck $ \seq x ->
+    NES.unsnoc (NES.snoc seq x) === Tuple (NES.toPlain seq) (x :: Number)
