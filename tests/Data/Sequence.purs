@@ -95,9 +95,6 @@ sequenceTests = do
           && S.head (snd split) == S.index seq idx'
           <?> ("seq: " <> show seq <> ", idx':" <> show idx')
 
-  trace "Test show instance"
-  check1 $ \xs -> show (S.toSeq xs) == ("toSeq " <> show (xs :: Array Number))
-
   trace "Test that adjust is safe"
   quickCheck $ \seq ->
     let f n = S.adjust id n (seq :: S.Seq Number)

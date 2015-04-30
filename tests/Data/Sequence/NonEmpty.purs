@@ -37,7 +37,7 @@ nonEmptySequenceTests = do
   trace "======================"
   trace ""
 
-  trace "Test Array/semigroup homomorphism"
+  trace "Test fromSeq homomorphism"
   quickCheck $ \x y ->
     NES.fromSeq (x <> y) == NES.fromSeq x <> (NES.fromSeq y :: Array Number)
     <?> ("x: " <> show x <> ", y: " <> show y)
@@ -125,3 +125,6 @@ nonEmptySequenceTests = do
   quickCheck $ \seq -> S.null (NES.filter (const false) (seq :: NES.Seq Number))
   quickCheck $ \seq -> NES.filter (const true) seq === (NES.toPlain seq :: S.Seq Number)
   quickCheck $ \seq f -> all f (NES.filter f (seq :: NES.Seq Number))
+
+  trace "Test length"
+  quickCheck $ \seq -> NES.length (seq :: NES.Seq Number) >= 1 <?> show seq
