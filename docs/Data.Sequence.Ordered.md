@@ -89,3 +89,10 @@ insert :: forall a. (Ord a) => a -> OrdSeq a -> OrdSeq a
 ``` purescript
 deleteAll :: forall a. (Ord a) => a -> OrdSeq a -> OrdSeq a
 ```
+
+
+#### `merge`
+
+``` purescript
+merge :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
+```

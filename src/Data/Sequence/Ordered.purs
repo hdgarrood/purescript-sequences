@@ -72,3 +72,16 @@ deleteAll x (OrdSeq xs) = OrdSeq (l <> r')
   r = force (snd t)
   t' = FT.split (\y -> y > Key x) r
   r' = force (snd t')
+
+merge :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
+merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (merge' xs ys)
+  where
+  merge' as bs =
+    case FT.viewL bs of
+      FT.NilL        -> as
+      FT.ConsL a bs' ->
+        let t = FT.split (\c -> c > measure a) as
+            l = force (fst t)
+            r = force (snd t)
+        in l <> (FT.cons a (merge' (force bs') r))
+
