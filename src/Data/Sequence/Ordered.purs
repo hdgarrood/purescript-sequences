@@ -81,10 +81,6 @@ instance foldableOrdSeq :: Foldable OrdSeq where
   foldl f z (OrdSeq xs) = foldl (lift2Elem f) z xs
   foldMap f (OrdSeq xs) = foldMap (liftElem f) xs
 
-{-- instance traversableOrdSeq :: Traversable OrdSeq where --}
-{--   traverse f (OrdSeq xs) = fmapOrdSeq (traverse (traverse f) xs) --}
-{--   sequence = traverse id --}
-
 -- | O(1). Returns true if the given sequence is empty, false otherwise.
 null :: forall a. OrdSeq a -> Boolean
 null (OrdSeq FT.Empty) = true
