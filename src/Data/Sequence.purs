@@ -100,12 +100,6 @@ instance semigroupSeq :: Semigroup (Seq a) where
 instance monoidSeq :: Monoid (Seq a) where
   mempty = empty
 
-lift2Elem :: forall a b. (b -> a -> b) -> b -> Elem a -> b
-lift2Elem = unsafeCoerce
-
-liftElem :: forall a b. (a -> b) -> Elem a -> b
-liftElem = unsafeCoerce
-
 instance foldableSeq :: Foldable Seq where
   foldr f z (Seq xs) = foldr (liftElem f) z xs
   foldl f z (Seq xs) = foldl (lift2Elem f) z xs

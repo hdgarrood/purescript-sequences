@@ -65,6 +65,12 @@ fmapElem = unsafeCoerce
 fmapGetElem :: forall f a. (Functor f) => f (Elem a) -> f a
 fmapGetElem = unsafeCoerce
 
+lift2Elem :: forall a b. (b -> a -> b) -> b -> Elem a -> b
+lift2Elem = unsafeCoerce
+
+liftElem :: forall a b. (a -> b) -> Elem a -> b
+liftElem = unsafeCoerce
+
 instance measuredElem :: Measured (Elem a) (Additive Number) where
   measure _ = Additive 1
 

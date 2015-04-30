@@ -12,6 +12,7 @@ import Data.Lazy
 import Data.Tuple
 import Data.Maybe
 import Data.Monoid
+import Data.Monoid.Additive
 import Data.Foldable
 import Data.Traversable
 import Data.Unfoldable
@@ -47,12 +48,27 @@ instance monoidKey :: Monoid (Key a) where
 instance measuredElemKey :: Measured (Elem a) (Key a) where
   measure (Elem x) = Key x
 
+-- `fmap OrdSeq` is a no-op, since OrdSeq is a newtype. Use this function
+-- instead to avoid an unnecessary traversal of the structure.
+fmapOrdSeq :: forall f a. (Functor f) => f (OrdSeqInner a) -> f (OrdSeq a)
+fmapOrdSeq = unsafeCoerce
+
 -- | An ordered sequence. The Semigroup instance uses the `merge` function.
 newtype OrdSeq a
-  = OrdSeq (FT.FingerTree (Key a) (Elem a))
+  = OrdSeq (OrdSeqInner a)
+
+type OrdSeqInner a = FT.FingerTree (Key a) (Elem a)
 
 empty :: forall a. OrdSeq a
 empty = OrdSeq FT.Empty
+
+instance eqOrdSeq :: (Eq a) => Eq (OrdSeq a) where
+  (==) xs ys =
+    if length xs == length ys
+      then fromOrdSeq xs == (fromOrdSeq ys :: Array a)
+      else false
+
+  (/=) x y = not (x == y)
 
 instance semigroupOrdSeq :: (Ord a) => Semigroup (OrdSeq a) where
   (<>) = merge
@@ -60,6 +76,27 @@ instance semigroupOrdSeq :: (Ord a) => Semigroup (OrdSeq a) where
 instance monoidOrdSeq :: (Ord a) => Monoid (OrdSeq a) where
   mempty = empty
 
+instance foldableOrdSeq :: Foldable OrdSeq where
+  foldr f z (OrdSeq xs) = foldr (liftElem f) z xs
+  foldl f z (OrdSeq xs) = foldl (lift2Elem f) z xs
+  foldMap f (OrdSeq xs) = foldMap (liftElem f) xs
+
+{-- instance traversableOrdSeq :: Traversable OrdSeq where --}
+{--   traverse f (OrdSeq xs) = fmapOrdSeq (traverse (traverse f) xs) --}
+{--   sequence = traverse id --}
+
+-- | O(1). Returns true if the given sequence is empty, false otherwise.
+null :: forall a. OrdSeq a -> Boolean
+null (OrdSeq FT.Empty) = true
+null _ = false
+
+-- | O(n). Return the length of the sequence.
+length :: forall a. OrdSeq a -> Number
+length = runAdditive <<< foldMap (const (Additive 1))
+
+-- | O(log(n)). Split an ordered sequence into two halves. The first element
+-- | of the returned tuple contains all elements which compared less than or
+-- | equal to the argument; the second element contains the rest.
 partition :: forall a. (Ord a) => a -> OrdSeq a -> Tuple (OrdSeq a) (OrdSeq a)
 partition k (OrdSeq xs) = Tuple (OrdSeq (force l)) (OrdSeq (force r))
   where

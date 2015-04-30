@@ -61,19 +61,39 @@ instance measuredElemKey :: Measured (Elem a) (Key a)
 ```
 
 
+#### `fmapOrdSeq`
+
+``` purescript
+fmapOrdSeq :: forall f a. (Functor f) => f (OrdSeqInner a) -> f (OrdSeq a)
+```
+
 #### `OrdSeq`
 
 ``` purescript
 newtype OrdSeq a
-  = OrdSeq (FT.FingerTree (Key a) (Elem a))
+  = OrdSeq (OrdSeqInner a)
 ```
 
 An ordered sequence. The Semigroup instance uses the `merge` function.
+
+#### `OrdSeqInner`
+
+``` purescript
+type OrdSeqInner a = FT.FingerTree (Key a) (Elem a)
+```
+
 
 #### `empty`
 
 ``` purescript
 empty :: forall a. OrdSeq a
+```
+
+
+#### `eqOrdSeq`
+
+``` purescript
+instance eqOrdSeq :: (Eq a) => Eq (OrdSeq a)
 ```
 
 
@@ -91,12 +111,36 @@ instance monoidOrdSeq :: (Ord a) => Monoid (OrdSeq a)
 ```
 
 
+#### `foldableOrdSeq`
+
+``` purescript
+instance foldableOrdSeq :: Foldable OrdSeq
+```
+
+
+#### `null`
+
+``` purescript
+null :: forall a. OrdSeq a -> Boolean
+```
+
+#### `length`
+
+``` purescript
+length :: forall a. OrdSeq a -> Number
+```
+
+O(n). Return the length of the sequence.
+
 #### `partition`
 
 ``` purescript
 partition :: forall a. (Ord a) => a -> OrdSeq a -> Tuple (OrdSeq a) (OrdSeq a)
 ```
 
+O(log(n)). Split an ordered sequence into two halves. The first element
+of the returned tuple contains all elements which compared less than or
+equal to the argument; the second element contains the rest.
 
 #### `insert`
 
