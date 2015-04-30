@@ -141,3 +141,11 @@ sequenceTests = do
     S.uncons (S.cons x seq) === Just (Tuple (x :: Number) seq)
   quickCheck $ \seq x ->
     S.unsnoc (S.snoc seq x) === Just (Tuple seq (x :: Number))
+
+  trace "Test init"
+  quickCheck $ \seq ->
+    fromMaybe S.empty (S.init seq) === S.take (S.length seq - 1) (seq :: S.Seq Number)
+
+  trace "Test tail"
+  quickCheck $ \seq ->
+    fromMaybe S.empty (S.tail seq) === S.drop 1 (seq :: S.Seq Number)

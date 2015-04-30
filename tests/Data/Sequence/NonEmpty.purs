@@ -134,3 +134,11 @@ nonEmptySequenceTests = do
     NES.uncons (NES.cons x seq) === Tuple (x :: Number) (NES.toPlain seq)
   quickCheck $ \seq x ->
     NES.unsnoc (NES.snoc seq x) === Tuple (NES.toPlain seq) (x :: Number)
+
+  trace "Test init"
+  quickCheck $ \seq ->
+    NES.init seq === NES.take (NES.length seq - 1) (seq :: NES.Seq Number)
+
+  trace "Test tail"
+  quickCheck $ \seq ->
+    NES.tail seq === NES.drop 1 (seq :: NES.Seq Number)
