@@ -3,7 +3,7 @@
 ## Module Data.Sequence
 
 
-This module provides a Sequence data type, intended for the same sort of
+This module provides a sequence data type, intended for the same sort of
 tasks as an Array would be in JavaScript, except with better asymptotic
 complexity for many operations.
 
