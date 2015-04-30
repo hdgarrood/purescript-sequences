@@ -16,6 +16,8 @@ import Data.Foldable
 import Data.Unfoldable
 import Data.Traversable
 
+import Data.Sequence.Internal
+
 fromFingerTree :: forall f a v. (Unfoldable f, Monoid v, Measured a v) =>
   FingerTree v a -> f a
 fromFingerTree = unfoldr step
@@ -23,9 +25,6 @@ fromFingerTree = unfoldr step
   step tree = case viewL tree of
                 ConsL x xs -> Just (Tuple x (force xs))
                 NilL       -> Nothing
-
-class Measured a v where
-  measure :: a -> v
 
 data Node v a = Node2 v a a | Node3 v a a a
 
@@ -72,12 +71,6 @@ instance measuredNode :: Measured (Node v a) v where
   measure (Node2 v _ _) = v
   measure (Node3 v _ _ _) = v
 
-instance measuredArray :: (Monoid v, Measured a v) => Measured (Array a) v where
-  measure xs = foldl (\i a -> i <> measure a) mempty xs
-
-instance measuredLazy :: (Monoid v, Measured a v) => Measured (Lazy a) v where
-  measure s = measure (force s)
-
 -- Deep node may have debits, the cost of suspended code, as many as safe
 -- digits it has (i.e., 0, 1, or 2).
 data FingerTree v a = Empty
@@ -113,6 +106,9 @@ instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
      ++ ") (" ++ show m
      ++ ") (" ++ show sf
      ++ ")")
+
+instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTree v a) where
+  (<>) = append
 
 -- We don't implement an Ord instance because we can't implement a good Eq
 -- instance, and because we expect actual uses of FingerTrees to use newtypes,

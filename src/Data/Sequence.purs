@@ -150,7 +150,7 @@ instance monadPlusSeq :: MonadPlus Seq
 
 -- | O(1). The number of elements in the sequence.
 length :: forall a. Seq a -> Number
-length (Seq xs) = runAdditive (FT.measure xs)
+length (Seq xs) = runAdditive (measure xs)
 
 -- | O(1). True if the sequence has no elements, false otherwise.
 null :: forall a. Seq a -> Boolean

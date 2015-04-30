@@ -9,14 +9,6 @@ fromFingerTree :: forall f a v. (Unfoldable f, Monoid v, Measured a v) => Finger
 ```
 
 
-#### `Measured`
-
-``` purescript
-class Measured a v where
-  measure :: a -> v
-```
-
-
 #### `Node`
 
 ``` purescript
@@ -82,20 +74,6 @@ instance measuredNode :: Measured (Node v a) v
 ```
 
 
-#### `measuredArray`
-
-``` purescript
-instance measuredArray :: (Monoid v, Measured a v) => Measured (Array a) v
-```
-
-
-#### `measuredLazy`
-
-``` purescript
-instance measuredLazy :: (Monoid v, Measured a v) => Measured (Lazy a) v
-```
-
-
 #### `FingerTree`
 
 ``` purescript
@@ -129,6 +107,13 @@ type Digit a = Array a
 
 ``` purescript
 instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a)
+```
+
+
+#### `semigroupFingerTree`
+
+``` purescript
+instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTree v a)
 ```
 
 

@@ -7,8 +7,8 @@ import Data.Maybe
 import Data.Tuple
 import Data.Foldable
 import Data.Traversable
-
-import qualified Data.FingerTree as FT
+import Data.Array
+import Data.Lazy
 
 -----------------------
 -- Various utilities
@@ -30,6 +30,18 @@ foreign import unsafeCoerce """
     return x
   } """ :: forall a b. a -> b
 
+----------------------------------------
+-- FingerTree/Sequence specific stuff
+
+class Measured a v where
+  measure :: a -> v
+
+instance measuredArray :: (Monoid v, Measured a v) => Measured (Array a) v where
+  measure xs = foldl (\i a -> i <> measure a) mempty xs
+
+instance measuredLazy :: (Monoid v, Measured a v) => Measured (Lazy a) v where
+  measure s = measure (force s)
+
 newtype Elem a = Elem a
 
 getElem :: forall a. Elem a -> a
@@ -45,7 +57,7 @@ fmapElem = unsafeCoerce
 fmapGetElem :: forall f a. (Functor f) => f (Elem a) -> f a
 fmapGetElem = unsafeCoerce
 
-instance measuredElem :: FT.Measured (Elem a) (Additive Number) where
+instance measuredElem :: Measured (Elem a) (Additive Number) where
   measure _ = Additive 1
 
 instance showElem :: (Show a) => Show (Elem a) where
