@@ -142,3 +142,11 @@ nonEmptySequenceTests = do
   trace "Test tail"
   quickCheck $ \seq ->
     NES.tail seq === NES.drop 1 (seq :: NES.Seq Number)
+
+  trace "Test head"
+  quickCheck $ \seq x ->
+    NES.head (NES.cons x seq) === (x :: Number)
+
+  trace "Test last"
+  quickCheck $ \seq x ->
+    NES.last (NES.snoc seq x) === (x :: Number)

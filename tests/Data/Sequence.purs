@@ -149,3 +149,11 @@ sequenceTests = do
   trace "Test tail"
   quickCheck $ \seq ->
     fromMaybe S.empty (S.tail seq) === S.drop 1 (seq :: S.Seq Number)
+
+  trace "Test head"
+  quickCheck $ \seq x ->
+    S.head (S.cons x seq) === Just (x :: Number)
+
+  trace "Test last"
+  quickCheck $ \seq x ->
+    S.last (S.snoc seq x) === Just (x :: Number)
