@@ -1,11 +1,7 @@
 
--- | An implementation of finger trees, based on "Finger Trees: A Simple,
--- | General-Purpose Data Structure" (2006), Ralf Hinze and Ross Paterson.
--- | http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
--- |
--- | This module defines a general-purpose data structure, intended to be
--- | used as an aid for implementing other data structures. See, for example,
--- | `Seq` from `Data.Sequence`.
+-- | This module defines a general-purpose data structure, known as a "finger
+-- | tree", which is intended to be used as a building block for implementing
+-- | other data structures. See, for example, `Seq` from `Data.Sequence`.
 
 module Data.FingerTree where
 
