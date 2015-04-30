@@ -135,3 +135,9 @@ sequenceTests = do
   quickCheck $ \seq -> S.null (S.filter (const false) (seq :: S.Seq Number))
   quickCheck $ \seq -> S.filter (const true) seq === (seq :: S.Seq Number)
   quickCheck $ \seq f -> all f (S.filter f (seq :: S.Seq Number))
+
+  trace "Test cons/uncons"
+  quickCheck $ \seq x ->
+    S.uncons (S.cons x seq) === Just (Tuple (x :: Number) seq)
+  quickCheck $ \seq x ->
+    S.unsnoc (S.snoc seq x) === Just (Tuple seq (x :: Number))
