@@ -333,11 +333,11 @@ app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
   in
    deep pr1 (defer computeM') sf2
 
-nodes :: forall a v. (Monoid v, Measured a v) => Array a -> [Node v a]
-nodes [a, b]           = [node2 a b]
-nodes [a, b, c]        = [node3 a b c]
-nodes [a, b, c, d]     = [node2 a b, node2 c d]
-nodes (a : b : c : xs) = node3 a b c : nodes xs
+nodes :: forall a v. (Monoid v, Measured a v) => Array a -> Array (Node v a)
+nodes [a, b]       = [node2 a b]
+nodes [a, b, c]    = [node3 a b c]
+nodes [a, b, c, d] = [node2 a b, node2 c d]
+nodes xs           = node3 (xs ! 0) (xs ! 1) (xs ! 2) : nodes (A.drop 3 xs)
 
 append :: forall a v. (Monoid v, Measured a v)
      => FingerTree v a -> FingerTree v a -> FingerTree v a
@@ -349,12 +349,17 @@ data LazySplit f a = LazySplit (Lazy (f a)) a (Lazy (f a))
 -- unsafe
 splitDigit :: forall a v. (Monoid v, Measured a v)
            => (v -> Boolean) -> v -> Digit a -> Split Array a
-splitDigit p i [a] = Split [] a []
-splitDigit p i (a:as) =
-  if p i'
-    then Split [] a as
-    else case splitDigit p i' as of
-              Split l x r -> Split (a:l) x r
+splitDigit p i as'' =
+  case A.uncons as'' of
+    Just a as ->
+      case as' of
+        [] ->
+          Split [] (as ! 0) []
+        as ->
+          if p i'
+            then Split [] (as ! 0) as
+            else case splitDigit p i' as of
+                      Split l x r -> Split (a:l) x r
   where
   i' = i <> measure a
 
