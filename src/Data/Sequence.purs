@@ -89,7 +89,7 @@ instance eqSeq :: (Eq a) => Eq (Seq a) where
   (/=) xs ys = not (xs == ys)
 
 instance showSeq :: (Show a) => Show (Seq a) where
-  show xs = "toSeq [" <> strJoin "," (fromSeq xs) <> "]"
+  show xs = "(toSeq [" <> strJoin "," (fromSeq xs) <> "])"
 
 instance ordSeq :: (Ord a) => Ord (Seq a) where
   compare (Seq xs) (Seq ys) = FT.compareFingerTree xs ys

@@ -97,6 +97,13 @@ instance eqOrdSeq :: (Eq a) => Eq (OrdSeq a)
 ```
 
 
+#### `showOrdSeq`
+
+``` purescript
+instance showOrdSeq :: (Show a) => Show (OrdSeq a)
+```
+
+
 #### `semigroupOrdSeq`
 
 ``` purescript

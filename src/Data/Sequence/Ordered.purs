@@ -20,6 +20,8 @@ import Data.Unfoldable
 import Data.Sequence.Internal
 import qualified Data.FingerTree as FT
 
+-- TODO: there may be a better implementation for intersection.
+
 data Key a = NoKey | Key a
 
 instance eqKey :: (Eq a) => Eq (Key a) where
@@ -69,6 +71,9 @@ instance eqOrdSeq :: (Eq a) => Eq (OrdSeq a) where
       else false
 
   (/=) x y = not (x == y)
+
+instance showOrdSeq :: (Show a) => Show (OrdSeq a) where
+  show xs = "(toOrdSeq [" <> strJoin "," (fromOrdSeq xs) <> "])"
 
 instance semigroupOrdSeq :: (Ord a) => Semigroup (OrdSeq a) where
   (<>) = merge
@@ -123,16 +128,31 @@ deleteAll x (OrdSeq xs) = OrdSeq (l <> r')
 -- | sequences respectively. Create a new sequence containing every element
 -- | in both of the given sequences.
 merge :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
-merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (merge' xs ys)
+merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
   where
-  merge' as bs =
+  go as bs =
     case FT.viewL bs of
       FT.NilL        -> as
       FT.ConsL a bs' ->
         let t = FT.split (\c -> c > measure a) as
             l = force (fst t)
             r = force (snd t)
-        in l <> (FT.cons a (merge' (force bs') r))
+        in l <> (FT.cons a (go (force bs') r))
+
+-- | O(n), where n is the length of the longer sequence. Create a new sequence
+-- | containing only elements which are common to both sequences.
+intersection :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
+intersection (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
+  where
+  go as bs =
+    case Tuple (FT.viewL as) (FT.viewL bs) of
+      Tuple FT.NilL _ -> FT.Empty
+      Tuple _ FT.NilL -> FT.Empty
+      Tuple (FT.ConsL a as') (FT.ConsL b bs') ->
+        case compare a b of
+          LT -> go (force as') bs
+          EQ -> FT.cons a (go (force as') (force bs'))
+          GT -> go as (force bs')
 
 -- | O(1). Access the least element of the sequence, or Nothing if the sequence
 -- | is empty.
