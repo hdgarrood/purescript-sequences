@@ -142,13 +142,30 @@ least (OrdSeq xs) =
     FT.NilL      -> Nothing
     FT.ConsL x _ -> Just (getElem x)
 
--- | O(1). Access the least element of the sequence, or Nothing if the sequence
--- | is empty.
+-- | O(1). Remove the least element of the sequence, returning that element and
+-- | the remainder of the sequence. If the sequence is empty, return Nothing.
+popLeast :: forall a. (Ord a) => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
+popLeast (OrdSeq xs) =
+  case FT.viewL xs of
+    FT.NilL       -> Nothing
+    FT.ConsL x xs -> Just (Tuple (getElem x) (OrdSeq (force xs)))
+
+-- | O(1). Access the greatest element of the sequence, or Nothing if the
+-- | sequence is empty.
 greatest :: forall a. (Ord a) => OrdSeq a -> Maybe a
 greatest (OrdSeq xs) =
   case FT.viewR xs of
     FT.NilR      -> Nothing
     FT.SnocR _ x -> Just (getElem x)
+
+-- | O(1). Remove the greatest element of the sequence, returning that element
+-- | and the remainder of the sequence. If the sequence is empty, return
+-- | Nothing.
+popGreatest :: forall a. (Ord a) => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
+popGreatest (OrdSeq xs) =
+  case FT.viewR xs of
+    FT.NilR       -> Nothing
+    FT.SnocR xs x -> Just (Tuple (getElem x) (OrdSeq (force xs)))
 
 -- | Probably O(n), but depends on the Foldable instance. Consruct an ordered
 -- | sequence from any any `Foldable`.

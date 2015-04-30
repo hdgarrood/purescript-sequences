@@ -124,6 +124,8 @@ instance foldableOrdSeq :: Foldable OrdSeq
 null :: forall a. OrdSeq a -> Boolean
 ```
 
+O(1). Returns true if the given sequence is empty, false otherwise.
+
 #### `length`
 
 ``` purescript
@@ -178,14 +180,33 @@ least :: forall a. (Ord a) => OrdSeq a -> Maybe a
 O(1). Access the least element of the sequence, or Nothing if the sequence
 is empty.
 
+#### `popLeast`
+
+``` purescript
+popLeast :: forall a. (Ord a) => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
+```
+
+O(1). Remove the least element of the sequence, returning that element and
+the remainder of the sequence. If the sequence is empty, return Nothing.
+
 #### `greatest`
 
 ``` purescript
 greatest :: forall a. (Ord a) => OrdSeq a -> Maybe a
 ```
 
-O(1). Access the least element of the sequence, or Nothing if the sequence
-is empty.
+O(1). Access the greatest element of the sequence, or Nothing if the
+sequence is empty.
+
+#### `popGreatest`
+
+``` purescript
+popGreatest :: forall a. (Ord a) => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
+```
+
+O(1). Remove the greatest element of the sequence, returning that element
+and the remainder of the sequence. If the sequence is empty, return
+Nothing.
 
 #### `toOrdSeq`
 
