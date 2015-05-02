@@ -3,7 +3,8 @@
 -- | but which is guaranteed to contain at least one element.
 -- |
 -- | This module is intended to be imported qualified, to avoid name clashes or
--- | ambiguity. For example: `import qualified Data.Sequence.NonEmpty as NES`.
+-- | ambiguity. For example: `import qualified Data.Sequence.NonEmpty as
+-- | NonEmpty`.
 
 module Data.Sequence.NonEmpty
   ( Seq(..)

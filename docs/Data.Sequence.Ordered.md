@@ -8,7 +8,7 @@ order. This enables constant time access to the least and greatest
 elements, in addition to logarithmic time partitioning.
 
 The module is intended to be imported qualified, to avoid ambiguity or
-name clashes. For example, `import Data.Sequence.Ordered as OS`.
+name clashes. For example, `import Data.Sequence.Ordered as OrdSeq`.
 
 #### `OrdSeq`
 

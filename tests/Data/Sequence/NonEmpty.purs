@@ -12,7 +12,7 @@ import Test.QuickCheck
 import TypeclassTests
 
 import qualified Data.Sequence as S
-import qualified Data.Sequence.NonEmpty as NES
+import qualified Data.Sequence.NonEmpty as NonEmpty
 import Tests.Utils
 
 nonEmptySequenceTests = do
@@ -23,14 +23,14 @@ nonEmptySequenceTests = do
 
   trace "Test fromSeq homomorphism"
   quickCheck $ \x y ->
-    NES.fromSeq (x <> y) == NES.fromSeq x <> (NES.fromSeq y :: Array Number)
+    NonEmpty.fromSeq (x <> y) == NonEmpty.fromSeq x <> (NonEmpty.fromSeq y :: Array Number)
     <?> ("x: " <> show x <> ", y: " <> show y)
 
   trace "Test semigroup law: associativity"
-  quickCheck $ \x y z -> (x <> y) <> z == x <> (y <> z :: NES.Seq Number)
+  quickCheck $ \x y z -> (x <> y) <> z == x <> (y <> z :: NonEmpty.Seq Number)
     <?> ("x: " <> show x <> ", y: " <> show y <> ", z:" <> show z)
 
-  let proxy = NES.singleton 0
+  let proxy = NonEmpty.singleton 0
   trace "Test functor laws"
   checkFunctor proxy
 
@@ -43,94 +43,94 @@ nonEmptySequenceTests = do
   trace "Test foldable instance"
   quickCheck $ \f z xs ->
     let types = Tuple (f :: Number -> Number -> Number) (z :: Number)
-    in  foldr f z xs == foldr f z (NES.fromSeq xs :: Array Number)
+    in  foldr f z xs == foldr f z (NonEmpty.fromSeq xs :: Array Number)
 
   quickCheck $ \f z xs ->
     let types = Tuple (f :: Number -> Number -> Number) (z :: Number)
-    in  foldl f z xs == foldl f z (NES.fromSeq xs :: Array Number)
+    in  foldl f z xs == foldl f z (NonEmpty.fromSeq xs :: Array Number)
 
-  quickCheck $ \xs -> A.length (NES.fromSeq xs) == foldableSize (xs :: NES.Seq Number)
+  quickCheck $ \xs -> A.length (NonEmpty.fromSeq xs) == foldableSize (xs :: NonEmpty.Seq Number)
 
-  quickCheck $ \xs -> isIntegral (NES.length (xs :: NES.Seq Number))
-  quickCheck $ \xs -> NES.length xs + 1 == NES.length (NES.cons 0 xs)
+  quickCheck $ \xs -> isIntegral (NonEmpty.length (xs :: NonEmpty.Seq Number))
+  quickCheck $ \xs -> NonEmpty.length xs + 1 == NonEmpty.length (NonEmpty.cons 0 xs)
   quickCheck $ \xs ->
-    let xs' = NES.cons 0 xs -- ensure xs' has at least one element
-    in NES.length xs' - 1 == S.length (NES.drop 1 xs')
+    let xs' = NonEmpty.cons 0 xs -- ensure xs' has at least one element
+    in NonEmpty.length xs' - 1 == S.length (NonEmpty.drop 1 xs')
 
   trace "Test splitAt/head/last"
   quickCheck $ \idx seq ->
     let idx' :: Number
-        idx' = integerBetween 0 (NES.length seq) idx
+        idx' = integerBetween 0 (NonEmpty.length seq) idx
 
         split :: Tuple (S.Seq Number) (S.Seq Number)
-        split = NES.splitAt idx' seq
+        split = NonEmpty.splitAt idx' seq
 
-    in  S.last (fst split) == NES.index seq (idx' - 1)
-          && S.head (snd split) == NES.index seq idx'
+    in  S.last (fst split) == NonEmpty.index seq (idx' - 1)
+          && S.head (snd split) == NonEmpty.index seq idx'
           <?> ("seq: " <> show seq <> ", idx':" <> show idx')
 
   trace "Test that adjust is safe"
   quickCheck $ \seq ->
-    let f n = NES.adjust id n (seq :: NES.Seq Number)
-    in f (-1) == f (NES.length seq)
+    let f n = NonEmpty.adjust id n (seq :: NonEmpty.Seq Number)
+    in f (-1) == f (NonEmpty.length seq)
 
   trace "Test that index is safe"
   quickCheck $ \seq ->
-    let f n = NES.index (seq :: NES.Seq Number) n
-    in f (-1) == Nothing && f (NES.length seq) == Nothing
+    let f n = NonEmpty.index (seq :: NonEmpty.Seq Number) n
+    in f (-1) == Nothing && f (NonEmpty.length seq) == Nothing
 
   trace "Test inBounds"
   quickCheck $ \seq ->
-    let seq' = NES.cons 0 seq
+    let seq' = NonEmpty.cons 0 seq
         lowerBound = 0
-        upperBound = NES.length seq' - 1
-    in NES.inBounds seq' lowerBound && NES.inBounds seq' upperBound
-        && not (NES.inBounds seq' (lowerBound - 1))
-        && not (NES.inBounds seq' (upperBound + 1))
+        upperBound = NonEmpty.length seq' - 1
+    in NonEmpty.inBounds seq' lowerBound && NonEmpty.inBounds seq' upperBound
+        && not (NonEmpty.inBounds seq' (lowerBound - 1))
+        && not (NonEmpty.inBounds seq' (upperBound + 1))
 
   trace "Test adjust"
   quickCheck $ \seq idx ->
-    let seq' = const 0 <$> NES.cons 0 seq
-        idx' = integerBetween 0 (NES.length seq') idx
-        result = sum (NES.adjust (+1) idx' seq')
+    let seq' = const 0 <$> NonEmpty.cons 0 seq
+        idx' = integerBetween 0 (NonEmpty.length seq') idx
+        result = sum (NonEmpty.adjust (+1) idx' seq')
     in  result == 1 <?> "seq': " <> show seq' <> ", result: " <> show result
 
   trace "Test take"
   quickCheck $ \seq n ->
-    let result = S.length (NES.take n (seq :: NES.Seq Number))
+    let result = S.length (NonEmpty.take n (seq :: NonEmpty.Seq Number))
     in 0 <= result && result <= n
 
   trace "Test drop"
   quickCheck $ \seq n ->
-    let dropped = S.length (NES.drop n seq) - NES.length (seq :: NES.Seq Number)
+    let dropped = S.length (NonEmpty.drop n seq) - NonEmpty.length (seq :: NonEmpty.Seq Number)
     in 0 <= dropped && dropped <= n
 
   trace "Test filter"
-  quickCheck $ \seq -> S.null (NES.filter (const false) (seq :: NES.Seq Number))
-  quickCheck $ \seq -> NES.filter (const true) seq === (NES.toPlain seq :: S.Seq Number)
-  quickCheck $ \seq f -> all f (NES.filter f (seq :: NES.Seq Number))
+  quickCheck $ \seq -> S.null (NonEmpty.filter (const false) (seq :: NonEmpty.Seq Number))
+  quickCheck $ \seq -> NonEmpty.filter (const true) seq === (NonEmpty.toPlain seq :: S.Seq Number)
+  quickCheck $ \seq f -> all f (NonEmpty.filter f (seq :: NonEmpty.Seq Number))
 
   trace "Test length"
-  quickCheck $ \seq -> NES.length (seq :: NES.Seq Number) >= 1 <?> show seq
+  quickCheck $ \seq -> NonEmpty.length (seq :: NonEmpty.Seq Number) >= 1 <?> show seq
 
   trace "Test cons/uncons"
   quickCheck $ \seq x ->
-    NES.uncons (NES.cons x seq) === Tuple (x :: Number) (NES.toPlain seq)
+    NonEmpty.uncons (NonEmpty.cons x seq) === Tuple (x :: Number) (NonEmpty.toPlain seq)
   quickCheck $ \seq x ->
-    NES.unsnoc (NES.snoc seq x) === Tuple (NES.toPlain seq) (x :: Number)
+    NonEmpty.unsnoc (NonEmpty.snoc seq x) === Tuple (NonEmpty.toPlain seq) (x :: Number)
 
   trace "Test init"
   quickCheck $ \seq ->
-    NES.init seq === NES.take (NES.length seq - 1) (seq :: NES.Seq Number)
+    NonEmpty.init seq === NonEmpty.take (NonEmpty.length seq - 1) (seq :: NonEmpty.Seq Number)
 
   trace "Test tail"
   quickCheck $ \seq ->
-    NES.tail seq === NES.drop 1 (seq :: NES.Seq Number)
+    NonEmpty.tail seq === NonEmpty.drop 1 (seq :: NonEmpty.Seq Number)
 
   trace "Test head"
   quickCheck $ \seq x ->
-    NES.head (NES.cons x seq) === (x :: Number)
+    NonEmpty.head (NonEmpty.cons x seq) === (x :: Number)
 
   trace "Test last"
   quickCheck $ \seq x ->
-    NES.last (NES.snoc seq x) === (x :: Number)
+    NonEmpty.last (NonEmpty.snoc seq x) === (x :: Number)
