@@ -33,11 +33,11 @@ orderedSequenceTests = do
   trace "Test foldable instance"
   quickCheck $ \f z xs ->
     let types = Tuple (f :: Number -> Number -> Number) (z :: Number)
-    in  foldr f z (OS.toOrdSeq xs) == foldr f z (A.sort xs :: Array Number)
+    in  foldr f z (OS.toOrdSeq xs) == foldr f z (A.sort xs)
 
   quickCheck $ \f z xs ->
     let types = Tuple (f :: Number -> Number -> Number) (z :: Number)
-    in  foldl f z (OS.toOrdSeq xs) == foldl f z (A.sort xs :: Array Number)
+    in  foldl f z (OS.toOrdSeq xs) == foldl f z (A.sort xs)
 
   quickCheck $ \xs -> A.length xs == foldableSize (OS.toOrdSeq xs :: OS.OrdSeq Number)
   quickCheck $ \xs -> A.length (OS.fromOrdSeq xs) == foldableSize (xs :: OS.OrdSeq Number)
