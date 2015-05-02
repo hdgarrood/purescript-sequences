@@ -42,6 +42,10 @@ sortedRev :: forall a. (Show a, Ord a) => Array a -> _
 sortedRev xs = xs == A.reverse (A.sort xs)
                 <?> show xs <> " is not sorted in reverse order."
 
+-------------
+-- Min/Max
+-- TODO: Remove this (once 0.7.0 is released)
+
 newtype Min a = Min a
 
 runMin :: forall a. Min a -> a
@@ -63,3 +67,25 @@ instance semigroupMin :: (Ord a) => Semigroup (Min a) where
 
 foldableMinimum :: forall f a. (Ord a, Foldable f) => f a -> Maybe a
 foldableMinimum = (<$>) runMin <<< foldMap (Just <<< Min)
+
+newtype Max a = Max a
+
+runMax :: forall a. Max a -> a
+runMax (Max a) = a
+
+instance eqMax :: (Eq a) => Eq (Max a) where
+  (==) (Max a) (Max b) = a == b
+  (/=) a b = not (a == b)
+
+instance ordMax :: (Ord a) => Ord (Max a) where
+  compare (Max a) (Max b) = compare a b
+
+instance semigroupMax :: (Ord a) => Semigroup (Max a) where
+  (<>) a b =
+    case compare a b of
+      LT -> b
+      EQ -> a
+      GT -> a
+
+foldableMaximum :: forall f a. (Ord a, Foldable f) => f a -> Maybe a
+foldableMaximum = (<$>) runMax <<< foldMap (Just <<< Max)

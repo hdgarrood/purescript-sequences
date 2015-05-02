@@ -44,7 +44,9 @@ orderedSequenceTests = do
 
   trace "Test length/null"
   quickCheck $ \xs ->
-    if OS.empty == (xs :: OS.OrdSeq Number) then OS.null xs else OS.length xs > 0
+    if OS.empty == (xs :: OS.OrdSeq Number)
+      then OS.null xs
+      else OS.length xs > 0
 
   quickCheck $ \xs -> isIntegral (OS.length (xs :: OS.OrdSeq Number))
   quickCheck $ \xs -> OS.length xs + 1 == OS.length (OS.insert 0 xs)
@@ -59,4 +61,10 @@ orderedSequenceTests = do
 
   trace "Test least"
   quickCheck $ \seq ->
-    OS.least seq == A
+    OS.least seq == foldableMinimum (seq :: OS.OrdSeq Number)
+      <?> ("seq: " <> show seq)
+
+  trace "Test greatest"
+  quickCheck $ \seq ->
+    OS.greatest seq == foldableMaximum (seq :: OS.OrdSeq Number)
+      <?> ("seq: " <> show seq)
