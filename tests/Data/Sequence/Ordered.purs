@@ -64,7 +64,21 @@ orderedSequenceTests = do
     OS.least seq == foldableMinimum (seq :: OS.OrdSeq Number)
       <?> ("seq: " <> show seq)
 
+  trace "Test popLeast"
+  quickCheck $ \seq ->
+    let seq' = OS.insert 1 seq -- ensure nonempty
+    in case OS.popLeast seq' of
+         Nothing -> false
+         Just (Tuple x seq'') -> all (>= x) seq''
+
   trace "Test greatest"
   quickCheck $ \seq ->
     OS.greatest seq == foldableMaximum (seq :: OS.OrdSeq Number)
       <?> ("seq: " <> show seq)
+
+  trace "Test popGreatest"
+  quickCheck $ \seq ->
+    let seq' = OS.insert 0 seq -- ensure nonempty
+    in case OS.popGreatest seq' of
+         Nothing -> false
+         Just (Tuple x seq'') -> all (<= x) seq''
