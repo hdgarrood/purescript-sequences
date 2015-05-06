@@ -316,7 +316,7 @@ app3 :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Array a -> Fin
 #### `nodes`
 
 ``` purescript
-nodes :: forall a v. (Monoid v, Measured a v) => Array a -> [Node v a]
+nodes :: forall a v. (Monoid v, Measured a v) => Array a -> Array (Node v a)
 ```
 
 

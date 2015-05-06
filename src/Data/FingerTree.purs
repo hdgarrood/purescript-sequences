@@ -349,19 +349,17 @@ data LazySplit f a = LazySplit (Lazy (f a)) a (Lazy (f a))
 -- unsafe
 splitDigit :: forall a v. (Monoid v, Measured a v)
            => (v -> Boolean) -> v -> Digit a -> Split Array a
-splitDigit p i as'' =
-  case A.uncons as'' of
-    Just a as ->
-      case as' of
-        [] ->
-          Split [] (as ! 0) []
-        as ->
-          if p i'
-            then Split [] (as ! 0) as
-            else case splitDigit p i' as of
-                      Split l x r -> Split (a:l) x r
-  where
-  i' = i <> measure a
+splitDigit p i as =
+  case A.length as of
+    1 -> Split [] (as ! 0) []
+    _ ->
+      let a = as ! 0
+          bs = A.drop 1 as
+          i' = i <> measure a
+      in if p i'
+           then Split [] a bs
+           else case splitDigit p i' bs of
+                  Split l x r -> Split (a:l) x r
 
 -- unsafe
 unsafeSplitTree :: forall a v. (Monoid v, Measured a v)

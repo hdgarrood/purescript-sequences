@@ -1,6 +1,7 @@
 
 module Data.Sequence.Internal where
 
+import Prelude.Unsafe
 import Data.Monoid
 import Data.Monoid.Additive
 import Data.Maybe
@@ -12,6 +13,8 @@ import Data.Lazy
 
 -----------------------
 -- Various utilities
+(!) :: forall a. Array a -> Number -> a
+(!) = unsafeIndex
 
 (***) :: forall a b aa bb. (a -> aa) -> (b -> bb) -> Tuple a b -> Tuple aa bb
 (***) fa fb (Tuple a b) = Tuple (fa a) (fb b)
