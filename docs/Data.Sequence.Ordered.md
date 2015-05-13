@@ -119,8 +119,8 @@ in both of the given sequences.
 intersection :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
 ```
 
-O(n), where n is the length of the longer sequence. Create a new sequence
-containing only elements which are common to both sequences.
+O(n*log(n)), where n is the length of the longer sequence. Create a new
+sequence containing only elements which are common to both sequences.
 
 #### `least`
 

@@ -327,8 +327,8 @@ O(1). Get the last element of a Seq. Equivalent to
 toSeq :: forall f a. (Foldable f) => f a -> Seq a
 ```
 
-Probably O(n), but depends on the Foldable instance. Turn any `Foldable`
-into a `Seq`.
+Probably O(n*log(n)), but depends on the Foldable instance. Turn any
+`Foldable` into a `Seq`.
 
 #### `fromSeq`
 
