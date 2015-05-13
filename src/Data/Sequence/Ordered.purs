@@ -35,6 +35,7 @@ module Data.Sequence.Ordered
   -- other
   , fromOrdSeq
   , fromOrdSeqDescending
+  , sort
   ) where
 
 import Data.Lazy
@@ -184,8 +185,8 @@ popGreatest (OrdSeq xs) =
     FT.NilR       -> Nothing
     FT.SnocR xs x -> Just (Tuple (getElem x) (OrdSeq (force xs)))
 
--- | Probably O(n), but depends on the Foldable instance. Consruct an ordered
--- | sequence from any any `Foldable`.
+-- | Probably O(n*log(n)), but depends on the Foldable instance. Consruct an
+-- | ordered sequence from any any `Foldable`.
 toOrdSeq :: forall f a. (Foldable f, Ord a) => f a -> OrdSeq a
 toOrdSeq = foldr insert empty
 
@@ -198,3 +199,10 @@ fromOrdSeq (OrdSeq xs) = fmapGetElem (FT.unfoldLeft xs)
 -- | sequence in descending order.
 fromOrdSeqDescending :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
 fromOrdSeqDescending (OrdSeq xs) = fmapGetElem (FT.unfoldRight xs)
+
+-- | Sort any structure (which has Foldable, Unfoldable, and Functor instances)
+-- | by converting to an OrdSeq and back again. I am fairly sure this is
+-- | usually O(n*log(n)), although of course this depends on the Unfoldable and
+-- | Foldable instances.
+sort :: forall f a. (Functor f, Foldable f, Unfoldable f, Ord a) => f a -> f a
+sort = fromOrdSeq <<< toOrdSeq
