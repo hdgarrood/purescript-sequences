@@ -5,6 +5,7 @@ import qualified Data.Array as A
 import Data.Monoid
 import Data.Monoid.Additive
 import Data.Foldable
+import Data.Unfoldable
 import Data.Maybe
 import Data.Tuple
 import Debug.Trace
@@ -13,6 +14,7 @@ import TypeclassTests
 import Math (abs, floor)
 
 import qualified Data.Sequence.Ordered as OrdSeq
+import qualified Data.Sequence as S
 import Tests.Utils
 
 orderedSequenceTests = do
@@ -82,3 +84,15 @@ orderedSequenceTests = do
     in case OrdSeq.popGreatest seq' of
          Nothing -> false
          Just (Tuple x seq'') -> all (<= x) seq''
+
+  trace "Test sort is the same as Data.Array.sort"
+  quickCheck $ \arr ->
+    OrdSeq.sort arr === A.sort (arr :: Array Number)
+
+  trace "Test sort is idempotent"
+  quickCheck (sortIdempotent :: S.Seq Number -> Boolean)
+  quickCheck (sortIdempotent :: Array Number -> Boolean)
+
+  where
+  sortIdempotent :: forall f a. (Functor f, Unfoldable f, Foldable f, Ord a, Eq (f a)) => f a -> Boolean
+  sortIdempotent xs = let xs' = OrdSeq.sort xs in xs' == OrdSeq.sort xs'
