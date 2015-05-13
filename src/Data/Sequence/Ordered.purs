@@ -137,8 +137,8 @@ merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
             r = force (snd t)
         in l <> (FT.cons a (go (force bs') r))
 
--- | O(n), where n is the length of the longer sequence. Create a new sequence
--- | containing only elements which are common to both sequences.
+-- | O(n*log(n)), where n is the length of the longer sequence. Create a new
+-- | sequence containing only elements which are common to both sequences.
 intersection :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
 intersection (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
   where

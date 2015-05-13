@@ -276,8 +276,8 @@ init (Seq xs) = fmapSeq (FT.init xs)
 last :: forall a. Seq a -> Maybe a
 last (Seq xs) = fmapGetElem (FT.last xs)
 
--- | Probably O(n), but depends on the Foldable instance. Turn any `Foldable`
--- | into a `Seq`.
+-- | Probably O(n*log(n)), but depends on the Foldable instance. Turn any
+-- | `Foldable` into a `Seq`.
 toSeq :: forall f a. (Foldable f) => f a -> Seq a
 toSeq = foldr cons empty
 
