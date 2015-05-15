@@ -33,6 +33,10 @@
     "purescript-identity": "^0.3.0"
   },
   "devDependencies": {
-    "purescript-quickcheck": "^0.5.0"
+    "purescript-quickcheck": "^0.5.0",
+    "purescript-strongcheck": "*",
+    "purescript-exists": "*",
+    "purescript-benchmark": "git://github.com/jacereda/purescript-benchmark",
+    "purescript-monad-eff": "*"
   }
 }
