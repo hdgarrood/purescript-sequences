@@ -29,7 +29,7 @@ module.exports = function(grunt) {
         src: testsFiles,
         dest: "tmp/tests.js"
       },
-      benchmarks: {
+      bench: {
         options: {
           module: "Benchmark.Main",
           main: "Benchmark.Main"
@@ -62,6 +62,9 @@ module.exports = function(grunt) {
     execute: {
       tests: {
         src: "tmp/tests.js"
+      },
+      bench: {
+        src: "tmp/benchmarks.js"
       }
     }
   });
@@ -71,8 +74,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks("grunt-purescript");
   grunt.loadNpmTasks("grunt-execute");
 
-  grunt.registerTask("test",    ["clean", "psc:tests", "execute"]);
-  grunt.registerTask("bench",   ["clean", "psc:benchmarks"]);
+  grunt.registerTask("test",    ["clean", "psc:tests", "execute:tests"]);
+  grunt.registerTask("bench",   ["clean", "psc:bench", "execute:bench"]);
   grunt.registerTask("make",    ["pscMake", "dotPsci", "pscDocs"]);
   grunt.registerTask("default", ["make"]);
 };

@@ -34,7 +34,7 @@ foreign import randomArray """
   } """ :: Number -> Eff BenchEffects (Array Number)
 
 main = do
-  benchmarkToStdout insertLots
+  benchmarkToFile insertLots "tmp/insertLots.json"
 
 -- Benchmark 2: traverse an Array/Seq
 {-- safeSqrt :: Number -> Maybe Number --}

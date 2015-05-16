@@ -4,13 +4,18 @@ module Benchmarking where
 import Data.Exists
 import Data.Identity
 import Data.Tuple
-import Data.Array (map, filter, (..))
+import Data.Array (map, filter, (..), length)
 import Data.Array.Unsafe (head)
+import Data.String (joinWith)
 import Data.Traversable
 import Debug.Trace
 import Control.Monad
 import Control.Monad.Eff
 import Control.Monad.Eff.Random
+import Control.Monad.Eff.Exception (Exception())
+import Node.FS (FS())
+import Node.FS.Sync (writeTextFile)
+import Node.Encoding (Encoding(..))
 import Test.QuickCheck.Gen
 
 newtype Benchmark a = Benchmark (BenchmarkInner a)
@@ -33,6 +38,8 @@ toAny = mkExists <<< Identity
 type BenchEffects
   = ( trace :: Trace
     , random :: Random
+    , err :: Exception
+    , fs :: FS
     )
 
 type BenchmarkM a = (Eff BenchEffects) a
@@ -93,8 +100,16 @@ inputsPerStep = 5
 
 runBenchmark' :: forall a. Benchmark a -> BenchmarkM (Array ResultSeries)
 runBenchmark' (Benchmark benchmark) = do
-  results <- for benchmark.sizes $ \size -> do
-    stderrWrite $ "Benchmarking for n=" <> show size <> "\n"
+  let countSizes = length benchmark.sizes
+  results <- for (withIndices benchmark.sizes) $ \(Tuple idx size) -> do
+    stderrWrite $ joinWith "" [" Benchmarking... n="
+                              , show size
+                              , " ("
+                              , show idx
+                              , " / "
+                              , show countSizes
+                              , ") \r"
+                              ]
 
     inputs <- for (1..inputsPerStep) (const (benchmark.gen size))
     allStats <- for benchmark.functions $ \function -> do
@@ -105,6 +120,9 @@ runBenchmark' (Benchmark benchmark) = do
     return { size: size, allStats: allStats }
 
   return $ rejig results
+
+  where
+  withIndices arr = zip (1..(length arr)) arr
 
 type IntermediateResult =
   Array { size :: Number, allStats :: Array { name :: String, stats :: Stats } }
@@ -156,7 +174,7 @@ foreign import stderrWrite
     }
   } """ :: String -> Eff BenchEffects Unit
 
-benchmarkToStdout :: forall a. Benchmark a -> Eff BenchEffects Unit
-benchmarkToStdout b = do
-  results <- runBenchmark b
-  stdoutWrite $ jsonStringify results
+benchmarkToFile :: forall a. Benchmark a -> String -> Eff BenchEffects Unit
+benchmarkToFile bench path = do
+  results <- runBenchmark bench
+  writeTextFile UTF8 path $ jsonStringify results

@@ -34,6 +34,8 @@
   },
   "devDependencies": {
     "purescript-quickcheck": "^0.5.0",
-    "purescript-exists": "*"
+    "purescript-exists": "*",
+    "purescript-node-fs": "~0.5.0",
+    "purescript-node-buffer": "~0.0.1"
   }
 }
