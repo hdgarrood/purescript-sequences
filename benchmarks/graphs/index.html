@@ -64,8 +64,17 @@ var yAxis = d3.svg.axis()
     .orient("left");
 
 var line = d3.svg.line()
-    .x(function(d) { return x(d.n); })
-    .y(function(d) { return y(d.runtime); });
+    .x(function(d) { return x(d.size); })
+    .y(function(d) { return y(d.stats.mean); });
+
+function takeWhere(arr, pred) {
+  var result = arr.filter(pred);
+  if (result.length === 1) {
+    return result[0];
+  } else {
+    throw new Error('takeWhere: did not return exactly 1 result');
+  }
+}
 
 d3.json("runtimes.json", function(error, data) {
   function drawGraph(minX, maxX, elId) {
@@ -75,15 +84,17 @@ d3.json("runtimes.json", function(error, data) {
       .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-      var seqData = data.Seq
-                      .filter(function(d) { return minX <= d.n && d.n <= maxX });
-      var arrData = data.Array
-                      .filter(function(d) { return minX <= d.n && d.n <= maxX });
+      var seqData = takeWhere(data, function(d) { return d.name === 'Seq' })
+                      .results
+                      .filter(function(d) { return minX <= d.size && d.size <= maxX });
+      var arrData = takeWhere(data, function(d) { return d.name === 'Array' })
+                      .results
+                      .filter(function(d) { return minX <= d.size && d.size <= maxX });
 
       var allData = seqData.concat(arrData);
 
-      x.domain(d3.extent(allData, function(d) { return d.n }))
-      y.domain(d3.extent(allData, function(d) { return d.runtime }))
+      x.domain(d3.extent(allData, function(d) { return d.size }))
+      y.domain(d3.extent(allData, function(d) { return d.stats.mean }))
 
       svg.append("g")
           .attr("class", "x axis")
@@ -107,8 +118,8 @@ d3.json("runtimes.json", function(error, data) {
             .data(data)
             .enter()
             .append("circle")
-            .attr("cx", function(d) { return x(d.n) })
-            .attr("cy", function(d) { return y(d.runtime) })
+            .attr("cx", function(d) { return x(d.size) })
+            .attr("cy", function(d) { return y(d.stats.mean) })
             .attr("r", 3);
 
         series.selectAll("path.error-bar")
@@ -116,13 +127,13 @@ d3.json("runtimes.json", function(error, data) {
             .enter()
               .append("path")
               .attr("class", "error-bar")
-              .attr("x", function(d) { return x(d.n) })
-              .attr("y", function(d) { return y(d.runtime) })
+              .attr("x", function(d) { return x(d.size) })
+              .attr("y", function(d) { return y(d.stats.mean) })
               .attr("d", function(d) {
-                    var mx = x(d.n),
-                        my = y(d.runtime),
-                        my1 = y(d.runtime + d.stdDev),
-                        my2 = y(d.runtime - d.stdDev),
+                    var mx = x(d.size),
+                        my = y(d.stats.mean),
+                        my1 = y(d.stats.mean + d.stats.deviation),
+                        my2 = y(d.stats.mean - d.stats.deviation),
                         dx = 3
                     return ["M", mx, my,
                             "V", my1, "h", -dx, "h", 2 * dx, "h", -dx,

@@ -64,7 +64,7 @@ runBenchmark bm = do
   runBenchmark' bm
 
 inputsPerStep :: Number
-inputsPerStep = 100
+inputsPerStep = 5
 
 {-- foreign import runBenchmark'impl --}
 {--   """ --}
