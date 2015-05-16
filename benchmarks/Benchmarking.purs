@@ -4,16 +4,12 @@ module Benchmarking where
 import Data.Exists
 import Data.Identity
 import Data.Tuple
-import Data.Array (map, filter)
+import Data.Array (map, filter, (..))
 import Data.Array.Unsafe (head)
 import Data.Traversable
 import Debug.Trace
 import Control.Monad
-import Control.Monad.State.Class
-import Control.Monad.Reader.Class
-import Control.Monad.State.Trans
 import Control.Monad.Eff
-import Control.Monad.Eff.Class
 import Control.Monad.Eff.Random
 import Test.QuickCheck.Gen
 
@@ -22,7 +18,7 @@ newtype Benchmark a = Benchmark (BenchmarkInner a)
 type BenchmarkInner a =
   { name       :: String
   , sizes      :: Array Number
-  , gen        :: Number -> Gen a
+  , gen        :: Number -> Eff BenchEffects a
   , functions  :: Array { name :: String, fn :: a -> Any }
   }
 
@@ -39,8 +35,7 @@ type BenchEffects
     , random :: Random
     )
 
-type BenchmarkM a =
-  StateT WrappedState (Eff BenchEffects) a
+type BenchmarkM a = (Eff BenchEffects) a
 
 newtype WrappedState = WrappedState GenState
 
@@ -66,9 +61,7 @@ type ResultSeries =
 
 runBenchmark :: forall a. Benchmark a -> Eff BenchEffects (Array ResultSeries)
 runBenchmark bm = do
-  seed <- random
-  let initialState = WrappedState { newSeed: seed, size: 10 }
-  evalStateT (runBenchmark' bm) initialState
+  runBenchmark' bm
 
 inputsPerStep :: Number
 inputsPerStep = 100
@@ -101,16 +94,12 @@ inputsPerStep = 100
 runBenchmark' :: forall a. Benchmark a -> BenchmarkM (Array ResultSeries)
 runBenchmark' (Benchmark benchmark) = do
   results <- for benchmark.sizes $ \size -> do
-    liftEff $ trace $ "Benchmarking for n=" <> show size
+    stderrWrite $ "Benchmarking for n=" <> show size <> "\n"
 
-    let gen = benchmark.gen size
-    inputs <- state (\(WrappedState s) ->
-                let out = runGen (vectorOf inputsPerStep gen) s
-                in  Tuple out.value (WrappedState out.state))
-
+    inputs <- for (1..inputsPerStep) (const (benchmark.gen size))
     allStats <- for benchmark.functions $ \function -> do
       let f _ = map function.fn inputs
-      stats <- StateT $ \s -> runBenchmarkImpl f <#> \x -> Tuple x s
+      stats <- runBenchmarkImpl f
       return { name: function.name, stats: stats }
 
     return { size: size, allStats: allStats }
@@ -143,3 +132,31 @@ foreign import runBenchmarkImpl
     }
   }
   """ :: forall r. (Unit -> r) -> Eff BenchEffects Stats
+
+foreign import jsonStringify
+  """
+  function jsonStringify(obj) {
+    return JSON.stringify(obj)
+  }
+  """ :: Array ResultSeries -> String
+
+foreign import stdoutWrite
+  """
+  function stdoutWrite(str) {
+    return function() {
+      process.stdout.write(str)
+    }
+  } """ :: String -> Eff BenchEffects Unit
+
+foreign import stderrWrite
+  """
+  function stderrWrite(str) {
+    return function() {
+      process.stderr.write(str)
+    }
+  } """ :: String -> Eff BenchEffects Unit
+
+benchmarkToStdout :: forall a. Benchmark a -> Eff BenchEffects Unit
+benchmarkToStdout b = do
+  results <- runBenchmark b
+  stdoutWrite $ jsonStringify results

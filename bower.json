@@ -34,9 +34,6 @@
   },
   "devDependencies": {
     "purescript-quickcheck": "^0.5.0",
-    "purescript-strongcheck": "*",
-    "purescript-exists": "*",
-    "purescript-benchmark": "git://github.com/jacereda/purescript-benchmark",
-    "purescript-monad-eff": "*"
+    "purescript-exists": "*"
   }
 }
