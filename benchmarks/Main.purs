@@ -10,10 +10,10 @@ import Test.QuickCheck.Gen
 import Test.QuickCheck (Arbitrary, arbitrary)
 import Control.Monad.Eff
 
-import Benchmarking
+import Benchotron
 
-insertLots :: Benchmark (Array Number)
-insertLots = Benchmark
+insertLots :: forall e. Benchmark e (Array Number)
+insertLots =
   { name: "Insert lots of elements into an empty structure"
   , sizes: (1..50) <#> (*1000)
   , inputsPerSize: 1
@@ -32,7 +32,7 @@ foreign import randomArray """
       }
       return arr;
     }
-  } """ :: Number -> Eff BenchEffects (Array Number)
+  } """ :: forall e. Number -> Eff (BenchEffects e) (Array Number)
 
 main = do
   benchmarkToFile insertLots "tmp/insertLots.json"
