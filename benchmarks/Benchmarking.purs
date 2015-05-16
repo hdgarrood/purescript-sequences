@@ -21,10 +21,11 @@ import Test.QuickCheck.Gen
 newtype Benchmark a = Benchmark (BenchmarkInner a)
 
 type BenchmarkInner a =
-  { name       :: String
-  , sizes      :: Array Number
-  , gen        :: Number -> Eff BenchEffects a
-  , functions  :: Array { name :: String, fn :: a -> Any }
+  { name          :: String
+  , sizes         :: Array Number
+  , inputsPerSize :: Number
+  , gen           :: Number -> Eff BenchEffects a
+  , functions     :: Array { name :: String, fn :: a -> Any }
   }
 
 unwrap :: forall a. Benchmark a -> BenchmarkInner a
@@ -66,52 +67,20 @@ type ResultSeries =
   , results :: Array Result
   }
 
-runBenchmark :: forall a. Benchmark a -> Eff BenchEffects (Array ResultSeries)
-runBenchmark bm = do
-  runBenchmark' bm
-
-inputsPerStep :: Number
-inputsPerStep = 5
-
-{-- foreign import runBenchmark'impl --}
-{--   """ --}
-{--   function runBenchmark$primeimpl(benchmark, rejig, inputsPerStep, initialGenState) { --}
-{--     var results = benchmark.sizes.map(function(size) { --}
-{--       trace('Benchmarking for n=' + size) --}
-
-{--       var gen = benchmark.gen(size) --}
-{--       var inputs = [] --}
-{--       var genState = initialGenState --}
-{--       for (var i = 0; i < inputsPerStep; i++) { --}
-{--         var out = runGen(gen)(genState) --}
-{--         inputs.push(out.value) --}
-{--         genState = out.state --}
-{--       } --}
-{--     }) --}
-
-{--     return rejig(results) --}
-{--   } --}
-{--   """ :: forall a. Fn3 (Benchmark a) --}
-{--                        (IntermediateResult -> Array (ResultSeries)) --}
-{--                        Number --}
-{--                        GenState --}
-{--                        (BenchmarkM (Array ResultSeries)) --}
-
-
-runBenchmark' :: forall a. Benchmark a -> BenchmarkM (Array ResultSeries)
-runBenchmark' (Benchmark benchmark) = do
+runBenchmark :: forall a. Benchmark a -> BenchmarkM (Array ResultSeries)
+runBenchmark (Benchmark benchmark) = do
   let countSizes = length benchmark.sizes
   results <- for (withIndices benchmark.sizes) $ \(Tuple idx size) -> do
     stderrWrite $ joinWith "" [" Benchmarking... n="
                               , show size
                               , " ("
                               , show idx
-                              , " / "
+                              , "/"
                               , show countSizes
                               , ") \r"
                               ]
 
-    inputs <- for (1..inputsPerStep) (const (benchmark.gen size))
+    inputs <- for (1..benchmark.inputsPerSize) (const (benchmark.gen size))
     allStats <- for benchmark.functions $ \function -> do
       let f _ = map function.fn inputs
       stats <- runBenchmarkImpl f
@@ -178,3 +147,8 @@ benchmarkToFile :: forall a. Benchmark a -> String -> Eff BenchEffects Unit
 benchmarkToFile bench path = do
   results <- runBenchmark bench
   writeTextFile UTF8 path $ jsonStringify results
+
+benchmarkToStdout :: forall a. Benchmark a -> Eff BenchEffects Unit
+benchmarkToStdout bench = do
+  results <- runBenchmark bench
+  stdoutWrite $ jsonStringify results

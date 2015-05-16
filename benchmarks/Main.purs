@@ -16,6 +16,7 @@ insertLots :: Benchmark (Array Number)
 insertLots = Benchmark
   { name: "Insert lots of elements into an empty structure"
   , sizes: (1..50) <#> (*1000)
+  , inputsPerSize: 1
   , gen: randomArray
   , functions: [ { name: "Array", fn: toAny <<< foldr cons []        }
                , { name: "Seq",   fn: toAny <<< foldr S.cons S.empty }
