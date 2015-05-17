@@ -12,15 +12,27 @@ import Control.Monad.Eff
 
 import Benchotron
 
-insertLots :: forall e. Benchmark e (Array Number)
-insertLots =
-  { name: "Insert lots of elements into an empty structure"
+benchInsertLots :: forall e. Benchmark e (Array Number)
+benchInsertLots =
+  { title: "Insert lots of elements into an empty structure"
   , sizes: (1..50) <#> (*1000)
   , sizeInterpretation: "Number of elements to be inserted"
   , inputsPerSize: 1
   , gen: randomArray
-  , functions: [ { name: "Array", fn: toAny <<< foldr cons []        }
-               , { name: "Seq",   fn: toAny <<< foldr S.cons S.empty }
+  , functions: [ benchFn "Array" (foldr cons [])
+               , benchFn "Seq"   (foldr S.cons S.empty)
+               ]
+  }
+
+benchTraverse :: forall e. Benchmark e (Array Number)
+benchTraverse =
+  { title: "Traverse a structure"
+  , sizes: (1..50) <#> (*1000)
+  , sizeInterpretation: "Number of elements in the structure"
+  , inputsPerSize: 1
+  , gen: randomArray
+  , functions: [ benchFn "Array" (traverse Just)
+               , benchFn' "Seq" (traverse Just) S.toSeq
                ]
   }
 
@@ -36,7 +48,8 @@ foreign import randomArray """
   } """ :: forall e. Number -> Eff (BenchEffects e) (Array Number)
 
 main = do
-  benchmarkToFile insertLots "tmp/insertLots.json"
+  --benchmarkToFile benchInsertLots "tmp/insertLots.json"
+  benchmarkToFile benchTraverse "tmp/traverse.json"
 
 -- Benchmark 2: traverse an Array/Seq
 {-- safeSqrt :: Number -> Maybe Number --}
