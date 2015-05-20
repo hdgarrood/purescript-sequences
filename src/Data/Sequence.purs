@@ -49,6 +49,7 @@ module Data.Sequence
 
   -- other
   , fromSeq
+  , fullyForce
   ) where
 
 import Prelude hiding (cons)
@@ -293,3 +294,7 @@ filter p (Seq xs) = Seq (FT.filter q xs)
   where
   q :: Elem a -> Boolean
   q = unsafeCoerce p
+
+-- | Force evaluation of all unevaluated thunks within the sequence.
+fullyForce :: forall a. Seq a -> Seq a
+fullyForce (Seq xs) = Seq (FT.fullyForce xs)

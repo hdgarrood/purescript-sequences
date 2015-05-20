@@ -422,3 +422,15 @@ unfoldRight = unfoldr step
   step tree = case viewR tree of
                 SnocR xs x -> Just (Tuple x (force xs))
                 NilR       -> Nothing
+
+fullyForce :: forall a v. FingerTree v a -> FingerTree v a
+fullyForce ft =
+  case ft of
+    Empty ->
+      Empty
+    Single x ->
+      Single x
+    Deep v pr m sf ->
+      let v' = force v
+          m' = fullyForce (force m)
+      in  Deep (pure v') pr (pure m') sf
