@@ -1,5 +1,6 @@
 module Benchmark.Main where
 
+import Control.Monad (replicateM)
 import Data.Foldable
 import Data.Traversable
 import Data.Tuple
@@ -51,19 +52,15 @@ benchTraverse =
                ]
   }
 
-benchAppend :: forall e. Benchmark e (Tuple (Array Number) (Array Number))
+benchAppend :: forall e. Benchmark e (Array (Array Number))
 benchAppend =
-  { title: "Append a structure to another"
-  , sizes: (1..50) <#> (*1000)
+  { title: "Append a bunch of structures together"
+  , sizes: (1..50) <#> (*100)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
-  , gen: \n -> Tuple <$> randomArray n <*> randomArray n
-  , functions: [ benchFn "Array" (\(Tuple x y) -> x <> y)
-               , benchFn' "Seq"  (\(Tuple x y) -> S.fullyForce (x <> y))
-                                 (both S.toSeq)
-               , benchFn' "Seq (forced)"
-                                 (\(Tuple x y) -> S.fullyForce (x <> y))
-                                 (both (S.fullyForce <<< S.toSeq))
+  , gen: \n -> replicateM n (randomArray 100)
+  , functions: [ benchFn "Array" (foldr (<>) [])
+               , benchFn' "Seq"  (foldr (<>) S.empty) (A.map S.toSeq)
                ]
   }
 

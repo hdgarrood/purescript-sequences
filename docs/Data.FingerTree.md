@@ -381,3 +381,10 @@ unfoldLeft :: forall f a v. (Unfoldable f, Monoid v, Measured a v) => FingerTree
 ``` purescript
 unfoldRight :: forall f a v. (Unfoldable f, Monoid v, Measured a v) => FingerTree v a -> f a
 ```
+
+
+#### `fullyForce`
+
+``` purescript
+fullyForce :: forall a v. FingerTree v a -> FingerTree v a
+```

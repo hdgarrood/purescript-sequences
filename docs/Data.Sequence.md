@@ -347,3 +347,11 @@ filter :: forall a. (a -> Boolean) -> Seq a -> Seq a
 
 O(n). Create a new Seq which contains only those elements of the input
 Seq which satisfy the given predicate.
+
+#### `fullyForce`
+
+``` purescript
+fullyForce :: forall a. Seq a -> Seq a
+```
+
+Force evaluation of all unevaluated thunks within the sequence.
