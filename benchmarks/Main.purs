@@ -56,16 +56,13 @@ benchAppend :: forall e. Benchmark e (Array (Array Number))
 benchAppend =
   { title: "Append a bunch of structures together"
   , sizes: (1..50) <#> (*100)
-  , sizeInterpretation: "Number of elements in the structure"
+  , sizeInterpretation: "Number of structures being appended"
   , inputsPerSize: 1
   , gen: \n -> replicateM n (randomArray 100)
   , functions: [ benchFn "Array" (foldr (<>) [])
                , benchFn' "Seq"  (foldr (<>) S.empty) (A.map S.toSeq)
                ]
   }
-
-both :: forall a b. (a -> b) -> Tuple a a -> Tuple b b
-both f (Tuple x y) = Tuple (f x) (f y)
 
 main = do
   -- benchmarkToFile benchInsertLots "tmp/insertLots.json"
