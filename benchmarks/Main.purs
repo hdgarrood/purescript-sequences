@@ -58,20 +58,21 @@ benchAppend =
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: \n -> Tuple <$> randomArray n <*> randomArray n
-  , functions: [ benchFn "Array" (\(Tuple x y) -> let z = x <> y in A.length z)
-               , benchFn' "Seq"  (\(Tuple x y) -> let z = x <> y in S.length z)
+  , functions: [ benchFn "Array" (\(Tuple x y) -> x <> y)
+               , benchFn' "Seq"  (\(Tuple x y) -> S.fullyForce (x <> y))
                                  (both S.toSeq)
                , benchFn' "Seq (forced)"
-                                 (\(Tuple x y) -> let z = x <> y in S.length z)
+                                 (\(Tuple x y) -> S.fullyForce (x <> y))
                                  (both (S.fullyForce <<< S.toSeq))
                ]
   }
-  where
-  both f (Tuple x y) = Tuple (f x) (f y)
+
+both :: forall a b. (a -> b) -> Tuple a a -> Tuple b b
+both f (Tuple x y) = Tuple (f x) (f y)
 
 main = do
   -- benchmarkToFile benchInsertLots "tmp/insertLots.json"
-  benchmarkToFile benchFold "tmp/fold.json"
+  -- benchmarkToFile benchFold "tmp/fold.json"
   -- benchmarkToFile benchTraverse "tmp/traverse.json"
   benchmarkToFile benchAppend "tmp/append.json"
 
