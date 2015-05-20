@@ -2,8 +2,9 @@ module Benchmark.Main where
 
 import Data.Foldable
 import Data.Traversable
+import Data.Tuple
 import Data.Maybe
-import Data.Array
+import qualified Data.Array as A
 import qualified Data.Sequence as S
 import Math (floor, sqrt)
 import Test.QuickCheck.Gen
@@ -11,6 +12,8 @@ import Test.QuickCheck (Arbitrary, arbitrary)
 import Control.Monad.Eff
 
 import Benchotron
+
+(..) = A.(..)
 
 benchInsertLots :: forall e. Benchmark e (Array Number)
 benchInsertLots =
@@ -21,6 +24,18 @@ benchInsertLots =
   , gen: randomArray
   , functions: [ benchFn "Array" (foldr cons [])
                , benchFn "Seq"   (foldr S.cons S.empty)
+               ]
+  }
+
+benchFold :: forall e. Benchmark e (Array Number)
+benchFold =
+  { title: "fold a structure"
+  , sizes: (1..50) <#> (*1000)
+  , sizeInterpretation: "Number of elements in the structure"
+  , inputsPerSize: 1
+  , gen: randomArray
+  , functions: [ benchFn "Array" sum
+               , benchFn' "Seq" sum S.toSeq
                ]
   }
 
@@ -35,6 +50,30 @@ benchTraverse =
                , benchFn' "Seq" (traverse Just) S.toSeq
                ]
   }
+
+benchAppend :: forall e. Benchmark e (Tuple (Array Number) (Array Number))
+benchAppend =
+  { title: "Append a structure to another"
+  , sizes: (1..50) <#> (*1000)
+  , sizeInterpretation: "Number of elements in the structure"
+  , inputsPerSize: 1
+  , gen: \n -> Tuple <$> randomArray n <*> randomArray n
+  , functions: [ benchFn "Array" (\(Tuple x y) -> let z = x <> y in A.length z)
+               , benchFn' "Seq"  (\(Tuple x y) -> let z = x <> y in S.length z)
+                                 (both S.toSeq)
+               , benchFn' "Seq (forced)"
+                                 (\(Tuple x y) -> let z = x <> y in S.length z)
+                                 (both (S.fullyForce <<< S.toSeq))
+               ]
+  }
+  where
+  both f (Tuple x y) = Tuple (f x) (f y)
+
+main = do
+  -- benchmarkToFile benchInsertLots "tmp/insertLots.json"
+  benchmarkToFile benchFold "tmp/fold.json"
+  -- benchmarkToFile benchTraverse "tmp/traverse.json"
+  benchmarkToFile benchAppend "tmp/append.json"
 
 foreign import randomArray
   """
@@ -103,17 +142,3 @@ foreign import traverseArrayImpl
                        (a -> m b) ->
                        Array a ->
                        m (Array b)
-
-main = do
-  --benchmarkToFile benchInsertLots "tmp/insertLots.json"
-  benchmarkToFile benchTraverse "tmp/traverse.json"
-
--- Benchmark 2: traverse an Array/Seq
-{-- safeSqrt :: Number -> Maybe Number --}
-{-- safeSqrt x = if x >= 0 then Just (sqrt x) else Nothing --}
-
-{-- traverseSeq :: S.Seq Number -> Maybe (S.Seq Number) --}
-{-- traverseSeq = traverse safeSqrt --}
-
-{-- traverseArray :: [Number] -> Maybe [Number] --}
-{-- traverseArray = traverse safeSqrt --}
