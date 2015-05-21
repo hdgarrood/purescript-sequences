@@ -22,7 +22,9 @@ module Data.Sequence
   , cons
   , snoc
   , append
+  , map
   , concat
+  , concatMap
   , toSeq
 
   -- queries
@@ -114,10 +116,7 @@ instance unfoldableSeq :: Unfoldable Seq where
                   Nothing           -> empty
 
 instance functorSeq :: Functor Seq where
-  (<$>) f (Seq xs) = Seq (g <$> xs)
-    where
-    g :: Elem a -> Elem b
-    g = unsafeCoerce f
+  (<$>) = map
 
 instance applySeq :: Apply Seq where
   (<*>) = ap
@@ -126,8 +125,7 @@ instance applicativeSeq :: Applicative Seq where
   pure = singleton
 
 instance bindSeq :: Bind Seq where
-  (>>=) xs f = foldl add empty xs
-    where add ys x = append ys (f x)
+  (>>=) = flip concatMap
 
 instance monadSeq :: Monad Seq
 
@@ -140,6 +138,37 @@ instance plusSeq :: Plus Seq where
 instance alternativeSeq :: Alternative Seq
 
 instance monadPlusSeq :: MonadPlus Seq
+
+-- | A sequence with no elements.
+empty :: forall a. Seq a
+empty = Seq FT.Empty
+
+-- | O(1). Create a Seq with one element.
+singleton :: forall a. a -> Seq a
+singleton x = cons x empty
+
+-- | O(1). Add an element to the left end of a Seq.
+cons :: forall a. a -> Seq a -> Seq a
+cons x (Seq xs) = Seq (FT.cons (Elem x) xs)
+
+-- | O(1). Add an element to the right end of a Seq.
+snoc :: forall a. Seq a -> a -> Seq a
+snoc (Seq xs) x = Seq (FT.snoc xs (Elem x))
+
+-- | O(log(min(n1,n2)), where n1 and n2 are the lengths of the arguments. Join
+-- | two Seqs together.
+append :: forall a. Seq a -> Seq a -> Seq a
+append (Seq a) (Seq b) = Seq (FT.append a b)
+
+-- | O(m*log(n)), where m is the number of sequences, and n is the length of
+-- | the longest sequence within it. Flatten a sequence of sequences.
+concat :: forall a. Seq (Seq a) -> Seq a
+concat = foldr append empty
+
+-- | O(m*n), where m is the number of sequences, and n is the length of
+-- | the longest sequence within it. Map a function over a sequence and
+concatMap :: forall a. (a -> Seq a) -> Seq a -> Seq a
+concatMap f = concat <<< map f
 
 -- | O(1). The number of elements in the sequence.
 length :: forall a. Seq a -> Number
@@ -240,31 +269,12 @@ unsafeAdjust f i (Seq xs) =
 replace :: forall a. a -> Number -> Seq a -> Seq a
 replace x = adjust (const x)
 
--- | A sequence with no elements.
-empty :: forall a. Seq a
-empty = Seq FT.Empty
-
--- | O(1). Add an element to the left end of a Seq.
-cons :: forall a. a -> Seq a -> Seq a
-cons x (Seq xs) = Seq (FT.cons (Elem x) xs)
-
--- | O(1). Add an element to the right end of a Seq.
-snoc :: forall a. Seq a -> a -> Seq a
-snoc (Seq xs) x = Seq (FT.snoc xs (Elem x))
-
--- | O(1). Create a Seq with one element.
-singleton :: forall a. a -> Seq a
-singleton x = cons x empty
-
--- | O(log(min(n1,n2)), where n1 and n2 are the lengths of the arguments. Join
--- | two Seqs together.
-append :: forall a. Seq a -> Seq a -> Seq a
-append (Seq a) (Seq b) = Seq (FT.append a b)
-
--- | O(m*log(n)), where m is the number of sequences, and n is the length of
--- | the longest sequence within it. Flatten a sequence of sequences.
-concat :: forall a. Seq (Seq a) -> Seq a
-concat = foldr append empty
+-- | O(n). Apply a function to every element within a sequence.
+map :: forall a b. (a -> b) -> Seq a -> Seq b
+map f (Seq xs) = Seq (g <$> xs)
+  where
+  g :: Elem a -> Elem b
+  g = unsafeCoerce f
 
 -- | O(1). Get the first element of a Seq. Equivalent to `\seq -> index seq 0`.
 head :: forall a. Seq a -> Maybe a

@@ -143,6 +143,65 @@ instance monadPlusSeq :: MonadPlus Seq
 ```
 
 
+#### `empty`
+
+``` purescript
+empty :: forall a. Seq a
+```
+
+A sequence with no elements.
+
+#### `singleton`
+
+``` purescript
+singleton :: forall a. a -> Seq a
+```
+
+O(1). Create a Seq with one element.
+
+#### `cons`
+
+``` purescript
+cons :: forall a. a -> Seq a -> Seq a
+```
+
+O(1). Add an element to the left end of a Seq.
+
+#### `snoc`
+
+``` purescript
+snoc :: forall a. Seq a -> a -> Seq a
+```
+
+O(1). Add an element to the right end of a Seq.
+
+#### `append`
+
+``` purescript
+append :: forall a. Seq a -> Seq a -> Seq a
+```
+
+O(log(min(n1,n2)), where n1 and n2 are the lengths of the arguments. Join
+two Seqs together.
+
+#### `concat`
+
+``` purescript
+concat :: forall a. Seq (Seq a) -> Seq a
+```
+
+O(m*log(n)), where m is the number of sequences, and n is the length of
+the longest sequence within it. Flatten a sequence of sequences.
+
+#### `concatMap`
+
+``` purescript
+concatMap :: forall a. (a -> Seq a) -> Seq a -> Seq a
+```
+
+O(m*n), where m is the number of sequences, and n is the length of
+the longest sequence within it. Map a function over a sequence and
+
 #### `length`
 
 ``` purescript
@@ -247,55 +306,13 @@ O(log(min(i,n-i))). Replace the element at the specified index with
 a new element. If the index is out of range, the sequence is returned
 unchanged.
 
-#### `empty`
+#### `map`
 
 ``` purescript
-empty :: forall a. Seq a
+map :: forall a b. (a -> b) -> Seq a -> Seq b
 ```
 
-A sequence with no elements.
-
-#### `cons`
-
-``` purescript
-cons :: forall a. a -> Seq a -> Seq a
-```
-
-O(1). Add an element to the left end of a Seq.
-
-#### `snoc`
-
-``` purescript
-snoc :: forall a. Seq a -> a -> Seq a
-```
-
-O(1). Add an element to the right end of a Seq.
-
-#### `singleton`
-
-``` purescript
-singleton :: forall a. a -> Seq a
-```
-
-O(1). Create a Seq with one element.
-
-#### `append`
-
-``` purescript
-append :: forall a. Seq a -> Seq a -> Seq a
-```
-
-O(log(min(n1,n2)), where n1 and n2 are the lengths of the arguments. Join
-two Seqs together.
-
-#### `concat`
-
-``` purescript
-concat :: forall a. Seq (Seq a) -> Seq a
-```
-
-O(m*log(n)), where m is the number of sequences, and n is the length of
-the longest sequence within it. Flatten a sequence of sequences.
+O(n). Apply a function to every element within a sequence.
 
 #### `head`
 
