@@ -285,7 +285,17 @@ O(1). Create a Seq with one element.
 append :: forall a. Seq a -> Seq a -> Seq a
 ```
 
-O(log(min(i,n-i))). Join two Seqs together.
+O(log(min(n1,n2)), where n1 and n2 are the lengths of the arguments. Join
+two Seqs together.
+
+#### `concat`
+
+``` purescript
+concat :: forall a. Seq (Seq a) -> Seq a
+```
+
+O(m*log(n)), where m is the number of sequences, and n is the length of
+the longest sequence within it. Flatten a sequence of sequences.
 
 #### `head`
 

@@ -22,6 +22,7 @@ module Data.Sequence
   , cons
   , snoc
   , append
+  , concat
   , toSeq
 
   -- queries
@@ -255,9 +256,15 @@ snoc (Seq xs) x = Seq (FT.snoc xs (Elem x))
 singleton :: forall a. a -> Seq a
 singleton x = cons x empty
 
--- | O(log(min(i,n-i))). Join two Seqs together.
+-- | O(log(min(n1,n2)), where n1 and n2 are the lengths of the arguments. Join
+-- | two Seqs together.
 append :: forall a. Seq a -> Seq a -> Seq a
 append (Seq a) (Seq b) = Seq (FT.append a b)
+
+-- | O(m*log(n)), where m is the number of sequences, and n is the length of
+-- | the longest sequence within it. Flatten a sequence of sequences.
+concat :: forall a. Seq (Seq a) -> Seq a
+concat = foldr append empty
 
 -- | O(1). Get the first element of a Seq. Equivalent to `\seq -> index seq 0`.
 head :: forall a. Seq a -> Maybe a
