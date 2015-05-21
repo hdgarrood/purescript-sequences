@@ -426,11 +426,9 @@ unfoldRight = unfoldr step
 fullyForce :: forall a v. FingerTree v a -> FingerTree v a
 fullyForce ft =
   case ft of
-    Empty ->
-      Empty
-    Single x ->
-      Single x
     Deep v pr m sf ->
       let v' = force v
           m' = fullyForce (force m)
-      in  Deep (pure v') pr (pure m') sf
+      in  ft
+    _ ->
+      ft
