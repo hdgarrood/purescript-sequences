@@ -57,6 +57,21 @@ benchApply =
   where
   bimap f g (Tuple x y) = Tuple (f x) (g y)
 
+benchConcatMap :: forall e. Benchmark e (Array Number)
+benchConcatMap =
+  { title: "concatMap over a structure"
+  , sizes: (1..50) <#> (*1000)
+  , sizeInterpretation: "Number of elements in the structure"
+  , inputsPerSize: 1
+  , gen: randomArray
+  , functions: [ benchFn "Array" (A.concatMap f)
+               , benchFn' "Seq"  (S.concatMap g) S.toSeq
+               ]
+  }
+  where
+  f x = [x, x+1, x+2]
+  g x = S.cons x (S.cons (x+1) (S.cons (x+2) S.empty))
+
 benchFold :: forall e. Benchmark e (Array Number)
 benchFold =
   { title: "Fold a structure"
@@ -96,7 +111,8 @@ benchAppend =
 main = do
   -- benchmarkToFile benchInsertLots "tmp/insertLots.json"
   -- benchmarkToFile benchMap "tmp/map.json"
-  benchmarkToFile benchApply "tmp/apply.json"
+  -- benchmarkToFile benchApply "tmp/apply.json"
+  benchmarkToFile benchConcatMap "tmp/concatMap.json"
   -- benchmarkToFile benchFold "tmp/fold.json"
   -- benchmarkToFile benchTraverse "tmp/traverse.json"
   -- benchmarkToFile benchAppend "tmp/append.json"
