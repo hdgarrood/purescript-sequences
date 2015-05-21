@@ -196,11 +196,12 @@ the longest sequence within it. Flatten a sequence of sequences.
 #### `concatMap`
 
 ``` purescript
-concatMap :: forall a. (a -> Seq a) -> Seq a -> Seq a
+concatMap :: forall a b. (a -> Seq b) -> Seq a -> Seq b
 ```
 
-O(m*n), where m is the number of sequences, and n is the length of
-the longest sequence within it. Map a function over a sequence and
+O(m*n), where m is the number of sequences, and n is the length of the
+longest sequence within it. Map a function over a sequence and then
+flatten the results.
 
 #### `length`
 

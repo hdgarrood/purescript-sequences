@@ -165,9 +165,10 @@ append (Seq a) (Seq b) = Seq (FT.append a b)
 concat :: forall a. Seq (Seq a) -> Seq a
 concat = foldr append empty
 
--- | O(m*n), where m is the number of sequences, and n is the length of
--- | the longest sequence within it. Map a function over a sequence and
-concatMap :: forall a. (a -> Seq a) -> Seq a -> Seq a
+-- | O(m*n), where m is the number of sequences, and n is the length of the
+-- | longest sequence within it. Map a function over a sequence and then
+-- | flatten the results.
+concatMap :: forall a b. (a -> Seq b) -> Seq a -> Seq b
 concatMap f = concat <<< map f
 
 -- | O(1). The number of elements in the sequence.
