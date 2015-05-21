@@ -270,7 +270,11 @@ unsafeAdjust f i (Seq xs) =
 replace :: forall a. a -> Number -> Seq a -> Seq a
 replace x = adjust (const x)
 
--- | O(n). Apply a function to every element within a sequence.
+-- | O(n). Apply a function to every element within a sequence. Note that this
+-- | function is performed lazily &mdash; the actual call is almost
+-- | instantaneous, regardless of the length of the sequence, because the
+-- | function is not applied to all elements immediately. The eventual running
+-- | time (assuming all elements are later requested) _is_ O(n), though.
 map :: forall a b. (a -> b) -> Seq a -> Seq b
 map f (Seq xs) = Seq (g <$> xs)
   where

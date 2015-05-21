@@ -285,7 +285,7 @@ index :: forall a. Number -> Seq a -> Maybe a
 
 O(log(min(i,n-i))). Retrieve the element at the given index in the
 sequence. This function is zero-based; that is, the first element in a
-sequence `xs` can be retrieved with `index xs 0`.
+sequence `xs` can be retrieved with `index 0 xs`.
 
 #### `adjust`
 
@@ -313,7 +313,11 @@ unchanged.
 map :: forall a b. (a -> b) -> Seq a -> Seq b
 ```
 
-O(n). Apply a function to every element within a sequence.
+O(n). Apply a function to every element within a sequence. Note that this
+function is performed lazily &mdash; the actual call is almost
+instantaneous, regardless of the length of the sequence, because the
+function is not applied to all elements immediately. The eventual running
+time (assuming all elements are later requested) _is_ O(n), though.
 
 #### `head`
 
@@ -321,7 +325,7 @@ O(n). Apply a function to every element within a sequence.
 head :: forall a. Seq a -> Maybe a
 ```
 
-O(1). Get the first element of a Seq. Equivalent to `\seq -> index seq 0`.
+O(1). Get the first element of a Seq. Equivalent to `index 0`.
 
 #### `tail`
 
@@ -347,7 +351,7 @@ last :: forall a. Seq a -> Maybe a
 ```
 
 O(1). Get the last element of a Seq. Equivalent to
-`\seq -> index seq (length seq - 1)`.
+`\seq -> index (length seq - 1) seq`.
 
 #### `toSeq`
 
