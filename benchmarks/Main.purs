@@ -43,6 +43,20 @@ benchMap =
   map = (<$>)
   f = (*5)
 
+benchFilter :: forall e. Benchmark e (Array Number)
+benchFilter =
+  { title: "Filter a structure"
+  , sizes: (1..50) <#> (*1000)
+  , sizeInterpretation: "Number of elements in the structure"
+  , inputsPerSize: 1
+  , gen: randomArray
+  , functions: [ benchFn "Array" (A.filter f)
+               , benchFn' "Seq"  (S.filter f) S.toSeq
+               ]
+  }
+  where
+  f = (> 0.5)
+
 benchApply :: forall e. Benchmark e (Tuple (Array (Number -> Number)) (Array Number))
 benchApply =
   { title: "Apply over a structure with (<*>)"
@@ -111,8 +125,9 @@ benchAppend =
 main = do
   -- benchmarkToFile benchInsertLots "tmp/insertLots.json"
   -- benchmarkToFile benchMap "tmp/map.json"
+  benchmarkToFile benchFilter "tmp/filter.json"
   -- benchmarkToFile benchApply "tmp/apply.json"
-  benchmarkToFile benchConcatMap "tmp/concatMap.json"
+  -- benchmarkToFile benchConcatMap "tmp/concatMap.json"
   -- benchmarkToFile benchFold "tmp/fold.json"
   -- benchmarkToFile benchTraverse "tmp/traverse.json"
   -- benchmarkToFile benchAppend "tmp/append.json"
