@@ -62,7 +62,7 @@ O(1). The number of elements in the sequence.
 #### `inBounds`
 
 ``` purescript
-inBounds :: forall a. Seq a -> Number -> Boolean
+inBounds :: forall a. Number -> Seq a -> Boolean
 ```
 
 O(1). True if the given index specifies an element that exists in the
@@ -170,7 +170,7 @@ elements of the input sequence which satisfy the given predicate.
 #### `index`
 
 ``` purescript
-index :: forall a. Seq a -> Number -> Maybe a
+index :: forall a. Number -> Seq a -> Maybe a
 ```
 
 O(log(min(i,n-i))). Retrieve the element at the given index in the

@@ -229,20 +229,20 @@ drop i = force <<< snd <<< splitAt' i
 
 -- | O(1). True if the given index specifies an element that exists in the
 -- | sequence, false otherwise.
-inBounds :: forall a. Seq a -> Number -> Boolean
-inBounds seq i = 0 <= i && i < length seq
+inBounds :: forall a. Number -> Seq a -> Boolean
+inBounds i seq = 0 <= i && i < length seq
 
 -- | O(log(min(i,n-i))). Retrieve the element at the given index in the
 -- | sequence. This function is zero-based; that is, the first element in a
 -- | sequence `xs` can be retrieved with `index xs 0`.
-index :: forall a. Seq a -> Number -> Maybe a
-index xs i = if inBounds xs i then Just (unsafeIndex xs i) else Nothing
+index :: forall a. Number -> Seq a -> Maybe a
+index i xs = if inBounds i xs then Just (unsafeIndex i xs) else Nothing
 
 -- | O(log(min(i,n-i))). Like `index`, but this function will throw an error
 -- | instead of returning Nothing if no element exists at the specified
 -- | sequence.
-unsafeIndex :: forall a. Seq a -> Number -> a
-unsafeIndex (Seq xs) i =
+unsafeIndex :: forall a. Number -> Seq a -> a
+unsafeIndex i (Seq xs) =
   case FT.unsafeSplitTree (\n -> i < runAdditive n) (Additive 0) xs of
     FT.LazySplit _ x _ -> getElem x
 
@@ -250,7 +250,7 @@ unsafeIndex (Seq xs) i =
 -- | applying the given function to it. If the index is out of range, the
 -- | sequence is returned unchanged.
 adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
-adjust f i xs = if inBounds xs i then unsafeAdjust f i xs else xs
+adjust f i xs = if inBounds i xs then unsafeAdjust f i xs else xs
 
 unsafeAdjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
 unsafeAdjust f i (Seq xs) =

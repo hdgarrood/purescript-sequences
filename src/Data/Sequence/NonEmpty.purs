@@ -78,9 +78,9 @@ length (Seq _ xs) = S.length xs + 1
 
 -- | O(1). True if the given index specifies an element that exists in the
 -- | sequence, false otherwise.
-inBounds :: forall a. Seq a -> Number -> Boolean
-inBounds _ 0 = true
-inBounds (Seq _ xs) i = S.inBounds xs (i - 1)
+inBounds :: forall a. Number -> Seq a -> Boolean
+inBounds 0 _ = true
+inBounds i (Seq _ xs) = S.inBounds (i - 1) xs
 
 -- | O(1). Take one element off the left side of a Seq and return it, together
 -- | with the (possibly empty) remainder of the Seq.
@@ -143,9 +143,9 @@ filter p = S.filter p <<< toPlain
 -- | O(log(min(i,n-i))). Retrieve the element at the given index in the
 -- | sequence. This function is zero-based; that is, the first element in a
 -- | sequence `xs` can be retrieved with `index xs 0`.
-index :: forall a. Seq a -> Number -> Maybe a
-index (Seq x _)  0 = Just x
-index (Seq _ xs) i = S.index xs (i - 1)
+index :: forall a. Number -> Seq a -> Maybe a
+index 0 (Seq x _)  = Just x
+index i (Seq _ xs) = S.index (i - 1) xs
 
 -- | O(log(min(i,n-i))). Adjust the element at the specified index by
 -- | applying the given function to it. If the index is out of range, the
