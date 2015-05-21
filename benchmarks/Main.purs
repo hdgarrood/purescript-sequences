@@ -28,9 +28,38 @@ benchInsertLots =
                ]
   }
 
+benchMap :: forall e. Benchmark e (Array Number)
+benchMap =
+  { title: "Map over a structure"
+  , sizes: (1..50) <#> (*1000)
+  , sizeInterpretation: "Number of elements in the structure"
+  , inputsPerSize: 1
+  , gen: randomArray
+  , functions: [ benchFn "Array" (map f)
+               , benchFn' "Seq" (S.fullyForce <<< map f) S.toSeq
+               ]
+  }
+  where
+  map = (<$>)
+  f = (*5)
+
+benchApply :: forall e. Benchmark e (Tuple (Array (Number -> Number)) (Array Number))
+benchApply =
+  { title: "Apply over a structure with (<*>)"
+  , sizes: (1..50) <#> (*100)
+  , sizeInterpretation: "Number of elements in the function structure"
+  , inputsPerSize: 1
+  , gen: \n -> Tuple <$> (A.map const <$> randomArray n) <*> randomArray 100
+  , functions: [ benchFn "Array" (uncurry (<*>))
+               , benchFn' "Seq"  (uncurry (<*>)) (bimap S.toSeq S.toSeq)
+               ]
+  }
+  where
+  bimap f g (Tuple x y) = Tuple (f x) (g y)
+
 benchFold :: forall e. Benchmark e (Array Number)
 benchFold =
-  { title: "fold a structure"
+  { title: "Fold a structure"
   , sizes: (1..50) <#> (*1000)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
@@ -66,9 +95,11 @@ benchAppend =
 
 main = do
   -- benchmarkToFile benchInsertLots "tmp/insertLots.json"
+  -- benchmarkToFile benchMap "tmp/map.json"
+  benchmarkToFile benchApply "tmp/apply.json"
   -- benchmarkToFile benchFold "tmp/fold.json"
   -- benchmarkToFile benchTraverse "tmp/traverse.json"
-  benchmarkToFile benchAppend "tmp/append.json"
+  -- benchmarkToFile benchAppend "tmp/append.json"
 
 foreign import randomArray
   """
