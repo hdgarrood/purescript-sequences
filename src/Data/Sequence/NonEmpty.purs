@@ -95,8 +95,8 @@ unsnoc (Seq x xs) =
     Nothing           -> Tuple S.empty x
     Just (Tuple ys y) -> Tuple (S.cons x ys) y
 
--- | O(1). Get the first element of a non-empty sequence. Equivalent to `\seq
--- | -> index seq 0`.
+-- | O(1). Get the first element of a non-empty sequence. Equivalent to
+-- | `index 0`.
 head :: forall a. Seq a -> a
 head (Seq x _) = x
 
@@ -142,7 +142,7 @@ filter p = S.filter p <<< toPlain
 
 -- | O(log(min(i,n-i))). Retrieve the element at the given index in the
 -- | sequence. This function is zero-based; that is, the first element in a
--- | sequence `xs` can be retrieved with `index xs 0`.
+-- | sequence `xs` can be retrieved with `index 0 xs`.
 index :: forall a. Number -> Seq a -> Maybe a
 index 0 (Seq x _)  = Just x
 index i (Seq _ xs) = S.index (i - 1) xs

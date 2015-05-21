@@ -234,7 +234,7 @@ inBounds i seq = 0 <= i && i < length seq
 
 -- | O(log(min(i,n-i))). Retrieve the element at the given index in the
 -- | sequence. This function is zero-based; that is, the first element in a
--- | sequence `xs` can be retrieved with `index xs 0`.
+-- | sequence `xs` can be retrieved with `index 0 xs`.
 index :: forall a. Number -> Seq a -> Maybe a
 index i xs = if inBounds i xs then Just (unsafeIndex i xs) else Nothing
 
@@ -277,7 +277,7 @@ map f (Seq xs) = Seq (g <$> xs)
   g :: Elem a -> Elem b
   g = unsafeCoerce f
 
--- | O(1). Get the first element of a Seq. Equivalent to `\seq -> index seq 0`.
+-- | O(1). Get the first element of a Seq. Equivalent to `index 0`.
 head :: forall a. Seq a -> Maybe a
 head (Seq xs) = fmapGetElem (FT.head xs)
 
@@ -291,7 +291,7 @@ init :: forall a. Seq a -> Maybe (Seq a)
 init (Seq xs) = fmapSeq (FT.init xs)
 
 -- | O(1). Get the last element of a Seq. Equivalent to
--- | `\seq -> index seq (length seq - 1)`.
+-- | `\seq -> index (length seq - 1) seq`.
 last :: forall a. Seq a -> Maybe a
 last (Seq xs) = fmapGetElem (FT.last xs)
 
