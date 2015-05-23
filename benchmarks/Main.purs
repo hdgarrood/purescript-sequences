@@ -16,6 +16,9 @@ import Benchotron
 
 (..) = A.(..)
 
+bimap :: forall a b c d. (a -> b) -> (c -> d) -> Tuple a c -> Tuple b d
+bimap f g (Tuple x y) = Tuple (f x) (g y)
+
 benchInsertLots :: forall e. Benchmark e (Array Number)
 benchInsertLots =
   { title: "Insert lots of elements into an empty structure"
@@ -68,8 +71,6 @@ benchApply =
                , benchFn' "Seq"  (uncurry (<*>)) (bimap S.toSeq S.toSeq)
                ]
   }
-  where
-  bimap f g (Tuple x y) = Tuple (f x) (g y)
 
 benchConcatMap :: forall e. Benchmark e (Array Number)
 benchConcatMap =
@@ -110,27 +111,30 @@ benchTraverse =
                ]
   }
 
-benchAppend :: forall e. Benchmark e (Array (Array Number))
+benchAppend :: forall e. Benchmark e (Tuple (Array Number) (Array Number))
 benchAppend =
-  { title: "Append a bunch of structures together"
-  , sizes: (1..50) <#> (*100)
-  , sizeInterpretation: "Number of structures being appended"
+  { title: "Append two structures together"
+  , sizes: (1..50) <#> (*4000)
+  , sizeInterpretation: "Number of elements in each structure"
   , inputsPerSize: 1
-  , gen: \n -> replicateM n (randomArray 100)
-  , functions: [ benchFn "Array" (foldr (<>) [])
-               , benchFn' "Seq"  (foldr (<>) S.empty) (A.map S.toSeq)
+  , gen: \n -> Tuple <$> randomArray n <*> randomArray n
+  , functions: [ benchFn "Array" (uncurry (<>))
+               , benchFn' "Seq"  (S.fullyForce <<< uncurry (<>))
+                                 (bimap S.toSeq S.toSeq)
                ]
   }
+  where
+  index = flip A.(!!)
 
 main = do
   -- benchmarkToFile benchInsertLots "tmp/insertLots.json"
   -- benchmarkToFile benchMap "tmp/map.json"
-  benchmarkToFile benchFilter "tmp/filter.json"
+  -- benchmarkToFile benchFilter "tmp/filter.json"
   -- benchmarkToFile benchApply "tmp/apply.json"
   -- benchmarkToFile benchConcatMap "tmp/concatMap.json"
   -- benchmarkToFile benchFold "tmp/fold.json"
   -- benchmarkToFile benchTraverse "tmp/traverse.json"
-  -- benchmarkToFile benchAppend "tmp/append.json"
+  benchmarkToFile benchAppend "tmp/append.json"
 
 foreign import randomArray
   """
