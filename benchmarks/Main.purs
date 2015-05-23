@@ -12,16 +12,18 @@ import Test.QuickCheck.Gen
 import Test.QuickCheck (Arbitrary, arbitrary)
 import Control.Monad.Eff
 
-import Benchotron
+import Benchotron.Core
+import Benchotron.UI.Console
 
 (..) = A.(..)
 
 bimap :: forall a b c d. (a -> b) -> (c -> d) -> Tuple a c -> Tuple b d
 bimap f g (Tuple x y) = Tuple (f x) (g y)
 
-benchInsertLots :: forall e. Benchmark e (Array Number)
-benchInsertLots =
-  { title: "Insert lots of elements into an empty structure"
+benchInsertLots :: forall e. Benchmark e
+benchInsertLots = mkBenchmark
+  { slug: "insert-lots"
+  , title: "Insert lots of elements into an empty structure"
   , sizes: (1..50) <#> (*1000)
   , sizeInterpretation: "Number of elements to be inserted"
   , inputsPerSize: 1
@@ -31,10 +33,11 @@ benchInsertLots =
                ]
   }
 
-benchMap :: forall e. Benchmark e (Array Number)
-benchMap =
-  { title: "Map over a structure"
-  , sizes: (1..50) <#> (*1000)
+benchMap :: forall e. Benchmark e
+benchMap = mkBenchmark
+  { slug: "map"
+  , title: "Map over a structure"
+  , sizes: (1..50) <#> (*1500)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: randomArray
@@ -46,10 +49,11 @@ benchMap =
   map = (<$>)
   f = (*5)
 
-benchFilter :: forall e. Benchmark e (Array Number)
-benchFilter =
-  { title: "Filter a structure"
-  , sizes: (1..50) <#> (*1000)
+benchFilter :: forall e. Benchmark e
+benchFilter = mkBenchmark
+  { slug: "filter"
+  , title: "Filter a structure"
+  , sizes: (1..50) <#> (*1500)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: randomArray
@@ -60,9 +64,10 @@ benchFilter =
   where
   f = (> 0.5)
 
-benchApply :: forall e. Benchmark e (Tuple (Array (Number -> Number)) (Array Number))
-benchApply =
-  { title: "Apply over a structure with (<*>)"
+benchApply :: forall e. Benchmark e
+benchApply = mkBenchmark
+  { slug: "apply"
+  , title: "Apply over a structure with (<*>)"
   , sizes: (1..50) <#> (*100)
   , sizeInterpretation: "Number of elements in the function structure"
   , inputsPerSize: 1
@@ -72,9 +77,10 @@ benchApply =
                ]
   }
 
-benchConcatMap :: forall e. Benchmark e (Array Number)
-benchConcatMap =
-  { title: "concatMap over a structure"
+benchConcatMap :: forall e. Benchmark e
+benchConcatMap = mkBenchmark
+  { slug: "concat-map"
+  , title: "concatMap over a structure"
   , sizes: (1..50) <#> (*1000)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
@@ -87,10 +93,11 @@ benchConcatMap =
   f x = [x, x+1, x+2]
   g x = S.cons x (S.cons (x+1) (S.cons (x+2) S.empty))
 
-benchFold :: forall e. Benchmark e (Array Number)
-benchFold =
-  { title: "Fold a structure"
-  , sizes: (1..50) <#> (*1000)
+benchFold :: forall e. Benchmark e
+benchFold = mkBenchmark
+  { slug: "fold"
+  , title: "Fold a structure"
+  , sizes: (1..50) <#> (*1500)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: randomArray
@@ -99,9 +106,10 @@ benchFold =
                ]
   }
 
-benchTraverse :: forall e. Benchmark e (Array Number)
-benchTraverse =
-  { title: "Traverse a structure"
+benchTraverse :: forall e. Benchmark e
+benchTraverse = mkBenchmark
+  { slug: "traverse"
+  , title: "Traverse a structure"
   , sizes: (1..50) <#> (*1000)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
@@ -111,9 +119,10 @@ benchTraverse =
                ]
   }
 
-benchAppend :: forall e. Benchmark e (Tuple (Array Number) (Array Number))
-benchAppend =
-  { title: "Append two structures together"
+benchAppend :: forall e. Benchmark e
+benchAppend = mkBenchmark
+  { slug: "append"
+  , title: "Append two structures together"
   , sizes: (1..50) <#> (*4000)
   , sizeInterpretation: "Number of elements in each structure"
   , inputsPerSize: 1
@@ -126,15 +135,17 @@ benchAppend =
   where
   index = flip A.(!!)
 
-main = do
-  -- benchmarkToFile benchInsertLots "tmp/insertLots.json"
-  -- benchmarkToFile benchMap "tmp/map.json"
-  -- benchmarkToFile benchFilter "tmp/filter.json"
-  -- benchmarkToFile benchApply "tmp/apply.json"
-  -- benchmarkToFile benchConcatMap "tmp/concatMap.json"
-  -- benchmarkToFile benchFold "tmp/fold.json"
-  -- benchmarkToFile benchTraverse "tmp/traverse.json"
-  benchmarkToFile benchAppend "tmp/append.json"
+main =
+  runSuite
+    [ benchInsertLots
+    , benchMap
+    , benchFilter
+    , benchApply
+    , benchConcatMap
+    , benchFold
+    , benchTraverse
+    , benchAppend
+    ]
 
 foreign import randomArray
   """
@@ -151,7 +162,7 @@ foreign import randomArray
 traverseArray :: forall m a b. (Applicative m) => (a -> m b) -> Array a -> m (Array b)
 traverseArray = traverseArrayImpl (<*>) (<$>) pure
 
--- TODO: Remove when the stack-safe traversable array instance is merged.
+-- TODO: Remove after psc-0.7 (when the traverseable array instance is stack-safe).
 foreign import traverseArrayImpl
   """
   var traverseArrayImpl = function() {
