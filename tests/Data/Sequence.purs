@@ -77,8 +77,8 @@ sequenceTests = do
         split :: Tuple (S.Seq Number) (S.Seq Number)
         split = S.splitAt idx' seq
 
-    in  S.last (fst split) == S.index seq (idx' - 1)
-          && S.head (snd split) == S.index seq idx'
+    in  S.last (fst split) == S.index (idx' - 1) seq
+          && S.head (snd split) == S.index idx' seq
           <?> ("seq: " <> show seq <> ", idx':" <> show idx')
 
   trace "Test that adjust is safe"
@@ -88,7 +88,7 @@ sequenceTests = do
 
   trace "Test that index is safe"
   quickCheck $ \seq ->
-    let f n = S.index (seq :: S.Seq Number) n
+    let f n = S.index n (seq :: S.Seq Number)
     in f (-1) == Nothing && f (S.length seq) == Nothing
 
   trace "Test inBounds"
@@ -96,9 +96,9 @@ sequenceTests = do
     let seq' = S.cons 0 seq
         lowerBound = 0
         upperBound = S.length seq' - 1
-    in S.inBounds seq' lowerBound && S.inBounds seq' upperBound
-        && not (S.inBounds seq' (lowerBound - 1))
-        && not (S.inBounds seq' (upperBound + 1))
+    in S.inBounds lowerBound seq' && S.inBounds upperBound seq'
+        && not (S.inBounds (lowerBound - 1) seq')
+        && not (S.inBounds (upperBound + 1) seq')
 
   trace "Test adjust"
   quickCheck $ \seq idx ->
