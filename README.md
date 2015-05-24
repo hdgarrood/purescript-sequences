@@ -55,13 +55,13 @@ Amortized complexities of other operations:
 
 Not always. For example:
 
-![insert-lots](benchmarks/graphs/insert-lots.svg)
-![map](benchmarks/graphs/map.svg)
-![filter](benchmarks/graphs/filter.svg)
-![fold](benchmarks/graphs/fold.svg)
-![apply](benchmarks/graphs/apply.svg)
-![concatMap](benchmarks/graphs/concatMap.svg)
-![traverse](benchmarks/graphs/traverse.svg)
+![insert-lots](benchmarks/graphs/insert-lots.png)
+![map](benchmarks/graphs/map.png)
+![filter](benchmarks/graphs/filter.png)
+![fold](benchmarks/graphs/fold.png)
+![apply](benchmarks/graphs/apply.png)
+![concatMap](benchmarks/graphs/concatMap.png)
+![traverse](benchmarks/graphs/traverse.png)
 
 ## When is this approach _not_ suitable?
 
