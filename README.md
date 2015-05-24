@@ -1,6 +1,6 @@
 # purescript-sequences
 
-Various efficient sequence types for PureScript.
+Various efficient-ish sequence types for PureScript.
 
 The implementations are based on 2-3 finger trees, as described in the paper
 [_Finger Trees: A Simple General-Purpose Data Structure_][1], Ralf Hinze and
@@ -56,11 +56,12 @@ Amortized complexities of other operations:
 Not always. For example:
 
 ![insert-lots](benchmarks/graphs/insert-lots.png)
+![append](benchmarks/graphs/append.png)
 ![map](benchmarks/graphs/map.png)
 ![filter](benchmarks/graphs/filter.png)
 ![fold](benchmarks/graphs/fold.png)
 ![apply](benchmarks/graphs/apply.png)
-![concatMap](benchmarks/graphs/concatMap.png)
+![concatMap](benchmarks/graphs/concat-map.png)
 ![traverse](benchmarks/graphs/traverse.png)
 
 ## When is this approach _not_ suitable?
