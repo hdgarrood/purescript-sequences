@@ -346,10 +346,9 @@ append xs ys = app3 xs [] ys
 data Split f a = Split (f a) a (f a)
 data LazySplit f a = LazySplit (Lazy (f a)) a (Lazy (f a))
 
--- unsafe
-splitDigit :: forall a v. (Monoid v, Measured a v)
-           => (v -> Boolean) -> v -> Digit a -> Split Array a
-splitDigit p i as =
+unsafeSplitDigit :: forall a v. (Monoid v, Measured a v) =>
+  (v -> Boolean) -> v -> Digit a -> Split Array a
+unsafeSplitDigit p i as =
   case A.length as of
     1 -> Split [] (as ! 0) []
     _ ->
@@ -358,17 +357,16 @@ splitDigit p i as =
           i' = i <> measure a
       in if p i'
            then Split [] a bs
-           else case splitDigit p i' bs of
+           else case unsafeSplitDigit p i' bs of
                   Split l x r -> Split (a:l) x r
 
--- unsafe
-unsafeSplitTree :: forall a v. (Monoid v, Measured a v)
-          => (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
+unsafeSplitTree :: forall a v. (Monoid v, Measured a v) =>
+  (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
 unsafeSplitTree p i (Single x) = LazySplit lazyEmpty x lazyEmpty
 unsafeSplitTree p i (Deep _ pr m sf) =
   let vpr = i <> measure pr
   in if p vpr
-    then case splitDigit p i pr of
+    then case unsafeSplitDigit p i pr of
       Split l x r ->
         LazySplit (defer (\_ -> toFingerTree l)) x (defer (\_ -> deepL r m sf))
     else
@@ -377,13 +375,13 @@ unsafeSplitTree p i (Deep _ pr m sf) =
         then
           case unsafeSplitTree p vpr (force m) of
             LazySplit ml xs mr ->
-              case splitDigit p (vpr <> measure ml) (nodeToDigit xs) of
+              case unsafeSplitDigit p (vpr <> measure ml) (nodeToDigit xs) of
                 Split l x r ->
                   LazySplit (defer (\_ -> deepR pr ml l))
                             x
                             (defer (\_ -> deepL r mr sf))
         else
-          case splitDigit p vm sf of
+          case unsafeSplitDigit p vm sf of
            Split l x r ->
              LazySplit (defer (\_ -> deepR pr m l))
                        x
