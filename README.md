@@ -53,10 +53,17 @@ Amortized complexities of other operations:
 
 ## Is it faster?
 
-For large enough sequences, yes. See
-<http://harry.garrood.me/blog/announcing-purescript-sequences/benchmarks/>.
+Not always. For example:
 
-## Ok, so when is this approach _not_ suitable?
+![insert-lots](benchmarks/graphs/insert-lots.svg)
+![map](benchmarks/graphs/map.svg)
+![filter](benchmarks/graphs/filter.svg)
+![fold](benchmarks/graphs/fold.svg)
+![apply](benchmarks/graphs/apply.svg)
+![concatMap](benchmarks/graphs/concatMap.svg)
+![traverse](benchmarks/graphs/traverse.svg)
+
+## When is this approach _not_ suitable?
 
 If you are using JavaScript libraries via the FFI, and passing Arrays back and
 forth between PureScript and JavaScript, you might find that it's easier and
