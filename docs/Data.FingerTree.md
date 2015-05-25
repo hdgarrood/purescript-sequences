@@ -343,17 +343,19 @@ data LazySplit f a
 ```
 
 
-#### `splitDigit`
+#### `unsafeSplitDigit`
 
 ``` purescript
-splitDigit :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> v -> Digit a -> Split Array a
+unsafeSplitDigit :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> v -> Digit a -> Split Array a
 ```
+
 
 #### `unsafeSplitTree`
 
 ``` purescript
 unsafeSplitTree :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
 ```
+
 
 #### `split`
 
