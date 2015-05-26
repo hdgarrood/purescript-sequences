@@ -44,6 +44,7 @@ module Data.Sequence
   , take
   , drop
   , filter
+  , sort
 
   -- indexing
   , index
@@ -72,6 +73,7 @@ import Control.MonadPlus
 
 import Data.Sequence.Internal
 import qualified Data.FingerTree as FT
+import qualified Data.Sequence.Ordered as Ordered
 
 -- TODO: Optimise Apply instance (see Hackage)
 -- TODO: adjust might be suboptimal, see Data.Sequence on Hackage
@@ -316,6 +318,11 @@ filter p (Seq xs) = Seq (FT.filter q xs)
   where
   q :: Elem a -> Boolean
   q = unsafeCoerce p
+
+-- | O(n*log(n)). Sort the sequence, using the `sort` from
+-- | `Data.Sequence.Ordered`. Note that this sorting algorithm is unstable.
+sort :: forall a. (Ord a) => Seq a -> Seq a
+sort = Ordered.sort
 
 -- | Force evaluation of all unevaluated thunks within the sequence.
 fullyForce :: forall a. Seq a -> Seq a

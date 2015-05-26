@@ -135,6 +135,19 @@ benchAppend = mkBenchmark
   where
   index = flip A.(!!)
 
+benchSort :: forall e. Benchmark e
+benchSort = mkBenchmark
+  { slug: "sort"
+  , title: "Sort a structure"
+  , sizes: (1..8) <#> (*1500)
+  , sizeInterpretation: "Number of elements in the structure"
+  , inputsPerSize: 10
+  , gen: randomArray
+  , functions: [ benchFn "Array" A.sort
+               , benchFn' "Seq" S.sort S.toSeq
+               ]
+  }
+
 main =
   runSuite
     [ benchInsertLots
@@ -145,6 +158,7 @@ main =
     , benchFold
     , benchTraverse
     , benchAppend
+    , benchSort
     ]
 
 foreign import randomArray

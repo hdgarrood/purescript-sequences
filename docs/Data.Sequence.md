@@ -380,6 +380,15 @@ filter :: forall a. (a -> Boolean) -> Seq a -> Seq a
 O(n). Create a new Seq which contains only those elements of the input
 Seq which satisfy the given predicate.
 
+#### `sort`
+
+``` purescript
+sort :: forall a. (Ord a) => Seq a -> Seq a
+```
+
+O(n*log(n)). Sort the sequence, using the `sort` from
+`Data.Sequence.Ordered`. Note that this sorting algorithm is unstable.
+
 #### `fullyForce`
 
 ``` purescript
