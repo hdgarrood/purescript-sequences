@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500"><defs><style type="text/css">
+.background {
+  fill: white;
+}
+
+text {
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+.axis-path,
+.axis-line {
+  fill: none;
+  stroke: #000;
+  stroke-width: 1px;
+  shape-rendering: crispEdges;
+}
+
+.line {
+  fill: none;
+  stroke-width: 1.5px;
+}
+
+.data-series-0 {
+  stroke: steelblue;
+  fill: steelblue;
+}
+
+.data-series-1 {
+  stroke: crimson;
+  fill: crimson;
+}
+
+.data-series-2 {
+  stroke: mediumseagreen;
+  fill: mediumseagreen;
+}
+
+.data-series-3 {
+  stroke: mediumslateblue;
+  fill: mediumslateblue;
+}
+
+.data-series-4 {
+  stroke: goldenrod;
+  fill: goldenrod;
+}
+
+.error-bar {
+  fill: none;
+}
+</style></defs><rect width="960" height="500" class="background"/><g transform="translate(80,40)"><g transform="translate(420, 0)"><text style="text-anchor: middle; font-size: 28px;">Sort a structure</text></g><g class="x axis" transform="translate(0,400)"><g class="tick" transform="translate(40,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">2,000</text></g><g class="tick" transform="translate(120,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">3,000</text></g><g class="tick" transform="translate(200,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">4,000</text></g><g class="tick" transform="translate(280,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">5,000</text></g><g class="tick" transform="translate(360,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">6,000</text></g><g class="tick" transform="translate(440,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">7,000</text></g><g class="tick" transform="translate(520,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">8,000</text></g><g class="tick" transform="translate(600,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">9,000</text></g><g class="tick" transform="translate(680,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">10,000</text></g><g class="tick" transform="translate(760,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">11,000</text></g><g class="tick" transform="translate(840,0)" style="opacity: 1;"><line y2="6" x2="0" class="axis-line"/><text dy=".71em" y="9" x="0" style="text-anchor: middle;">12,000</text></g><path class="axis-path" d="M0,6V0H840V6"/><text x="420" y="40" style="text-anchor: middle;">Number of elements in the structure</text></g><g class="y axis"><g class="tick" transform="translate(0,368.3739989791263)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">5.00</text></g><g class="tick" transform="translate(0,336.5474480285183)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">10.00</text></g><g class="tick" transform="translate(0,304.7208970779103)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">15.00</text></g><g class="tick" transform="translate(0,272.89434612730224)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">20.00</text></g><g class="tick" transform="translate(0,241.06779517669423)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">25.00</text></g><g class="tick" transform="translate(0,209.24124422608622)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">30.00</text></g><g class="tick" transform="translate(0,177.41469327547824)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">35.00</text></g><g class="tick" transform="translate(0,145.5881423248702)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">40.00</text></g><g class="tick" transform="translate(0,113.76159137426218)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">45.00</text></g><g class="tick" transform="translate(0,81.93504042365416)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">50.00</text></g><g class="tick" transform="translate(0,50.108489473046134)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">55.00</text></g><g class="tick" transform="translate(0,18.281938522438157)" style="opacity: 1;"><line x2="-6" y2="0" class="axis-line"/><text dy=".32em" x="-9" y="0" style="text-anchor: end;">60.00</text></g><path class="axis-path" d="M-6,0H0V400H-6"/><text transform="rotate(-90)" y="6" dy=".71em" style="text-anchor: end;">Mean running time (seconds)</text></g><g class="data-series-0"><circle cx="0" cy="400" r="3"/><circle cx="120" cy="399.7488622672624" r="3"/><circle cx="240" cy="399.5104159263545" r="3"/><circle cx="360" cy="399.234904790882" r="3"/><circle cx="480" cy="398.9448573254988" r="3"/><circle cx="600" cy="398.6567737954482" r="3"/><circle cx="720" cy="398.35092445999896" r="3"/><circle cx="840" cy="397.9946813881285" r="3"/><path class="error-bar" x="0" y="400" d="M 0 400 V 399.9912522029836 h -3 h 6 h -3 V 400.0087477970164 h -3 h 6"/><path class="error-bar" x="120" y="399.7488622672624" d="M 120 399.7488622672624 V 399.72015545556394 h -3 h 6 h -3 V 399.7775690789608 h -3 h 6"/><path class="error-bar" x="240" y="399.5104159263545" d="M 240 399.5104159263545 V 399.48673575112275 h -3 h 6 h -3 V 399.53409610158616 h -3 h 6"/><path class="error-bar" x="360" y="399.234904790882" d="M 360 399.234904790882 V 399.2043959150293 h -3 h 6 h -3 V 399.26541366673473 h -3 h 6"/><path class="error-bar" x="480" y="398.9448573254988" d="M 480 398.9448573254988 V 398.90521348174485 h -3 h 6 h -3 V 398.9845011692528 h -3 h 6"/><path class="error-bar" x="600" y="398.6567737954482" d="M 600 398.6567737954482 V 398.6260188704643 h -3 h 6 h -3 V 398.68752872043206 h -3 h 6"/><path class="error-bar" x="720" y="398.35092445999896" d="M 720 398.35092445999896 V 398.2959086483441 h -3 h 6 h -3 V 398.40594027165383 h -3 h 6"/><path class="error-bar" x="840" y="397.9946813881285" d="M 840 397.9946813881285 V 397.9376456006747 h -3 h 6 h -3 V 398.0517171755824 h -3 h 6"/><path class="line" d="M0,400L120,399.7488622672624L240,399.5104159263545L360,399.234904790882L480,398.9448573254988L600,398.6567737954482L720,398.35092445999896L840,397.9946813881285"/></g><g class="data-series-1"><circle cx="0" cy="368.3477306170337" r="3"/><circle cx="120" cy="326.5585551603421" r="3"/><circle cx="240" cy="279.45112612100473" r="3"/><circle cx="360" cy="234.62445519507597" r="3"/><circle cx="480" cy="179.2875865000825" r="3"/><circle cx="600" cy="125.04547732019175" r="3"/><circle cx="720" cy="63.07135074170005" r="3"/><circle cx="840" cy="0" r="3"/><path class="error-bar" x="0" y="368.3477306170337" d="M 0 368.3477306170337 V 368.15858190979395 h -3 h 6 h -3 V 368.5368793242734 h -3 h 6"/><path class="error-bar" x="120" y="326.5585551603421" d="M 120 326.5585551603421 V 326.19442100138036 h -3 h 6 h -3 V 326.9226893193038 h -3 h 6"/><path class="error-bar" x="240" y="279.45112612100473" d="M 240 279.45112612100473 V 278.858525559417 h -3 h 6 h -3 V 280.04372668259253 h -3 h 6"/><path class="error-bar" x="360" y="234.62445519507597" d="M 360 234.62445519507597 V 234.2630580402159 h -3 h 6 h -3 V 234.98585234993607 h -3 h 6"/><path class="error-bar" x="480" y="179.2875865000825" d="M 480 179.2875865000825 V 172.5948652487676 h -3 h 6 h -3 V 185.98030775139748 h -3 h 6"/><path class="error-bar" x="600" y="125.04547732019175" d="M 600 125.04547732019175 V 121.33281861245 h -3 h 6 h -3 V 128.75813602793352 h -3 h 6"/><path class="error-bar" x="720" y="63.07135074170005" d="M 720 63.07135074170005 V 56.3982520890181 h -3 h 6 h -3 V 69.744449394382 h -3 h 6"/><path class="error-bar" x="840" y="0" d="M 840 0 V -7.660741702595786 h -3 h 6 h -3 V 7.660741702595741 h -3 h 6"/><path class="line" d="M0,368.3477306170337L120,326.5585551603421L240,279.45112612100473L360,234.62445519507597L480,179.2875865000825L600,125.04547732019175L720,63.07135074170005L840,0"/></g><g class="legend" transform="translate(50, 50)"><rect x="0" y="0" width="15" height="15" class="data-series-0"/><rect x="0" y="20" width="15" height="15" class="data-series-1"/><text x="24" y="13">Array</text><text x="24" y="33">Seq</text></g></g></svg>

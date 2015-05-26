@@ -63,6 +63,7 @@ Not always. For example:
 ![apply](benchmarks/graphs/apply.png)
 ![concatMap](benchmarks/graphs/concat-map.png)
 ![traverse](benchmarks/graphs/traverse.png)
+![sort](benchmarks/graphs/sort.png)
 
 ## When is this approach _not_ suitable?
 
