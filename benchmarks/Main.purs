@@ -141,7 +141,7 @@ benchSort = mkBenchmark
   , title: "Sort a structure"
   , sizes: (1..8) <#> (*1500)
   , sizeInterpretation: "Number of elements in the structure"
-  , inputsPerSize: 10
+  , inputsPerSize: 1
   , gen: randomArray
   , functions: [ benchFn "Array" A.sort
                , benchFn' "Seq" S.sort S.toSeq
