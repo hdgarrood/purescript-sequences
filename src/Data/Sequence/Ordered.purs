@@ -38,24 +38,35 @@ module Data.Sequence.Ordered
   , sort
   ) where
 
-import Data.Lazy
-import Data.Tuple
-import Data.Maybe
-import Data.Monoid
-import Data.Monoid.Additive
-import Data.Foldable
-import Data.Traversable
-import Data.Unfoldable
+import Prelude
 
-import Data.Sequence.Internal
-import qualified Data.FingerTree as FT
+import Data.Lazy            (force)
+import Data.Tuple           (Tuple(Tuple), fst, snd)
+import Data.Maybe           (Maybe(Just, Nothing))
+import Data.Monoid          (Monoid)
+import Data.Monoid.Additive (Additive(Additive), runAdditive)
+import Data.Foldable        (Foldable, foldl, foldMap, foldr)
+import Data.Traversable     ()
+import Data.Unfoldable      (Unfoldable)
+
+import           Data.Sequence.Internal ( Elem(Elem)
+                                        , Key(Key)
+                                        , getElem
+                                        , liftElem
+                                        , lift2Elem
+                                        , mapGetElem
+                                        , measure
+                                        , strJoin
+                                        , unsafeCoerce
+                                        )
+import qualified Data.FingerTree        as FT
 
 -- TODO: there may be a better implementation for intersection.
 
--- `fmap OrdSeq` is a no-op, since OrdSeq is a newtype. Use this function
+-- `map OrdSeq` is a no-op, since OrdSeq is a newtype. Use this function
 -- instead to avoid an unnecessary traversal of the structure.
-fmapOrdSeq :: forall f a. (Functor f) => f (OrdSeqInner a) -> f (OrdSeq a)
-fmapOrdSeq = unsafeCoerce
+mapOrdSeq :: forall f a. (Functor f) => f (OrdSeqInner a) -> f (OrdSeq a)
+mapOrdSeq = unsafeCoerce
 
 -- | An ordered sequence. The Semigroup instance uses the `merge` function.
 newtype OrdSeq a
@@ -67,14 +78,13 @@ empty :: forall a. OrdSeq a
 empty = OrdSeq FT.Empty
 
 instance eqOrdSeq :: (Eq a) => Eq (OrdSeq a) where
-  (==) (OrdSeq xs) (OrdSeq ys) = FT.eqFingerTree xs ys
-  (/=) x y = not (x == y)
+  eq (OrdSeq xs) (OrdSeq ys) = FT.eqFingerTree xs ys
 
 instance showOrdSeq :: (Show a) => Show (OrdSeq a) where
   show xs = "(toOrdSeq [" <> strJoin "," (fromOrdSeq xs) <> "])"
 
 instance semigroupOrdSeq :: (Ord a) => Semigroup (OrdSeq a) where
-  (<>) = merge
+  append = merge
 
 instance monoidOrdSeq :: (Ord a) => Monoid (OrdSeq a) where
   mempty = empty
@@ -90,7 +100,7 @@ null (OrdSeq FT.Empty) = true
 null _ = false
 
 -- | O(n). Return the length of the sequence.
-length :: forall a. OrdSeq a -> Number
+length :: forall a. OrdSeq a -> Int
 length = runAdditive <<< foldMap (const (Additive 1))
 
 -- | O(log(n)). Split an ordered sequence into two halves. The first element
@@ -193,12 +203,12 @@ toOrdSeq = foldr insert empty
 -- | Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
 -- | sequence in ascending order.
 fromOrdSeq :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
-fromOrdSeq (OrdSeq xs) = fmapGetElem (FT.unfoldLeft xs)
+fromOrdSeq (OrdSeq xs) = mapGetElem (FT.unfoldLeft xs)
 
 -- | Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
 -- | sequence in descending order.
 fromOrdSeqDescending :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
-fromOrdSeqDescending (OrdSeq xs) = fmapGetElem (FT.unfoldRight xs)
+fromOrdSeqDescending (OrdSeq xs) = mapGetElem (FT.unfoldRight xs)
 
 -- | Sort any structure (which has Foldable, Unfoldable, and Functor instances)
 -- | by converting to an OrdSeq and back again. I am fairly sure this is

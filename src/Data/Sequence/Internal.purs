@@ -1,26 +1,33 @@
+module Data.Sequence.Internal
+  ( (!)
+  , (<$$>)
+  , (<$$$>)
+  , strJoin
+  , unsafeCoerce
+  , Measured
+  , measure
+  , Elem(Elem)
+  , getElem
+  , mapElem
+  , mapGetElem
+  , lift2Elem
+  , liftElem
+  , Key(NoKey, Key)
+  ) where
 
-module Data.Sequence.Internal where
+import Prelude
 
-import Prelude.Unsafe
-import Data.Monoid
-import Data.Monoid.Additive
-import Data.Maybe
-import Data.Tuple
-import Data.Foldable
-import Data.Traversable
-import Data.Array
-import Data.Lazy
+import Data.Array.Unsafe    (unsafeIndex)
+import Data.Foldable        (Foldable, foldl, intercalate)
+import Data.Lazy            (Lazy(), force)
+import Data.Monoid          (Monoid, mempty)
+import Data.Monoid.Additive (Additive(Additive))
+import Data.Traversable     (Traversable)
 
 -----------------------
 -- Various utilities
-(!) :: forall a. Array a -> Number -> a
+(!) :: forall a. Array a -> Int -> a
 (!) = unsafeIndex
-
-(***) :: forall a b aa bb. (a -> aa) -> (b -> bb) -> Tuple a b -> Tuple aa bb
-(***) fa fb (Tuple a b) = Tuple (fa a) (fb b)
-
-fmap :: forall f a b. (Functor f) => (a -> b) -> f a -> f b
-fmap = (<$>)
 
 (<$$>) :: forall f g a b. (Functor f, Functor g) =>
   (a -> b) -> f (g a) -> f (g b)
@@ -31,15 +38,12 @@ fmap = (<$>)
 (<$$$>) = (<$$>) <<< (<$>)
 
 strJoin :: forall a. (Show a) => String -> Array a -> String
-strJoin glue = intercalate glue <<< fmap show
+strJoin glue = intercalate glue <<< map show
 
 -- With great power comes great responsibility. Always define an alias of
 -- this with a type signature which is as specific as possible, never use it
 -- directly.
-foreign import unsafeCoerce """
-  function unsafeCoerce(x) {
-    return x
-  } """ :: forall a b. a -> b
+foreign import unsafeCoerce :: forall a b. a -> b
 
 ----------------------------------------
 -- FingerTree/Sequence specific stuff
@@ -58,15 +62,15 @@ newtype Elem a = Elem a
 getElem :: forall a. Elem a -> a
 getElem (Elem a) = a
 
--- `fmap Elem` is a no-op, since Elem is a newtype. Use this function instead
+-- `map Elem` is a no-op, since Elem is a newtype. Use this function instead
 -- to avoid an unnecessary traversal of the structure.
-fmapElem :: forall f a. (Functor f) => f a -> f (Elem a)
-fmapElem = unsafeCoerce
+mapElem :: forall f a. (Functor f) => f a -> f (Elem a)
+mapElem = unsafeCoerce
 
--- `fmap getElem` is a no-op, since Elem is a newtype. Use this function
+-- `map getElem` is a no-op, since Elem is a newtype. Use this function
 -- instead to avoid an unnecessary traversal of the structure.
-fmapGetElem :: forall f a. (Functor f) => f (Elem a) -> f a
-fmapGetElem = unsafeCoerce
+mapGetElem :: forall f a. (Functor f) => f (Elem a) -> f a
+mapGetElem = unsafeCoerce
 
 lift2Elem :: forall a b. (b -> a -> b) -> b -> Elem a -> b
 lift2Elem = unsafeCoerce
@@ -74,15 +78,14 @@ lift2Elem = unsafeCoerce
 liftElem :: forall a b. (a -> b) -> Elem a -> b
 liftElem = unsafeCoerce
 
-instance measuredElem :: Measured (Elem a) (Additive Number) where
+instance measuredElem :: Measured (Elem a) (Additive Int) where
   measure _ = Additive 1
 
 instance showElem :: (Show a) => Show (Elem a) where
   show x = "Elem (" <> show (getElem x) <> ")"
 
 instance eqElem :: (Eq a) => Eq (Elem a) where
-  (==) (Elem x) (Elem y) = x == y
-  (/=) x y = not (x == y)
+  eq (Elem x) (Elem y) = x == y
 
 instance ordElem :: (Ord a) => Ord (Elem a) where
   compare (Elem x) (Elem y) = compare x y
@@ -93,28 +96,26 @@ instance foldableElem :: Foldable Elem where
   foldMap f (Elem x) = f x
 
 instance functorElem :: Functor Elem where
-  (<$>) f (Elem x) = Elem (f x)
+  map f (Elem x) = Elem (f x)
 
 instance traversableElem :: Traversable Elem where
-  traverse f (Elem x) = fmapElem (f x)
-  sequence (Elem fx)  = fmapElem fx
+  traverse f (Elem x) = mapElem (f x)
+  sequence (Elem fx)  = mapElem fx
 
 data Key a = NoKey | Key a
 
 instance eqKey :: (Eq a) => Eq (Key a) where
-  (==) (Key a) (Key b) = a == b
-  (==) NoKey NoKey = true
-  (==) _ _ = false
-
-  (/=) x y = not (x == y)
+  eq (Key a) (Key b) = a == b
+  eq NoKey NoKey     = true
+  eq _ _             = false
 
 instance showKey :: (Show a) => Show (Key a) where
   show (Key a) = "(Key " <> show a <> ")"
   show NoKey = "NoKey"
 
 instance semigroupKey :: Semigroup (Key a) where
-  (<>) k NoKey = k
-  (<>) _ k = k
+  append k NoKey = k
+  append _ k = k
 
 instance ordKey :: (Ord a) => Ord (Key a) where
   compare NoKey _ = LT
@@ -126,4 +127,3 @@ instance monoidKey :: Monoid (Key a) where
 
 instance measuredElemKey :: Measured (Elem a) (Key a) where
   measure (Elem x) = Key x
-
