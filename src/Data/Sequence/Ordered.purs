@@ -46,7 +46,6 @@ import Data.Maybe           (Maybe(Just, Nothing))
 import Data.Monoid          (Monoid)
 import Data.Monoid.Additive (Additive(Additive), runAdditive)
 import Data.Foldable        (Foldable, foldl, foldMap, foldr)
-import Data.Traversable     ()
 import Data.Unfoldable      (Unfoldable)
 
 import           Data.Sequence.Internal ( Elem(Elem)

@@ -471,5 +471,4 @@ fullyForce ft =
       let v' = force v
           m' = fullyForce (force m)
       in  ft
-    _ ->
-      ft
+    _ -> ft

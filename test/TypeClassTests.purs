@@ -1,8 +1,12 @@
-module TypeClassTests where
+module TypeClassTests
+  ( checkFunctor
+  , checkApplicative
+  , checkMonad
+  ) where
 
 import Prelude
 
-import Test.QuickCheck (QC(..), quickCheck, (<?>), Result(..))
+import Test.QuickCheck           (QC(), quickCheck, (<?>), Result())
 import Test.QuickCheck.Arbitrary (Arbitrary, Coarbitrary)
 
 -- |
@@ -38,7 +42,8 @@ checkApplicative ta tb tc = do
   identity :: forall f a. (Applicative f, Arbitrary (f a), Eq (f a), Show (f a)) => f a -> f a -> Result
   identity _ v = (pure id <*> v) == v <?> "identity: v = " <> show v
 
-  composition :: forall f a b c. (Applicative f, Arbitrary (f (b -> c)), Arbitrary (f (a -> b)), Arbitrary (f a), Eq (f c)) => f a -> f b -> f c -> f (b -> c) -> f (a -> b) -> f a -> Boolean
+  composition :: forall f a b c. (Applicative f, Arbitrary (f (b -> c)), Arbitrary (f (a -> b)), Arbitrary (f a), Eq (f c))
+              => f a -> f b -> f c -> f (b -> c) -> f (a -> b) -> f a -> Boolean
   composition _ _ _ u v w = (pure (<<<) <*> u <*> v <*> w) == (u <*> (v <*> w))
 
   homomorphism :: forall f a b. (Applicative f, Arbitrary b, Coarbitrary a, Arbitrary a, Eq (f b)) => f a -> f b -> (a -> b) -> a -> Boolean
@@ -67,4 +72,3 @@ checkMonad t = do
 
   associativity :: forall m a. (Monad m, Arbitrary a, Eq (m a)) => m a -> m a -> (a -> m a) -> (a -> m a) -> Boolean
   associativity _ m f g = ((m >>= f) >>= g) == (m >>= (\x -> f x >>= g))
-

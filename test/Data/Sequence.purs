@@ -1,19 +1,18 @@
-module Tests.Data.Sequence where
+module Tests.Data.Sequence (sequenceTests) where
 
 import Prelude
 
 import Control.Monad.Eff.Console (log)
-import qualified Data.Array as A
-import Data.Monoid
-import Data.Monoid.Additive
-import Data.Foldable
-import Data.Maybe
-import Data.Tuple
-import Test.QuickCheck
+import qualified Data.Array      as A
+import Data.Foldable             (all, foldl, foldr, sum)
+import Data.Maybe                (Maybe(Just, Nothing), fromMaybe)
+import Data.Monoid               (mempty)
+import Data.Tuple                (Tuple(Tuple), fst, snd)
+import Test.QuickCheck           ((<?>), (===), quickCheck)
 
-import qualified Data.Sequence as S
-import Tests.Utils (abs, err, foldableSize, integerBetween)
-import TypeClassTests
+import qualified Data.Sequence  as S
+import           Tests.Utils    (abs, err, foldableSize, integerBetween)
+import           TypeClassTests (checkApplicative, checkFunctor, checkMonad)
 
 sequenceTests = do
   log ""
