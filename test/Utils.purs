@@ -85,8 +85,18 @@ instance semigroupMin :: (Ord a) => Semigroup (Min a) where
       EQ -> a
       GT -> b
 
+-- Non-standard appending of `Semigroup a => Maybe a` where `Just x` takes
+-- takes priority over `Nothing`. See
+-- https://www.reddit.com/r/haskell/comments/39tumu/make_semigroup_a_superclass_of_monoid/cs6hlca
+-- (referenced by Phil Freeman in https://github.com/purescript/purescript-maybe/pull/11)
+-- for the reasoning why the PureScript standard differs from that of Haskell
+maybeAppend' :: forall a. (Semigroup a) => Maybe a -> Maybe a -> Maybe a
+maybeAppend' Nothing y = y
+maybeAppend' x Nothing = x
+maybeAppend' x y       = append <$> x <*> y
+
 foldableMinimum :: forall f a. (Ord a, Foldable f) => f a -> Maybe a
-foldableMinimum = map runMin <<< foldMap (Just <<< Min)
+foldableMinimum = map runMin <<< foldr (maybeAppend' <<< Just <<< Min) Nothing
 
 newtype Max a = Max a
 
@@ -107,7 +117,7 @@ instance semigroupMax :: (Ord a) => Semigroup (Max a) where
       GT -> a
 
 foldableMaximum :: forall f a. (Ord a, Foldable f) => f a -> Maybe a
-foldableMaximum = map runMax <<< foldMap (Just <<< Max)
+foldableMaximum = map runMax <<< foldr (maybeAppend' <<< Just <<< Max) Nothing
 
 -------------------------------------------------------------------------------
 

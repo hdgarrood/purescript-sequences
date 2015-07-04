@@ -71,6 +71,7 @@ orderedSequenceTests = do
   TODO: this should be uncommented when the semigroupMaybe instance in
         purescript-maybe is fixed (currently it propagates `Nothing`s through
         the `Apply` instance).
+  -}
   log "Test least"
   quickCheck $ \seq ->
     let seqLeast :: Maybe Number
@@ -81,7 +82,6 @@ orderedSequenceTests = do
               , "seqLeast = " <> show seqLeast
               , "seqMin = " <> show seqMin
               ]
-  -}
 
   log "Test popLeast"
   quickCheck $ \seq ->
@@ -90,8 +90,6 @@ orderedSequenceTests = do
          Nothing -> false
          Just (Tuple x seq'') -> all (>= x) seq''
 
-  {-
-  -- TODO: see above on "Test least"
   log "Test greatest"
   quickCheck $ \seq ->
     let seqGreatest :: Maybe Number
@@ -102,7 +100,6 @@ orderedSequenceTests = do
               , "seqGreatest = " <> show seqGreatest
               , "seqMax = " <> show seqMax
               ]
-  -}
 
   log "Test popGreatest"
   quickCheck $ \seq ->
