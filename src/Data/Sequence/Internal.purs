@@ -6,13 +6,13 @@ module Data.Sequence.Internal
   , unsafeCoerce
   , Measured
   , measure
-  , Elem(Elem)
+  , Elem(..)
   , getElem
   , mapElem
   , mapGetElem
   , lift2Elem
   , liftElem
-  , Key(NoKey, Key)
+  , Key(..)
   ) where
 
 import Prelude

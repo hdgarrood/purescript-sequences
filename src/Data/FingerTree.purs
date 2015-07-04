@@ -4,11 +4,11 @@
 -- | other data structures. See, for example, `Seq` from `Data.Sequence`.
 
 module Data.FingerTree
-  ( Node(Node2, Node3)
+  ( Node(..)
   , node2
   , node3
   , nodeToDigit
-  , FingerTree(Empty, Single, Deep)
+  , FingerTree(..)
   , lazyEmpty
   , deep
   , Digit()
@@ -19,7 +19,7 @@ module Data.FingerTree
   , consAll
   , snocAll
   , toFingerTree
-  , ViewL(NilL, ConsL)
+  , ViewL(..)
   , headDigit
   , tailDigit
   , viewL
@@ -29,7 +29,7 @@ module Data.FingerTree
   , tail
   , lastDigit
   , initDigit
-  , ViewR(NilR, SnocR)
+  , ViewR(..)
   , viewR
   , deepR
   , last
