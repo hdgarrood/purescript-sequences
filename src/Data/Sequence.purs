@@ -56,49 +56,57 @@ module Data.Sequence
   , fullyForce
   ) where
 
-import Prelude hiding (cons)
+import Prelude hiding (append, map)
 
-import Data.Lazy
-import Data.Monoid
-import Data.Monoid.Additive
-import Data.Tuple
-import Data.Maybe
-import Data.Foldable
-import Data.Unfoldable
-import Data.Traversable
-import Control.Alt
-import Control.Plus (Plus)
-import Control.Alternative
-import Control.MonadPlus
+import Control.Alt            (Alt)
+import Control.Alternative    (Alternative)
+import Control.MonadPlus      (MonadPlus)
+import Control.Plus           (Plus)
+import Data.Foldable          (Foldable, foldl, foldMap, foldr)
+import Data.Lazy              (Lazy(), force)
+import Data.Maybe             (Maybe(Just, Nothing))
+import Data.Monoid            (Monoid)
+import Data.Monoid.Additive   (Additive(Additive), runAdditive)
+import Data.Profunctor.Strong ((***))
+import Data.Traversable       (Traversable, traverse)
+import Data.Tuple             (Tuple(Tuple), fst, snd)
+import Data.Unfoldable        (Unfoldable, unfoldr)
 
-import Data.Sequence.Internal
-import qualified Data.FingerTree as FT
-import qualified Data.Sequence.Ordered as Ordered
+import           Data.Sequence.Internal ( Elem(Elem)
+                                        , mapGetElem
+                                        , getElem
+                                        , liftElem
+                                        , lift2Elem
+                                        , measure
+                                        , strJoin
+                                        , unsafeCoerce
+                                        )
+import qualified Data.FingerTree        as FT
+import qualified Data.Sequence.Ordered  as Ordered
 
 -- TODO: Optimise Apply instance (see Hackage)
 -- TODO: adjust might be suboptimal, see Data.Sequence on Hackage
 -- TODO: toSeq can be improved. See Hackage
 
-type SeqInner a = FT.FingerTree (Additive Number) (Elem a)
+type SeqInner a = FT.FingerTree (Additive Int) (Elem a)
 newtype Seq a = Seq (SeqInner a)
 
--- `fmap Seq` is a no-op, since Seq is a newtype. Use this function instead
+-- `map Seq` is a no-op, since Seq is a newtype. Use this function instead
 -- to avoid an unnecessary traversal of the structure.
-fmapSeq :: forall f a. (Functor f) => f (SeqInner a) -> f (Seq a)
-fmapSeq = unsafeCoerce
+mapSeq :: forall f a. (Functor f) => f (SeqInner a) -> f (Seq a)
+mapSeq = unsafeCoerce
 
 instance ordSeq :: (Ord a) => Ord (Seq a) where
   compare (Seq xs) (Seq ys) = FT.compareFingerTree xs ys
 
 instance eqSeq :: (Eq a) => Eq (Seq a) where
-  (==) (Seq xs) (Seq ys) = FT.eqFingerTree xs ys
-  (/=) xs ys = not (xs == ys)
+  eq (Seq xs) (Seq ys) = FT.eqFingerTree xs ys
 
 instance showSeq :: (Show a) => Show (Seq a) where
   show xs = "(toSeq [" <> strJoin "," (fromSeq xs) <> "])"
 
 instance semigroupSeq :: Semigroup (Seq a) where
-  (<>) = append
+  append = append
 
 instance monoidSeq :: Monoid (Seq a) where
   mempty = empty
@@ -109,7 +117,7 @@ instance foldableSeq :: Foldable Seq where
   foldMap f (Seq xs) = foldMap (liftElem f) xs
 
 instance traversableSeq :: Traversable Seq where
-  traverse f (Seq xs) = fmapSeq (traverse (traverse f) xs)
+  traverse f (Seq xs) = mapSeq (traverse (traverse f) xs)
   sequence = traverse id
 
 instance unfoldableSeq :: Unfoldable Seq where
@@ -118,21 +126,21 @@ instance unfoldableSeq :: Unfoldable Seq where
                   Nothing           -> empty
 
 instance functorSeq :: Functor Seq where
-  (<$>) = map
+  map = map
 
 instance applySeq :: Apply Seq where
-  (<*>) = ap
+  apply = ap
 
 instance applicativeSeq :: Applicative Seq where
   pure = singleton
 
 instance bindSeq :: Bind Seq where
-  (>>=) = flip concatMap
+  bind = flip concatMap
 
 instance monadSeq :: Monad Seq
 
 instance altSeq :: Alt Seq where
-  (<|>) = append
+  alt = append
 
 instance plusSeq :: Plus Seq where
   empty = empty
@@ -174,7 +182,7 @@ concatMap :: forall a b. (a -> Seq b) -> Seq a -> Seq b
 concatMap f = concat <<< map f
 
 -- | O(1). The number of elements in the sequence.
-length :: forall a. Seq a -> Number
+length :: forall a. Seq a -> Int
 length (Seq xs) = runAdditive (measure xs)
 
 -- | O(1). True if the sequence has no elements, false otherwise.
@@ -200,7 +208,7 @@ unsnoc (Seq xs) =
       FT.NilR       -> Nothing
       FT.SnocR ys y -> Just (Tuple (Seq (force ys)) (getElem y))
 
-splitAt' :: forall a. Number -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
+splitAt' :: forall a. Int -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
 splitAt' i (Seq xs) = seqify tuple
   where
   tuple = FT.split (\n -> i < runAdditive n) xs
@@ -213,7 +221,7 @@ splitAt' i (Seq xs) = seqify tuple
 -- | subsequence will have i elements (unless there are not that many in the
 -- | whole sequence, in which case the first element is the same sequence,
 -- | unchanged).
-splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
+splitAt :: forall a. Int -> Seq a -> Tuple (Seq a) (Seq a)
 splitAt i xs = forceBoth tuple
   where
   forceBoth = force *** force
@@ -221,29 +229,29 @@ splitAt i xs = forceBoth tuple
 
 -- | O(log(min(i,n-i))). Take a certain number of values from the left end of
 -- | a sequence, and discard the rest.
-take :: forall a. Number -> Seq a -> Seq a
+take :: forall a. Int -> Seq a -> Seq a
 take i = force <<< fst <<< splitAt' i
 
 -- | O(log(min(i,n-i))). Discard a given number of elements from the left side
 -- | of a Seq.
-drop :: forall a. Number -> Seq a -> Seq a
+drop :: forall a. Int -> Seq a -> Seq a
 drop i = force <<< snd <<< splitAt' i
 
 -- | O(1). True if the given index specifies an element that exists in the
 -- | sequence, false otherwise.
-inBounds :: forall a. Number -> Seq a -> Boolean
+inBounds :: forall a. Int -> Seq a -> Boolean
 inBounds i seq = 0 <= i && i < length seq
 
 -- | O(log(min(i,n-i))). Retrieve the element at the given index in the
 -- | sequence. This function is zero-based; that is, the first element in a
 -- | sequence `xs` can be retrieved with `index 0 xs`.
-index :: forall a. Number -> Seq a -> Maybe a
+index :: forall a. Int -> Seq a -> Maybe a
 index i xs = if inBounds i xs then Just (unsafeIndex i xs) else Nothing
 
 -- | O(log(min(i,n-i))). Like `index`, but this function will throw an error
 -- | instead of returning Nothing if no element exists at the specified
 -- | sequence.
-unsafeIndex :: forall a. Number -> Seq a -> a
+unsafeIndex :: forall a. Int -> Seq a -> a
 unsafeIndex i (Seq xs) =
   case FT.unsafeSplitTree (\n -> i < runAdditive n) (Additive 0) xs of
     FT.LazySplit _ x _ -> getElem x
@@ -251,10 +259,10 @@ unsafeIndex i (Seq xs) =
 -- | O(log(min(i,n-i))). Adjust the element at the specified index by
 -- | applying the given function to it. If the index is out of range, the
 -- | sequence is returned unchanged.
-adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
+adjust :: forall a. (a -> a) -> Int -> Seq a -> Seq a
 adjust f i xs = if inBounds i xs then unsafeAdjust f i xs else xs
 
-unsafeAdjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
+unsafeAdjust :: forall a. (a -> a) -> Int -> Seq a -> Seq a
 unsafeAdjust f i (Seq xs) =
   case FT.unsafeSplitTree (\n -> i < runAdditive n) (Additive 0) xs of
     FT.LazySplit l x r ->
@@ -269,7 +277,7 @@ unsafeAdjust f i (Seq xs) =
 -- | O(log(min(i,n-i))). Replace the element at the specified index with
 -- | a new element. If the index is out of range, the sequence is returned
 -- | unchanged.
-replace :: forall a. a -> Number -> Seq a -> Seq a
+replace :: forall a. a -> Int -> Seq a -> Seq a
 replace x = adjust (const x)
 
 -- | O(n). Apply a function to every element within a sequence. Note that this
@@ -285,21 +293,21 @@ map f (Seq xs) = Seq (g <$> xs)
 
 -- | O(1). Get the first element of a Seq. Equivalent to `index 0`.
 head :: forall a. Seq a -> Maybe a
-head (Seq xs) = fmapGetElem (FT.head xs)
+head (Seq xs) = mapGetElem (FT.head xs)
 
 -- | O(1). Get all but the first element of a Seq. Equivalent to `drop 1`.
 tail :: forall a. Seq a -> Maybe (Seq a)
-tail (Seq xs) = fmapSeq (FT.tail xs)
+tail (Seq xs) = mapSeq (FT.tail xs)
 
 -- | O(1). Get all but the last element of a Seq. Equivalent to `\seq -> take
 -- | (length seq - 1)`.
 init :: forall a. Seq a -> Maybe (Seq a)
-init (Seq xs) = fmapSeq (FT.init xs)
+init (Seq xs) = mapSeq (FT.init xs)
 
 -- | O(1). Get the last element of a Seq. Equivalent to
 -- | `\seq -> index (length seq - 1) seq`.
 last :: forall a. Seq a -> Maybe a
-last (Seq xs) = fmapGetElem (FT.last xs)
+last (Seq xs) = mapGetElem (FT.last xs)
 
 -- | Probably O(n*log(n)), but depends on the Foldable instance. Turn any
 -- | `Foldable` into a `Seq`.
@@ -309,7 +317,7 @@ toSeq = foldr cons empty
 -- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 -- | any `Unfoldable`.
 fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
-fromSeq (Seq xs) = fmapGetElem (FT.unfoldLeft xs)
+fromSeq (Seq xs) = mapGetElem (FT.unfoldLeft xs)
 
 -- | O(n). Create a new Seq which contains only those elements of the input
 -- | Seq which satisfy the given predicate.

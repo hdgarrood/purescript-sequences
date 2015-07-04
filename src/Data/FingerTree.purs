@@ -3,21 +3,64 @@
 -- | tree", which is intended to be used as a building block for implementing
 -- | other data structures. See, for example, `Seq` from `Data.Sequence`.
 
-module Data.FingerTree where
+module Data.FingerTree
+  ( Node(..)
+  , node2
+  , node3
+  , nodeToDigit
+  , FingerTree(..)
+  , lazyEmpty
+  , deep
+  , Digit()
+  , eqFingerTree
+  , compareFingerTree
+  , cons
+  , snoc
+  , consAll
+  , snocAll
+  , toFingerTree
+  , ViewL(..)
+  , headDigit
+  , tailDigit
+  , viewL
+  , deepL
+  , isEmpty
+  , head
+  , tail
+  , lastDigit
+  , initDigit
+  , ViewR(..)
+  , viewR
+  , deepR
+  , last
+  , init
+  , app3
+  , nodes
+  , append
+  , Split(Split)
+  , LazySplit(LazySplit)
+  , unsafeSplitDigit
+  , unsafeSplitTree
+  , split
+  , filter
+  , unfoldLeft
+  , unfoldRight
+  , fullyForce
+  ) where
 
-import Prelude hiding (cons)
+import Prelude hiding (append)
 
-import Data.Monoid
-import qualified Data.Array as A
+import qualified Data.Array        as A
 import qualified Data.Array.Unsafe as AU
-import Data.Maybe
-import Data.Tuple
-import Data.Lazy
-import Data.Foldable
-import Data.Unfoldable
-import Data.Traversable
+import           Data.Foldable     (Foldable, foldl, foldr)
+import           Data.Lazy         (Lazy(), defer, force)
+import           Data.Maybe        (Maybe(Just, Nothing))
+import           Data.Monoid       (Monoid, mempty)
+import           Data.Traversable  (Traversable, traverse)
+import           Data.Tuple        (Tuple(Tuple))
+import           Data.Unfoldable   (Unfoldable, unfoldr)
 
-import Data.Sequence.Internal
+import Data.Sequence.Internal (Measured, (!), (<$$$>), measure)
 
 data Node v a = Node2 v a a | Node3 v a a a
 
@@ -45,8 +88,8 @@ nodeToDigit (Node2 _ a b) = [a, b]
 nodeToDigit (Node3 _ a b c) = [a, b, c]
 
 instance functorNode :: Functor (Node v) where
-  (<$>) f (Node2 v a b)   = Node2 v (f a) (f b)
-  (<$>) f (Node3 v a b c) = Node3 v (f a) (f b) (f c)
+  map f (Node2 v a b)   = Node2 v (f a) (f b)
+  map f (Node3 v a b c) = Node3 v (f a) (f b) (f c)
 
 instance foldableNode :: Foldable (Node v) where
   foldr (-<) z (Node2 _ a b)   = a -< (b -< z)
@@ -101,7 +144,7 @@ instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
      ++ ")")
 
 instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTree v a) where
-  (<>) = append
+  append = append
 
 -- We don't implement an Eq instance because we don't want to make assumptions
 -- about the meaning of the data, and because we expect actual uses of
@@ -141,9 +184,9 @@ compareFingerTree xs ys =
         other -> other
 
 instance functorFingerTree :: Functor (FingerTree v) where
-  (<$>) f Empty = Empty
-  (<$>) f (Single x) = Single (f x)
-  (<$>) f (Deep v pr m sf) = Deep v (f <$> pr) (f <$$$> m) (f <$> sf)
+  map f Empty = Empty
+  map f (Single x) = Single (f x)
+  map f (Deep v pr m sf) = Deep v (f <$> pr) (f <$$$> m) (f <$> sf)
 
 instance foldableFingerTree :: Foldable (FingerTree v) where
   foldr (-<) z Empty            = z
@@ -206,7 +249,7 @@ cons a (Deep _ [b, c, d, e] m sf) =
    -- is satisfied. if sf is dangerous, we can pass a debit to the outer
    -- suspension to satisfy constraint.
    deep [a, b] (defer (\_ -> cons (node3 c d e) forcedM)) sf
-cons a (Deep _ pr m sf)           = deep (a : pr) m sf
+cons a (Deep _ pr m sf)           = deep (A.cons a pr) m sf
 
 snoc :: forall a v. (Monoid v, Measured a v) =>
   FingerTree v a -> a -> FingerTree v a
@@ -234,8 +277,8 @@ toFingerTree s = snocAll Empty s
 data ViewL s a = NilL | ConsL a (Lazy (s a))
 
 instance functorViewL :: (Functor s) => Functor (ViewL s) where
-  (<$>) f NilL = NilL
-  (<$>) f (ConsL x xs) = ConsL (f x) ((f <$>) <$> xs)
+  map f NilL = NilL
+  map f (ConsL x xs) = ConsL (f x) ((f <$>) <$> xs)
 
 headDigit :: forall a. Digit a -> a
 headDigit = AU.head
@@ -337,7 +380,7 @@ nodes :: forall a v. (Monoid v, Measured a v) => Array a -> Array (Node v a)
 nodes [a, b]       = [node2 a b]
 nodes [a, b, c]    = [node3 a b c]
 nodes [a, b, c, d] = [node2 a b, node2 c d]
-nodes xs           = node3 (xs ! 0) (xs ! 1) (xs ! 2) : nodes (A.drop 3 xs)
+nodes xs           = node3 (xs ! 0) (xs ! 1) (xs ! 2) A.: nodes (A.drop 3 xs)
 
 append :: forall a v. (Monoid v, Measured a v)
      => FingerTree v a -> FingerTree v a -> FingerTree v a
@@ -358,7 +401,7 @@ unsafeSplitDigit p i as =
       in if p i'
            then Split [] a bs
            else case unsafeSplitDigit p i' bs of
-                  Split l x r -> Split (a:l) x r
+                  Split l x r -> Split (A.cons a l) x r
 
 unsafeSplitTree :: forall a v. (Monoid v, Measured a v) =>
   (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
@@ -428,5 +471,4 @@ fullyForce ft =
       let v' = force v
           m' = fullyForce (force m)
       in  ft
-    _ ->
-      ft
+    _ -> ft

@@ -42,13 +42,14 @@ module Data.Sequence.NonEmpty
   , fromSeq
   ) where
 
-import Prelude hiding (cons)
-import Control.Alt
-import Data.Foldable
-import Data.Traversable
-import Data.Maybe
-import Data.Tuple
-import Data.Unfoldable
+import Prelude hiding (append)
+
+import Control.Alt      (Alt)
+import Data.Foldable    (Foldable, foldl, foldMap, foldr)
+import Data.Maybe       (Maybe(Just, Nothing), maybe)
+import Data.Traversable (Traversable, sequence, traverse)
+import Data.Tuple       (Tuple(Tuple), fst)
+import Data.Unfoldable  (Unfoldable)
 
 import qualified Data.Sequence as S
 
@@ -73,12 +74,12 @@ append :: forall a. Seq a -> Seq a -> Seq a
 append (Seq x xs) (Seq y ys) = Seq x ((S.snoc xs y) <> ys)
 
 -- | O(1). The number of elements in the sequence.
-length :: forall a. Seq a -> Number
+length :: forall a. Seq a -> Int
 length (Seq _ xs) = S.length xs + 1
 
 -- | O(1). True if the given index specifies an element that exists in the
 -- | sequence, false otherwise.
-inBounds :: forall a. Number -> Seq a -> Boolean
+inBounds :: forall a. Int -> Seq a -> Boolean
 inBounds 0 _ = true
 inBounds i (Seq _ xs) = S.inBounds (i - 1) xs
 
@@ -122,17 +123,17 @@ toPlain (Seq x xs) = S.cons x xs
 -- | The first subsequence will have i elements (unless there are not that many in
 -- | the whole sequence, in which case the first element is the same sequence,
 -- | unchanged).
-splitAt :: forall a. Number -> Seq a -> Tuple (S.Seq a) (S.Seq a)
+splitAt :: forall a. Int -> Seq a -> Tuple (S.Seq a) (S.Seq a)
 splitAt i = S.splitAt i <<< toPlain
 
 -- | O(log(min(i,n-i))). Take a certain number of values from the left end of
 -- | a sequence, and discard the rest, returning a possibly empty sequence.
-take :: forall a. Number -> Seq a -> S.Seq a
+take :: forall a. Int -> Seq a -> S.Seq a
 take i = S.take i <<< toPlain
 
 -- | O(log(min(i,n-i))). Discard a given number of elements from the left end
 -- | of a sequence, returning a possibly empty sequence.
-drop :: forall a. Number -> Seq a -> S.Seq a
+drop :: forall a. Int -> Seq a -> S.Seq a
 drop i = S.drop i <<< toPlain
 
 -- | O(n). Create a new (possibly empty) sequence which contains only those
@@ -143,21 +144,21 @@ filter p = S.filter p <<< toPlain
 -- | O(log(min(i,n-i))). Retrieve the element at the given index in the
 -- | sequence. This function is zero-based; that is, the first element in a
 -- | sequence `xs` can be retrieved with `index 0 xs`.
-index :: forall a. Number -> Seq a -> Maybe a
+index :: forall a. Int -> Seq a -> Maybe a
 index 0 (Seq x _)  = Just x
 index i (Seq _ xs) = S.index (i - 1) xs
 
 -- | O(log(min(i,n-i))). Adjust the element at the specified index by
 -- | applying the given function to it. If the index is out of range, the
 -- | sequence is returned unchanged.
-adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
+adjust :: forall a. (a -> a) -> Int -> Seq a -> Seq a
 adjust f 0 (Seq x xs) = Seq (f x) xs
 adjust f i (Seq x xs) = Seq x (S.adjust f (i - 1) xs)
 
 -- | O(log(min(i,n-i))). Replace the element at the specified index with
 -- | a new element. If the index is out of range, the sequence is returned
 -- | unchanged.
-replace :: forall a. a -> Number -> Seq a -> Seq a
+replace :: forall a. a -> Int -> Seq a -> Seq a
 replace x = adjust (const x)
 
 -- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
@@ -174,8 +175,7 @@ instance showSeq :: (Show a) => Show (Seq a) where
   show (Seq x xs) = "(Seq " <> show x <> " " <> show xs <> ")"
 
 instance eqSeq :: (Eq a) => Eq (Seq a) where
-  (==) (Seq x xs) (Seq y ys) = x == y && xs == ys
-  (/=) x y = not (x == y)
+  eq (Seq x xs) (Seq y ys) = x == y && xs == ys
 
 instance ordSeq :: (Ord a) => Ord (Seq a) where
   compare (Seq x xs) (Seq y ys) =
@@ -184,24 +184,24 @@ instance ordSeq :: (Ord a) => Ord (Seq a) where
       other -> other
 
 instance functorSeq :: Functor Seq where
-  (<$>) f (Seq x xs) = Seq (f x) (f <$> xs)
+  map f (Seq x xs) = Seq (f x) (f <$> xs)
 
 instance applySeq :: Apply Seq where
-  (<*>) fs xs = fromPlainUnsafe (toPlain fs <*> toPlain xs)
+  apply fs xs = fromPlainUnsafe (toPlain fs <*> toPlain xs)
 
 instance applicativeSeq :: Applicative Seq where
   pure x = Seq x S.empty
 
 instance bindSeq :: Bind Seq where
-  (>>=) xs f = fromPlainUnsafe (toPlain xs >>= (toPlain <<< f))
+  bind xs f = fromPlainUnsafe (toPlain xs >>= (toPlain <<< f))
 
 instance monadSeq :: Monad Seq
 
 instance semigroupSeq :: Semigroup (Seq a) where
-  (<>) (Seq x xs) (Seq y ys) = Seq x ((S.snoc xs y) <> ys)
+  append (Seq x xs) (Seq y ys) = Seq x ((S.snoc xs y) <> ys)
 
 instance altSeq :: Alt Seq where
-  (<|>) = (<>)
+  alt = (<>)
 
 instance foldableSeq :: Foldable Seq where
   foldr f z = toPlain >>> foldr f z
