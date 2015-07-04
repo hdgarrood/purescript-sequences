@@ -1,7 +1,4 @@
-# Module Documentation
-
 ## Module Data.FingerTree
-
 
 This module defines a general-purpose data structure, known as a "finger
 tree", which is intended to be used as a building block for implementing
@@ -15,13 +12,14 @@ data Node v a
   | Node3 v a a a
 ```
 
-
-#### `showNode`
-
+##### Instances
 ``` purescript
 instance showNode :: (Show a, Show v) => Show (Node v a)
+instance functorNode :: Functor (Node v)
+instance foldableNode :: Foldable (Node v)
+instance traversableNode :: Traversable (Node v)
+instance measuredNode :: Measured (Node v a) v
 ```
-
 
 #### `node2`
 
@@ -29,13 +27,11 @@ instance showNode :: (Show a, Show v) => Show (Node v a)
 node2 :: forall a v. (Monoid v, Measured a v) => a -> a -> Node v a
 ```
 
-
 #### `node3`
 
 ``` purescript
 node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
 ```
-
 
 #### `nodeToDigit`
 
@@ -43,42 +39,23 @@ node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
 nodeToDigit :: forall a v. Node v a -> Digit a
 ```
 
-
-#### `functorNode`
-
-``` purescript
-instance functorNode :: Functor (Node v)
-```
-
-
-#### `foldableNode`
-
-``` purescript
-instance foldableNode :: Foldable (Node v)
-```
-
-
-#### `traversableNode`
-
-``` purescript
-instance traversableNode :: Traversable (Node v)
-```
-
-
-#### `measuredNode`
-
-``` purescript
-instance measuredNode :: Measured (Node v a) v
-```
-
-
 #### `FingerTree`
 
 ``` purescript
 data FingerTree v a
-  = Empty 
+  = Empty
   | Single a
   | Deep (Lazy v) (Digit a) (Lazy (FingerTree v (Node v a))) (Digit a)
+```
+
+##### Instances
+``` purescript
+instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a)
+instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTree v a)
+instance functorFingerTree :: Functor (FingerTree v)
+instance foldableFingerTree :: Foldable (FingerTree v)
+instance traversableFingerTree :: Traversable (FingerTree v)
+instance measuredFingerTree :: (Monoid v, Measured a v) => Measured (FingerTree v a) v
 ```
 
 #### `lazyEmpty`
@@ -87,33 +64,17 @@ data FingerTree v a
 lazyEmpty :: forall v a. Lazy (FingerTree v a)
 ```
 
-
 #### `deep`
 
 ``` purescript
 deep :: forall a v. (Monoid v, Measured a v) => Digit a -> Lazy (FingerTree v (Node v a)) -> Digit a -> FingerTree v a
 ```
 
-
 #### `Digit`
 
 ``` purescript
 type Digit a = Array a
 ```
-
-#### `showFingerTree`
-
-``` purescript
-instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a)
-```
-
-
-#### `semigroupFingerTree`
-
-``` purescript
-instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTree v a)
-```
-
 
 #### `eqFingerTree`
 
@@ -127,40 +88,11 @@ eqFingerTree :: forall a v. (Monoid v, Measured a v, Eq a) => FingerTree v a -> 
 compareFingerTree :: forall a v. (Monoid v, Measured a v, Ord a) => FingerTree v a -> FingerTree v a -> Ordering
 ```
 
-#### `functorFingerTree`
-
-``` purescript
-instance functorFingerTree :: Functor (FingerTree v)
-```
-
-
-#### `foldableFingerTree`
-
-``` purescript
-instance foldableFingerTree :: Foldable (FingerTree v)
-```
-
-
-#### `traversableFingerTree`
-
-``` purescript
-instance traversableFingerTree :: Traversable (FingerTree v)
-```
-
-
-#### `measuredFingerTree`
-
-``` purescript
-instance measuredFingerTree :: (Monoid v, Measured a v) => Measured (FingerTree v a) v
-```
-
-
 #### `cons`
 
 ``` purescript
 cons :: forall a v. (Monoid v, Measured a v) => a -> FingerTree v a -> FingerTree v a
 ```
-
 
 #### `snoc`
 
@@ -168,13 +100,11 @@ cons :: forall a v. (Monoid v, Measured a v) => a -> FingerTree v a -> FingerTre
 snoc :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> a -> FingerTree v a
 ```
 
-
 #### `consAll`
 
 ``` purescript
 consAll :: forall f a v. (Monoid v, Measured a v, Foldable f) => f a -> FingerTree v a -> FingerTree v a
 ```
-
 
 #### `snocAll`
 
@@ -182,29 +112,24 @@ consAll :: forall f a v. (Monoid v, Measured a v, Foldable f) => f a -> FingerTr
 snocAll :: forall f a v. (Monoid v, Measured a v, Foldable f) => FingerTree v a -> f a -> FingerTree v a
 ```
 
-
 #### `toFingerTree`
 
 ``` purescript
 toFingerTree :: forall f a v. (Monoid v, Measured a v, Foldable f) => f a -> FingerTree v a
 ```
 
-
 #### `ViewL`
 
 ``` purescript
 data ViewL s a
-  = NilL 
+  = NilL
   | ConsL a (Lazy (s a))
 ```
 
-
-#### `functorViewL`
-
+##### Instances
 ``` purescript
 instance functorViewL :: (Functor s) => Functor (ViewL s)
 ```
-
 
 #### `headDigit`
 
@@ -212,13 +137,11 @@ instance functorViewL :: (Functor s) => Functor (ViewL s)
 headDigit :: forall a. Digit a -> a
 ```
 
-
 #### `tailDigit`
 
 ``` purescript
 tailDigit :: forall a. Digit a -> Digit a
 ```
-
 
 #### `viewL`
 
@@ -226,13 +149,11 @@ tailDigit :: forall a. Digit a -> Digit a
 viewL :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> ViewL (FingerTree v) a
 ```
 
-
 #### `deepL`
 
 ``` purescript
 deepL :: forall a v. (Monoid v, Measured a v) => Digit a -> Lazy (FingerTree v (Node v a)) -> Array a -> FingerTree v a
 ```
-
 
 #### `isEmpty`
 
@@ -240,13 +161,11 @@ deepL :: forall a v. (Monoid v, Measured a v) => Digit a -> Lazy (FingerTree v (
 isEmpty :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Boolean
 ```
 
-
 #### `head`
 
 ``` purescript
 head :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
 ```
-
 
 #### `tail`
 
@@ -254,13 +173,11 @@ head :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
 tail :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe (FingerTree v a)
 ```
 
-
 #### `lastDigit`
 
 ``` purescript
 lastDigit :: forall a. Digit a -> a
 ```
-
 
 #### `initDigit`
 
@@ -268,15 +185,13 @@ lastDigit :: forall a. Digit a -> a
 initDigit :: forall a. Digit a -> Digit a
 ```
 
-
 #### `ViewR`
 
 ``` purescript
 data ViewR s a
-  = NilR 
+  = NilR
   | SnocR (Lazy (s a)) a
 ```
-
 
 #### `viewR`
 
@@ -284,13 +199,11 @@ data ViewR s a
 viewR :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> ViewR (FingerTree v) a
 ```
 
-
 #### `deepR`
 
 ``` purescript
 deepR :: forall a v. (Monoid v, Measured a v) => Array a -> Lazy (FingerTree v (Node v a)) -> Array a -> FingerTree v a
 ```
-
 
 #### `last`
 
@@ -298,13 +211,11 @@ deepR :: forall a v. (Monoid v, Measured a v) => Array a -> Lazy (FingerTree v (
 last :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
 ```
 
-
 #### `init`
 
 ``` purescript
 init :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe (FingerTree v a)
 ```
-
 
 #### `app3`
 
@@ -312,20 +223,17 @@ init :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe (FingerT
 app3 :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Array a -> FingerTree v a -> FingerTree v a
 ```
 
-
 #### `nodes`
 
 ``` purescript
 nodes :: forall a v. (Monoid v, Measured a v) => Array a -> Array (Node v a)
 ```
 
-
 #### `append`
 
 ``` purescript
 append :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> FingerTree v a -> FingerTree v a
 ```
-
 
 #### `Split`
 
@@ -334,7 +242,6 @@ data Split f a
   = Split (f a) a (f a)
 ```
 
-
 #### `LazySplit`
 
 ``` purescript
@@ -342,13 +249,11 @@ data LazySplit f a
   = LazySplit (Lazy (f a)) a (Lazy (f a))
 ```
 
-
 #### `unsafeSplitDigit`
 
 ``` purescript
 unsafeSplitDigit :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> v -> Digit a -> Split Array a
 ```
-
 
 #### `unsafeSplitTree`
 
@@ -356,13 +261,11 @@ unsafeSplitDigit :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> v 
 unsafeSplitTree :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
 ```
 
-
 #### `split`
 
 ``` purescript
 split :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> FingerTree v a -> Tuple (Lazy (FingerTree v a)) (Lazy (FingerTree v a))
 ```
-
 
 #### `filter`
 
@@ -370,13 +273,11 @@ split :: forall a v. (Monoid v, Measured a v) => (v -> Boolean) -> FingerTree v 
 filter :: forall a v. (Monoid v, Measured a v) => (a -> Boolean) -> FingerTree v a -> FingerTree v a
 ```
 
-
 #### `unfoldLeft`
 
 ``` purescript
 unfoldLeft :: forall f a v. (Unfoldable f, Monoid v, Measured a v) => FingerTree v a -> f a
 ```
-
 
 #### `unfoldRight`
 
@@ -384,9 +285,10 @@ unfoldLeft :: forall f a v. (Unfoldable f, Monoid v, Measured a v) => FingerTree
 unfoldRight :: forall f a v. (Unfoldable f, Monoid v, Measured a v) => FingerTree v a -> f a
 ```
 
-
 #### `fullyForce`
 
 ``` purescript
 fullyForce :: forall a v. FingerTree v a -> FingerTree v a
 ```
+
+

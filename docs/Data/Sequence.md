@@ -1,7 +1,4 @@
-# Module Documentation
-
 ## Module Data.Sequence
-
 
 This module provides a sequence data type, intended for the same sort of
 tasks as an Array would be in JavaScript, except with better asymptotic
@@ -23,125 +20,26 @@ ambiguity. For example: `import qualified Data.Sequence as S`.
 newtype Seq a
 ```
 
-
-#### `ordSeq`
-
+##### Instances
 ``` purescript
 instance ordSeq :: (Ord a) => Ord (Seq a)
-```
-
-
-#### `eqSeq`
-
-``` purescript
 instance eqSeq :: (Eq a) => Eq (Seq a)
-```
-
-
-#### `showSeq`
-
-``` purescript
 instance showSeq :: (Show a) => Show (Seq a)
-```
-
-
-#### `semigroupSeq`
-
-``` purescript
 instance semigroupSeq :: Semigroup (Seq a)
-```
-
-
-#### `monoidSeq`
-
-``` purescript
 instance monoidSeq :: Monoid (Seq a)
-```
-
-
-#### `foldableSeq`
-
-``` purescript
 instance foldableSeq :: Foldable Seq
-```
-
-
-#### `traversableSeq`
-
-``` purescript
 instance traversableSeq :: Traversable Seq
-```
-
-
-#### `unfoldableSeq`
-
-``` purescript
 instance unfoldableSeq :: Unfoldable Seq
-```
-
-
-#### `functorSeq`
-
-``` purescript
 instance functorSeq :: Functor Seq
-```
-
-
-#### `applySeq`
-
-``` purescript
 instance applySeq :: Apply Seq
-```
-
-
-#### `applicativeSeq`
-
-``` purescript
 instance applicativeSeq :: Applicative Seq
-```
-
-
-#### `bindSeq`
-
-``` purescript
 instance bindSeq :: Bind Seq
-```
-
-
-#### `monadSeq`
-
-``` purescript
 instance monadSeq :: Monad Seq
-```
-
-
-#### `altSeq`
-
-``` purescript
 instance altSeq :: Alt Seq
-```
-
-
-#### `plusSeq`
-
-``` purescript
 instance plusSeq :: Plus Seq
-```
-
-
-#### `alternativeSeq`
-
-``` purescript
 instance alternativeSeq :: Alternative Seq
-```
-
-
-#### `monadPlusSeq`
-
-``` purescript
 instance monadPlusSeq :: MonadPlus Seq
 ```
-
 
 #### `empty`
 
@@ -206,7 +104,7 @@ flatten the results.
 #### `length`
 
 ``` purescript
-length :: forall a. Seq a -> Number
+length :: forall a. Seq a -> Int
 ```
 
 O(1). The number of elements in the sequence.
@@ -242,7 +140,7 @@ return Nothing.
 #### `splitAt`
 
 ``` purescript
-splitAt :: forall a. Number -> Seq a -> Tuple (Seq a) (Seq a)
+splitAt :: forall a. Int -> Seq a -> Tuple (Seq a) (Seq a)
 ```
 
 O(log(min(i,n-i))). Split the sequence into two subsequences. The first
@@ -253,7 +151,7 @@ unchanged).
 #### `take`
 
 ``` purescript
-take :: forall a. Number -> Seq a -> Seq a
+take :: forall a. Int -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Take a certain number of values from the left end of
@@ -262,7 +160,7 @@ a sequence, and discard the rest.
 #### `drop`
 
 ``` purescript
-drop :: forall a. Number -> Seq a -> Seq a
+drop :: forall a. Int -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Discard a given number of elements from the left side
@@ -271,7 +169,7 @@ of a Seq.
 #### `inBounds`
 
 ``` purescript
-inBounds :: forall a. Number -> Seq a -> Boolean
+inBounds :: forall a. Int -> Seq a -> Boolean
 ```
 
 O(1). True if the given index specifies an element that exists in the
@@ -280,7 +178,7 @@ sequence, false otherwise.
 #### `index`
 
 ``` purescript
-index :: forall a. Number -> Seq a -> Maybe a
+index :: forall a. Int -> Seq a -> Maybe a
 ```
 
 O(log(min(i,n-i))). Retrieve the element at the given index in the
@@ -290,7 +188,7 @@ sequence `xs` can be retrieved with `index 0 xs`.
 #### `adjust`
 
 ``` purescript
-adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
+adjust :: forall a. (a -> a) -> Int -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Adjust the element at the specified index by
@@ -300,7 +198,7 @@ sequence is returned unchanged.
 #### `replace`
 
 ``` purescript
-replace :: forall a. a -> Number -> Seq a -> Seq a
+replace :: forall a. a -> Int -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Replace the element at the specified index with
@@ -396,3 +294,5 @@ fullyForce :: forall a. Seq a -> Seq a
 ```
 
 Force evaluation of all unevaluated thunks within the sequence.
+
+

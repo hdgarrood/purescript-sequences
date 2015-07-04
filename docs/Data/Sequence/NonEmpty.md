@@ -1,7 +1,4 @@
-# Module Documentation
-
 ## Module Data.Sequence.NonEmpty
-
 
 This module contains a type, `Seq`, much like that from `Data.Sequence`,
 but which is guaranteed to contain at least one element.
@@ -14,10 +11,26 @@ NonEmpty`.
 
 ``` purescript
 data Seq a
-  = Seq a (S.Seq a)
+  = Seq a (Seq a)
 ```
 
 A sequence which is guaranteed to contain at least one element.
+
+##### Instances
+``` purescript
+instance showSeq :: (Show a) => Show (Seq a)
+instance eqSeq :: (Eq a) => Eq (Seq a)
+instance ordSeq :: (Ord a) => Ord (Seq a)
+instance functorSeq :: Functor Seq
+instance applySeq :: Apply Seq
+instance applicativeSeq :: Applicative Seq
+instance bindSeq :: Bind Seq
+instance monadSeq :: Monad Seq
+instance semigroupSeq :: Semigroup (Seq a)
+instance altSeq :: Alt Seq
+instance foldableSeq :: Foldable Seq
+instance traversableSeq :: Traversable Seq
+```
 
 #### `singleton`
 
@@ -54,7 +67,7 @@ O(log(min(i,n-i))). Join two sequence values together.
 #### `length`
 
 ``` purescript
-length :: forall a. Seq a -> Number
+length :: forall a. Seq a -> Int
 ```
 
 O(1). The number of elements in the sequence.
@@ -62,7 +75,7 @@ O(1). The number of elements in the sequence.
 #### `inBounds`
 
 ``` purescript
-inBounds :: forall a. Number -> Seq a -> Boolean
+inBounds :: forall a. Int -> Seq a -> Boolean
 ```
 
 O(1). True if the given index specifies an element that exists in the
@@ -71,7 +84,7 @@ sequence, false otherwise.
 #### `uncons`
 
 ``` purescript
-uncons :: forall a. Seq a -> Tuple a (S.Seq a)
+uncons :: forall a. Seq a -> Tuple a (Seq a)
 ```
 
 O(1). Take one element off the left side of a Seq and return it, together
@@ -80,7 +93,7 @@ with the (possibly empty) remainder of the Seq.
 #### `unsnoc`
 
 ``` purescript
-unsnoc :: forall a. Seq a -> Tuple (S.Seq a) a
+unsnoc :: forall a. Seq a -> Tuple (Seq a) a
 ```
 
 O(1). Take one element off the right side of a Seq and return it, together
@@ -98,7 +111,7 @@ O(1). Get the first element of a non-empty sequence. Equivalent to
 #### `tail`
 
 ``` purescript
-tail :: forall a. Seq a -> S.Seq a
+tail :: forall a. Seq a -> Seq a
 ```
 
 O(1). Get all but the first element of a non-empty sequence. The returned
@@ -107,7 +120,7 @@ sequence is possibly empty. Equivalent to `drop 1`.
 #### `init`
 
 ``` purescript
-init :: forall a. Seq a -> S.Seq a
+init :: forall a. Seq a -> Seq a
 ```
 
 O(1). Get all but the last element of a non-empty sequence. Possibly empty.
@@ -123,7 +136,7 @@ O(1). Get the last element of a non-empty sequence.
 #### `toPlain`
 
 ``` purescript
-toPlain :: forall a. Seq a -> S.Seq a
+toPlain :: forall a. Seq a -> Seq a
 ```
 
 O(1). Turn a non-empty sequence into a "plain" sequence (i.e. one from
@@ -132,7 +145,7 @@ Data.Sequence), containing the same elements.
 #### `splitAt`
 
 ``` purescript
-splitAt :: forall a. Number -> Seq a -> Tuple (S.Seq a) (S.Seq a)
+splitAt :: forall a. Int -> Seq a -> Tuple (Seq a) (Seq a)
 ```
 
 O(log(min(i,n-i))). Split the sequence into two (possibly empty) subsequences.
@@ -143,7 +156,7 @@ unchanged).
 #### `take`
 
 ``` purescript
-take :: forall a. Number -> Seq a -> S.Seq a
+take :: forall a. Int -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Take a certain number of values from the left end of
@@ -152,7 +165,7 @@ a sequence, and discard the rest, returning a possibly empty sequence.
 #### `drop`
 
 ``` purescript
-drop :: forall a. Number -> Seq a -> S.Seq a
+drop :: forall a. Int -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Discard a given number of elements from the left end
@@ -161,7 +174,7 @@ of a sequence, returning a possibly empty sequence.
 #### `filter`
 
 ``` purescript
-filter :: forall a. (a -> Boolean) -> Seq a -> S.Seq a
+filter :: forall a. (a -> Boolean) -> Seq a -> Seq a
 ```
 
 O(n). Create a new (possibly empty) sequence which contains only those
@@ -170,7 +183,7 @@ elements of the input sequence which satisfy the given predicate.
 #### `index`
 
 ``` purescript
-index :: forall a. Number -> Seq a -> Maybe a
+index :: forall a. Int -> Seq a -> Maybe a
 ```
 
 O(log(min(i,n-i))). Retrieve the element at the given index in the
@@ -180,7 +193,7 @@ sequence `xs` can be retrieved with `index 0 xs`.
 #### `adjust`
 
 ``` purescript
-adjust :: forall a. (a -> a) -> Number -> Seq a -> Seq a
+adjust :: forall a. (a -> a) -> Int -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Adjust the element at the specified index by
@@ -190,7 +203,7 @@ sequence is returned unchanged.
 #### `replace`
 
 ``` purescript
-replace :: forall a. a -> Number -> Seq a -> Seq a
+replace :: forall a. a -> Int -> Seq a -> Seq a
 ```
 
 O(log(min(i,n-i))). Replace the element at the specified index with
@@ -206,85 +219,4 @@ fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 any `Unfoldable`.
 
-#### `showSeq`
 
-``` purescript
-instance showSeq :: (Show a) => Show (Seq a)
-```
-
-
-#### `eqSeq`
-
-``` purescript
-instance eqSeq :: (Eq a) => Eq (Seq a)
-```
-
-
-#### `ordSeq`
-
-``` purescript
-instance ordSeq :: (Ord a) => Ord (Seq a)
-```
-
-
-#### `functorSeq`
-
-``` purescript
-instance functorSeq :: Functor Seq
-```
-
-
-#### `applySeq`
-
-``` purescript
-instance applySeq :: Apply Seq
-```
-
-
-#### `applicativeSeq`
-
-``` purescript
-instance applicativeSeq :: Applicative Seq
-```
-
-
-#### `bindSeq`
-
-``` purescript
-instance bindSeq :: Bind Seq
-```
-
-
-#### `monadSeq`
-
-``` purescript
-instance monadSeq :: Monad Seq
-```
-
-
-#### `semigroupSeq`
-
-``` purescript
-instance semigroupSeq :: Semigroup (Seq a)
-```
-
-
-#### `altSeq`
-
-``` purescript
-instance altSeq :: Alt Seq
-```
-
-
-#### `foldableSeq`
-
-``` purescript
-instance foldableSeq :: Foldable Seq
-```
-
-
-#### `traversableSeq`
-
-``` purescript
-instance traversableSeq :: Traversable Seq
-```

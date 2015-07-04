@@ -1,7 +1,4 @@
-# Module Documentation
-
 ## Module Data.Sequence.Ordered
-
 
 This module defines a sequence where elements are always kept in
 order. This enables constant time access to the least and greatest
@@ -18,47 +15,20 @@ newtype OrdSeq a
 
 An ordered sequence. The Semigroup instance uses the `merge` function.
 
+##### Instances
+``` purescript
+instance eqOrdSeq :: (Eq a) => Eq (OrdSeq a)
+instance showOrdSeq :: (Show a) => Show (OrdSeq a)
+instance semigroupOrdSeq :: (Ord a) => Semigroup (OrdSeq a)
+instance monoidOrdSeq :: (Ord a) => Monoid (OrdSeq a)
+instance foldableOrdSeq :: Foldable OrdSeq
+```
+
 #### `empty`
 
 ``` purescript
 empty :: forall a. OrdSeq a
 ```
-
-
-#### `eqOrdSeq`
-
-``` purescript
-instance eqOrdSeq :: (Eq a) => Eq (OrdSeq a)
-```
-
-
-#### `showOrdSeq`
-
-``` purescript
-instance showOrdSeq :: (Show a) => Show (OrdSeq a)
-```
-
-
-#### `semigroupOrdSeq`
-
-``` purescript
-instance semigroupOrdSeq :: (Ord a) => Semigroup (OrdSeq a)
-```
-
-
-#### `monoidOrdSeq`
-
-``` purescript
-instance monoidOrdSeq :: (Ord a) => Monoid (OrdSeq a)
-```
-
-
-#### `foldableOrdSeq`
-
-``` purescript
-instance foldableOrdSeq :: Foldable OrdSeq
-```
-
 
 #### `null`
 
@@ -71,7 +41,7 @@ O(1). Returns true if the given sequence is empty, false otherwise.
 #### `length`
 
 ``` purescript
-length :: forall a. OrdSeq a -> Number
+length :: forall a. OrdSeq a -> Int
 ```
 
 O(n). Return the length of the sequence.
@@ -196,3 +166,5 @@ Sort any structure (which has Foldable, Unfoldable, and Functor instances)
 by converting to an OrdSeq and back again. I am fairly sure this is
 usually O(n*log(n)), although of course this depends on the Unfoldable and
 Foldable instances.
+
+

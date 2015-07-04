@@ -75,7 +75,7 @@ between Seqs and Arrays at the PS/JS boundaries. The conversion in either
 direction is O(n).
 
 [1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
-[Data.Sequence]: docs/Data.Sequence.md
-[Data.Sequence.NonEmpty]: docs/Data.Sequence.NonEmpty.md
-[Data.Sequence.Ordered]: docs/Data.Sequence.Ordered.md
-[Data.FingerTree]: docs/Data.FingerTree.md
+[Data.Sequence]: docs/Data/Sequence.md
+[Data.Sequence.NonEmpty]: docs/Data/Sequence/NonEmpty.md
+[Data.Sequence.Ordered]: docs/Data/Sequence/Ordered.md
+[Data.FingerTree]: docs/Data/FingerTree.md
