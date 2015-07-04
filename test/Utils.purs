@@ -51,10 +51,6 @@ abs x = if x < 0 then (-x) else x
 integerBetween :: Int -> Int -> Int -> Int
 integerBetween lo hi x = (abs x `mod` hi - lo) + lo
 
--- No longer needed as this can be inforced by using Int
--- isIntegral :: Number -> Boolean
--- isIntegral x = x % 1.0 == 0.0
-
 sorted :: forall a. (Show a, Ord a) => Array a -> _
 sorted xs = xs == A.sort xs
               <?> show xs <> " is not sorted."
