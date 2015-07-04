@@ -1,18 +1,4 @@
-module Tests.Utils
-  ( abs
-  , err
-  , foldableSize
-  , check1
-  , integerBetween
-  , sorted
-  , sortedRev
-  , Min(Min)
-  , runMin
-  , foldableMinimum
-  , Max(Max)
-  , runMax
-  , foldableMaximum
-  ) where
+module Tests.Utils where
 
 import Prelude
 
