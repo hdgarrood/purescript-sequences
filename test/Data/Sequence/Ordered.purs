@@ -67,11 +67,6 @@ orderedSequenceTests = do
   quickCheck $ \seq ->
     sortedRev (OrdSeq.fromOrdSeqDescending seq :: Array Number)
 
-  {-
-  TODO: this should be uncommented when the semigroupMaybe instance in
-        purescript-maybe is fixed (currently it propagates `Nothing`s through
-        the `Apply` instance).
-  -}
   log "Test least"
   quickCheck $ \seq ->
     let seqLeast :: Maybe Number
