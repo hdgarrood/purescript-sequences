@@ -30,12 +30,6 @@ _left-associative / precedence -1_
 strJoin :: forall a. (Show a) => String -> Array a -> String
 ```
 
-#### `unsafeCoerce`
-
-``` purescript
-unsafeCoerce :: forall a b. a -> b
-```
-
 #### `Measured`
 
 ``` purescript

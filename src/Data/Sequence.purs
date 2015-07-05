@@ -71,6 +71,7 @@ import Data.Profunctor.Strong ((***))
 import Data.Traversable       (Traversable, traverse)
 import Data.Tuple             (Tuple(Tuple), fst, snd)
 import Data.Unfoldable        (Unfoldable, unfoldr)
+import Unsafe.Coerce          (unsafeCoerce)
 
 import           Data.Sequence.Internal ( Elem(Elem)
                                         , mapGetElem
@@ -79,7 +80,6 @@ import           Data.Sequence.Internal ( Elem(Elem)
                                         , lift2Elem
                                         , measure
                                         , strJoin
-                                        , unsafeCoerce
                                         )
 import qualified Data.FingerTree        as FT
 import qualified Data.Sequence.Ordered  as Ordered

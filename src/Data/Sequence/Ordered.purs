@@ -47,6 +47,7 @@ import Data.Monoid          (Monoid)
 import Data.Monoid.Additive (Additive(Additive), runAdditive)
 import Data.Foldable        (Foldable, foldl, foldMap, foldr)
 import Data.Unfoldable      (Unfoldable)
+import Unsafe.Coerce        (unsafeCoerce)
 
 import           Data.Sequence.Internal ( Elem(Elem)
                                         , Key(Key)
@@ -56,7 +57,6 @@ import           Data.Sequence.Internal ( Elem(Elem)
                                         , mapGetElem
                                         , measure
                                         , strJoin
-                                        , unsafeCoerce
                                         )
 import qualified Data.FingerTree        as FT
 

@@ -3,7 +3,6 @@ module Data.Sequence.Internal
   , (<$$>)
   , (<$$$>)
   , strJoin
-  , unsafeCoerce
   , Measured
   , measure
   , Elem(..)
@@ -23,6 +22,7 @@ import Data.Lazy            (Lazy(), force)
 import Data.Monoid          (Monoid, mempty)
 import Data.Monoid.Additive (Additive(Additive))
 import Data.Traversable     (Traversable)
+import Unsafe.Coerce        (unsafeCoerce)
 
 -----------------------
 -- Various utilities
@@ -39,11 +39,6 @@ import Data.Traversable     (Traversable)
 
 strJoin :: forall a. (Show a) => String -> Array a -> String
 strJoin glue = intercalate glue <<< map show
-
--- With great power comes great responsibility. Always define an alias of
--- this with a type signature which is as specific as possible, never use it
--- directly.
-foreign import unsafeCoerce :: forall a b. a -> b
 
 ----------------------------------------
 -- FingerTree/Sequence specific stuff
