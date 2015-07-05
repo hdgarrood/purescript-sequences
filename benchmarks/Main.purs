@@ -1,6 +1,6 @@
 module Benchmark.Main where
 
-import Control.Monad (replicateM)
+import Prelude
 import Data.Foldable
 import Data.Traversable
 import Data.Tuple
@@ -9,7 +9,6 @@ import qualified Data.Array as A
 import qualified Data.Sequence as S
 import Math (floor, sqrt)
 import Test.QuickCheck.Gen
-import Test.QuickCheck (Arbitrary, arbitrary)
 import Control.Monad.Eff
 
 import Benchotron.Core
@@ -28,7 +27,7 @@ benchInsertLots = mkBenchmark
   , sizeInterpretation: "Number of elements to be inserted"
   , inputsPerSize: 1
   , gen: randomArray
-  , functions: [ benchFn "Array" (foldr cons [])
+  , functions: [ benchFn "Array" (foldr A.cons [])
                , benchFn "Seq"   (foldr S.cons S.empty)
                ]
   }
@@ -47,7 +46,7 @@ benchMap = mkBenchmark
   }
   where
   map = (<$>)
-  f = (*5)
+  f = (*5.0)
 
 benchFilter :: forall e. Benchmark e
 benchFilter = mkBenchmark
@@ -71,7 +70,7 @@ benchApply = mkBenchmark
   , sizes: (1..50) <#> (*100)
   , sizeInterpretation: "Number of elements in the function structure"
   , inputsPerSize: 1
-  , gen: \n -> Tuple <$> (A.map const <$> randomArray n) <*> randomArray 100
+  , gen: \n -> Tuple <$> (map const <$> randomArray n) <*> randomArray 100
   , functions: [ benchFn "Array" (uncurry (<*>))
                , benchFn' "Seq"  (uncurry (<*>)) (bimap S.toSeq S.toSeq)
                ]
@@ -90,8 +89,8 @@ benchConcatMap = mkBenchmark
                ]
   }
   where
-  f x = [x, x+1, x+2]
-  g x = S.cons x (S.cons (x+1) (S.cons (x+2) S.empty))
+  f x = [x, x+1.0, x+2.0]
+  g x = S.cons x (S.cons (x+1.0) (S.cons (x+2.0) S.empty))
 
 benchFold :: forall e. Benchmark e
 benchFold = mkBenchmark
@@ -114,7 +113,7 @@ benchTraverse = mkBenchmark
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: randomArray
-  , functions: [ benchFn "Array" (traverseArray Just)
+  , functions: [ benchFn "Array" (traverse Just)
                , benchFn' "Seq" (traverse Just) S.toSeq
                ]
   }
@@ -161,70 +160,4 @@ main =
     , benchSort
     ]
 
-foreign import randomArray
-  """
-  function randomArray(n) {
-    return function() {
-      var arr = []
-      for (var i = 0; i < n; i++) {
-        arr.push(Math.random())
-      }
-      return arr;
-    }
-  } """ :: forall e. Number -> Eff (BenchEffects e) (Array Number)
-
-traverseArray :: forall m a b. (Applicative m) => (a -> m b) -> Array a -> m (Array b)
-traverseArray = traverseArrayImpl (<*>) (<$>) pure
-
--- TODO: Remove after psc-0.7 (when the traverseable array instance is stack-safe).
-foreign import traverseArrayImpl
-  """
-  var traverseArrayImpl = function() {
-    function Cont (fn) {
-      this.fn = fn;
-    }
-
-    function consArray(x) {
-      return function (xs) {
-        return [x].concat(xs);
-      };
-    }
-
-    return function (apply) {
-      return function (map) {
-        return function (pure) {
-          return function (f) {
-            var buildFrom = function (x, ys) {
-              return apply(map(consArray)(f(x)))(ys);
-            };
-
-            var go = function (acc, currentLen, xs) {
-              if (currentLen === 0) {
-                return acc;
-              } else {
-                var last = xs[currentLen - 1];
-                return new Cont(function () {
-                  return go(buildFrom(last, acc), currentLen - 1, xs);
-                });
-              }
-            };
-
-            return function (array) {
-              var result = go(pure([]), array.length, array);
-              while (result instanceof Cont) {
-                result = result.fn();
-              }
-
-              return result;
-            };
-          };
-        };
-      };
-    };
-  }();
-  """ :: forall m a b. (m (a -> b) -> m a -> m b) ->
-                       ((a -> b) -> m a -> m b) ->
-                       (a -> m a) ->
-                       (a -> m b) ->
-                       Array a ->
-                       m (Array b)
+foreign import randomArray :: forall e. Int -> Eff (BenchEffects e) (Array Number)
