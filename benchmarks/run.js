@@ -1,0 +1,1 @@
+require('Benchmark.Main').main()
