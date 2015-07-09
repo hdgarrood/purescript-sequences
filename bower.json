@@ -35,6 +35,7 @@
     "purescript-unsafe-coerce": "^0.1.0"
   },
   "devDependencies": {
-    "purescript-quickcheck": "^0.6.0"
+    "purescript-quickcheck": "^0.6.0",
+    "purescript-benchotron": "^2.1.0"
   }
 }
