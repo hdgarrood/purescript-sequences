@@ -8,7 +8,8 @@ import Data.Maybe
 import qualified Data.Array as A
 import qualified Data.Sequence as S
 import Math (floor, sqrt)
-import Test.QuickCheck.Gen
+import Test.QuickCheck.Arbitrary (arbitrary)
+import Test.QuickCheck.Gen (Gen(), vectorOf)
 import Control.Monad.Eff
 
 import Benchotron.Core
@@ -19,7 +20,7 @@ import Benchotron.UI.Console
 bimap :: forall a b c d. (a -> b) -> (c -> d) -> Tuple a c -> Tuple b d
 bimap f g (Tuple x y) = Tuple (f x) (g y)
 
-benchInsertLots :: forall e. Benchmark e
+benchInsertLots :: Benchmark
 benchInsertLots = mkBenchmark
   { slug: "insert-lots"
   , title: "Insert lots of elements into an empty structure"
@@ -32,7 +33,7 @@ benchInsertLots = mkBenchmark
                ]
   }
 
-benchMap :: forall e. Benchmark e
+benchMap :: Benchmark
 benchMap = mkBenchmark
   { slug: "map"
   , title: "Map over a structure"
@@ -48,7 +49,7 @@ benchMap = mkBenchmark
   map = (<$>)
   f = (*5.0)
 
-benchFilter :: forall e. Benchmark e
+benchFilter :: Benchmark
 benchFilter = mkBenchmark
   { slug: "filter"
   , title: "Filter a structure"
@@ -63,7 +64,7 @@ benchFilter = mkBenchmark
   where
   f = (> 0.5)
 
-benchApply :: forall e. Benchmark e
+benchApply :: Benchmark
 benchApply = mkBenchmark
   { slug: "apply"
   , title: "Apply over a structure with (<*>)"
@@ -76,7 +77,7 @@ benchApply = mkBenchmark
                ]
   }
 
-benchConcatMap :: forall e. Benchmark e
+benchConcatMap :: Benchmark
 benchConcatMap = mkBenchmark
   { slug: "concat-map"
   , title: "concatMap over a structure"
@@ -92,7 +93,7 @@ benchConcatMap = mkBenchmark
   f x = [x, x+1.0, x+2.0]
   g x = S.cons x (S.cons (x+1.0) (S.cons (x+2.0) S.empty))
 
-benchFold :: forall e. Benchmark e
+benchFold :: Benchmark
 benchFold = mkBenchmark
   { slug: "fold"
   , title: "Fold a structure"
@@ -105,7 +106,7 @@ benchFold = mkBenchmark
                ]
   }
 
-benchTraverse :: forall e. Benchmark e
+benchTraverse :: Benchmark
 benchTraverse = mkBenchmark
   { slug: "traverse"
   , title: "Traverse a structure"
@@ -118,7 +119,7 @@ benchTraverse = mkBenchmark
                ]
   }
 
-benchAppend :: forall e. Benchmark e
+benchAppend :: Benchmark
 benchAppend = mkBenchmark
   { slug: "append"
   , title: "Append two structures together"
@@ -134,7 +135,7 @@ benchAppend = mkBenchmark
   where
   index = flip A.(!!)
 
-benchSort :: forall e. Benchmark e
+benchSort :: Benchmark
 benchSort = mkBenchmark
   { slug: "sort"
   , title: "Sort a structure"
@@ -160,4 +161,5 @@ main =
     , benchSort
     ]
 
-foreign import randomArray :: forall e. Int -> Eff (BenchEffects e) (Array Number)
+randomArray :: Int -> Gen (Array Number)
+randomArray n = vectorOf n arbitrary

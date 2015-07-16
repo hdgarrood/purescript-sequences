@@ -6,7 +6,6 @@ set -e
 rm -rf src/tmp
 mkdir -p src/tmp
 ln -s ../../benchmarks/Main.purs src/tmp/Benchmark.Main.purs
-ln -s ../../benchmarks/Main.js src/tmp/Benchmark.Main.js
 
 pulp build
 
