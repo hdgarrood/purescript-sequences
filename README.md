@@ -1,5 +1,7 @@
 # purescript-sequences
 
+[![Build Status](https://travis-ci.org/hdgarrood/purescript-sequences.svg?branch=master)](https://travis-ci.org/hdgarrood/purescript-sequences)
+
 Various efficient-ish sequence types for PureScript.
 
 The implementations are based on 2-3 finger trees, as described in the paper
