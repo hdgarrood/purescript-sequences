@@ -1,11 +1,11 @@
 {
   "private": true,
   "devDependencies": {
-    "pulp": "^4.0.2",
+    "pulp": "^4.3.0",
     "benchmark": "~1.0.0",
     "microtime": "~1.2.0"
   },
   "scripts": {
-    "bench": "./benchmarks/run.sh"
+    "bench": "pulp build -I benchmarks --main Benchmark.Main -O --to output/benchmarks.js && (echo '*' | node output/benchmarks.js)"
   }
 }
