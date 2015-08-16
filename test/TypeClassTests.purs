@@ -13,7 +13,7 @@ import Test.QuickCheck.Arbitrary (Arbitrary, Coarbitrary)
 -- Functor
 --
 
-checkFunctor :: forall f a. (Functor f, Arbitrary a, Coarbitrary a, Arbitrary (f a), Eq (f a)) => f a -> QC Unit
+checkFunctor :: forall f e a. (Functor f, Arbitrary a, Coarbitrary a, Arbitrary (f a), Eq (f a)) => f a -> QC e Unit
 checkFunctor t = do
   quickCheck $ identity t
   quickCheck $ associativity t
@@ -30,7 +30,7 @@ checkFunctor t = do
 -- Applicative
 --
 
-checkApplicative :: forall f a b c. (Applicative f, Arbitrary (f a), Arbitrary (f (a -> b)), Arbitrary (f (b -> c)), Coarbitrary a, Arbitrary b, Arbitrary a, Eq (f a), Eq (f b), Eq (f c), Show (f a)) => f a -> f b -> f c -> QC Unit
+checkApplicative :: forall f e a b c. (Applicative f, Arbitrary (f a), Arbitrary (f (a -> b)), Arbitrary (f (b -> c)), Coarbitrary a, Arbitrary b, Arbitrary a, Eq (f a), Eq (f b), Eq (f c), Show (f a)) => f a -> f b -> f c -> QC e Unit
 checkApplicative ta tb tc = do
   quickCheck $ identity ta
   quickCheck $ composition ta tb tc
@@ -56,7 +56,7 @@ checkApplicative ta tb tc = do
 -- Monad
 --
 
-checkMonad :: forall m a. (Monad m, Arbitrary a, Coarbitrary a, Arbitrary (m a), Eq (m a), Show a, Show (m a)) => m a -> QC Unit
+checkMonad :: forall m e a. (Monad m, Arbitrary a, Coarbitrary a, Arbitrary (m a), Eq (m a), Show a, Show (m a)) => m a -> QC e Unit
 checkMonad t = do
   quickCheck $ leftIdentity t
   quickCheck $ rightIdentity t
