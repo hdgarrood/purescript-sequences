@@ -5,14 +5,14 @@ import Prelude
 import Control.Monad.Eff.Console (log)
 import qualified Data.Array      as A
 import Data.Foldable             (all, foldl, foldr, sum)
-import Data.Maybe                (Maybe(Just, Nothing), fromMaybe)
+import Data.Maybe                (Maybe(..), fromMaybe)
 import Data.Monoid               (mempty)
-import Data.Tuple                (Tuple(Tuple), fst, snd)
+import Data.Tuple                (Tuple(..), fst, snd)
 import Test.QuickCheck           ((<?>), (===), quickCheck)
 
-import qualified Data.Sequence  as S
-import           Tests.Utils    (abs, err, foldableSize, integerBetween)
-import           TypeClassTests (checkApplicative, checkFunctor, checkMonad)
+import qualified Data.Sequence as S
+import Tests.Utils
+import TypeClassTests
 
 sequenceTests = do
   log ""
@@ -21,23 +21,23 @@ sequenceTests = do
   log ""
 
   log "Test append"
-  quickCheck $ \x y ->
+  quickCheck $ \(ArbSeq x) (ArbSeq y) ->
     S.fromSeq (x <> y) == S.fromSeq x <> (S.fromSeq y :: Array Number)
     <?> ("x: " <> show x <> ", y: " <> show y)
 
   log "Test semigroup law: associativity"
-  quickCheck $ \x y z -> (x <> y) <> z == x <> (y <> z :: S.Seq Number)
+  quickCheck $ \(ArbSeq x) (ArbSeq y) (ArbSeq z) -> (x <> y) <> z == x <> (y <> z :: S.Seq Number)
     <?> ("x: " <> show x <> ", y: " <> show y <> ", z:" <> show z)
 
   log "Test monoid law: left identity"
-  quickCheck $ \x -> (mempty <> x) == (x :: S.Seq Number)
+  quickCheck $ \(ArbSeq x) -> (mempty <> x) == (x :: S.Seq Number)
     <?> ("x: " <> show x)
 
   log "Test monoid law: right identity"
-  quickCheck $ \x -> (x <> mempty) == (x :: S.Seq Number)
+  quickCheck $ \(ArbSeq x) -> (x <> mempty) == (x :: S.Seq Number)
     <?> ("x: " <> show x)
 
-  let proxy = S.singleton 0
+  let proxy = ArbSeq (S.singleton 0)
   log "Test functor laws"
   checkFunctor proxy
 
@@ -57,19 +57,19 @@ sequenceTests = do
     in  foldl f z (S.toSeq xs) == foldl f z (xs :: Array Number)
 
   quickCheck $ \xs -> A.length xs == foldableSize (S.toSeq xs :: S.Seq Number)
-  quickCheck $ \xs -> A.length (S.fromSeq xs) == foldableSize (xs :: S.Seq Number)
+  quickCheck $ \(ArbSeq xs) -> A.length (S.fromSeq xs) == foldableSize (xs :: S.Seq Number)
 
   log "Test length/null"
-  quickCheck $ \xs ->
+  quickCheck $ \(ArbSeq xs) ->
     if S.empty == (xs :: S.Seq Number) then S.null xs else S.length xs > 0
 
-  quickCheck $ \xs -> S.length xs + 1 == S.length (S.cons 0 xs)
-  quickCheck $ \xs ->
+  quickCheck $ \(ArbSeq xs) -> S.length xs + 1 == S.length (S.cons 0 xs)
+  quickCheck $ \(ArbSeq xs) ->
     let xs' = S.cons 0 xs -- ensure xs' has at least one element
     in S.length xs' - 1 == S.length (S.drop 1 xs')
 
   log "Test splitAt/head/last"
-  quickCheck $ \idx seq ->
+  quickCheck $ \idx (ArbSeq seq) ->
     let idx' :: Int
         idx' = integerBetween 0 (S.length seq) idx
 
@@ -81,17 +81,17 @@ sequenceTests = do
           <?> ("seq: " <> show seq <> ", idx':" <> show idx')
 
   log "Test that adjust is safe"
-  quickCheck $ \seq ->
+  quickCheck $ \(ArbSeq seq) ->
     let f n = S.adjust id n (seq :: S.Seq Number)
     in f (-1) == f (S.length seq)
 
   log "Test that index is safe"
-  quickCheck $ \seq ->
+  quickCheck $ \(ArbSeq seq) ->
     let f n = S.index n (seq :: S.Seq Number)
     in f (-1) == Nothing && f (S.length seq) == Nothing
 
   log "Test inBounds"
-  quickCheck $ \seq ->
+  quickCheck $ \(ArbSeq seq) ->
     let seq' = S.cons 0 seq
         lowerBound = 0
         upperBound = S.length seq' - 1
@@ -100,7 +100,7 @@ sequenceTests = do
         && not (S.inBounds (upperBound + 1) seq')
 
   log "Test adjust"
-  quickCheck $ \seq idx ->
+  quickCheck $ \(ArbSeq seq) idx ->
     let seq' = const 0 <$> S.cons 0 seq
         idx' = integerBetween 0 (S.length seq') idx
         result = sum (S.adjust (+1) idx' seq')
@@ -111,7 +111,7 @@ sequenceTests = do
   -- take is defined over negative indices, though the length of the result
   -- will be 0, so we must check that the result length is less than the
   -- absolute value of the index
-  quickCheck $ \seq n ->
+  quickCheck $ \(ArbSeq seq) n ->
     let result = S.length $ S.take n $ seq :: S.Seq Number
     in (0 <= result && result <= abs n) <?> err [ "n = " <> show n
                                                 , "seq = " <> show seq
@@ -120,7 +120,7 @@ sequenceTests = do
 
   log "Test drop"
   -- See note on "Test take" about negative indices
-  quickCheck $ \seq n ->
+  quickCheck $ \(ArbSeq seq) n ->
     let dropped = S.length (seq :: S.Seq Number) - S.length (S.drop n seq)
     in (0 <= dropped && dropped <= abs n) <?> err [ "n = " <> show n
                                                   , "seq = " <> show seq
@@ -128,28 +128,28 @@ sequenceTests = do
                                                   ]
 
   log "Test filter"
-  quickCheck $ \seq -> S.null (S.filter (const false) (seq :: S.Seq Number))
-  quickCheck $ \seq -> S.filter (const true) seq === (seq :: S.Seq Number)
-  quickCheck $ \seq f -> all f (S.filter f (seq :: S.Seq Number))
+  quickCheck $ \(ArbSeq seq) -> S.null (S.filter (const false) (seq :: S.Seq Number))
+  quickCheck $ \(ArbSeq seq) -> S.filter (const true) seq === (seq :: S.Seq Number)
+  quickCheck $ \(ArbSeq seq) f -> all f (S.filter f (seq :: S.Seq Number))
 
   log "Test cons/uncons"
-  quickCheck $ \seq x ->
+  quickCheck $ \(ArbSeq seq) x ->
     S.uncons (S.cons x seq) === Just (Tuple (x :: Number) seq)
-  quickCheck $ \seq x ->
+  quickCheck $ \(ArbSeq seq) x ->
     S.unsnoc (S.snoc seq x) === Just (Tuple seq (x :: Number))
 
   log "Test init"
-  quickCheck $ \seq ->
+  quickCheck $ \(ArbSeq seq) ->
     fromMaybe S.empty (S.init seq) === S.take (S.length seq - 1) (seq :: S.Seq Number)
 
   log "Test tail"
-  quickCheck $ \seq ->
+  quickCheck $ \(ArbSeq seq) ->
     fromMaybe S.empty (S.tail seq) === S.drop 1 (seq :: S.Seq Number)
 
   log "Test head"
-  quickCheck $ \seq x ->
+  quickCheck $ \(ArbSeq seq) x ->
     S.head (S.cons x seq) === Just (x :: Number)
 
   log "Test last"
-  quickCheck $ \seq x ->
+  quickCheck $ \(ArbSeq seq) x ->
     S.last (S.snoc seq x) === Just (x :: Number)

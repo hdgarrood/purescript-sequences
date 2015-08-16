@@ -3,6 +3,7 @@ module Tests.Utils where
 import Prelude
 
 import qualified Data.Array as A
+import Data.Function (on)
 import Data.Foldable
 import Data.Int (fromNumber, toNumber)
 import Data.Maybe
@@ -11,24 +12,53 @@ import Data.Monoid
 import Data.Monoid.Additive
 import Test.QuickCheck
 import Test.QuickCheck.Arbitrary (Arbitrary, arbitrary)
+import Test.QuickCheck.Gen (Gen())
 
 import qualified Data.Sequence as S
 import qualified Data.Sequence.NonEmpty as NES
 import qualified Data.Sequence.Ordered as OS
 
-instance arbSeq :: (Arbitrary a) => Arbitrary (S.Seq a) where
-  arbitrary = (S.toSeq :: Array a -> S.Seq a) <$> arbitrary
+newtype ArbSeq a   = ArbSeq   (S.Seq a)
+newtype ArbNESeq a = ArbNESeq (NES.Seq a)
+newtype ArbOSeq  a = ArbOSeq  (OS.OrdSeq a)
 
-instance arbNonEmptySeq :: (Arbitrary a) => Arbitrary (NES.Seq a) where
-  arbitrary = NES.Seq <$> arbitrary <*> arbitrary
+unArbSeq (ArbSeq xs)     = xs
+unArbNESeq (ArbNESeq xs) = xs
+unArbOSea (ArbOSeq xs)   = xs
 
-instance arbOrdSeq :: (Ord a, Arbitrary a) => Arbitrary (OS.OrdSeq a) where
-  arbitrary = (OS.toOrdSeq :: Array a -> OS.OrdSeq a) <$> arbitrary
+instance eqArbSeq :: (Eq a) => Eq (ArbSeq a) where
+  eq = eq `on` unArbSeq
+
+instance functorArbSeq :: Functor ArbSeq where
+  map f = ArbSeq <<< map f <<< unArbSeq
+
+instance applyArbSeq :: Apply ArbSeq where
+  apply fs xs = ArbSeq (apply (unArbSeq fs) (unArbSeq xs))
+
+instance applicativeArbSeq :: Applicative ArbSeq where
+  pure = ArbSeq <<< pure
+
+instance bindArbSeq :: Bind ArbSeq where
+  bind xs f = ArbSeq (bind (unArbSeq xs) (unArbSeq <<< f))
+
+instance monadArbSeq :: Monad ArbSeq
+
+instance showArbSeq :: (Show a) => Show (ArbSeq a) where
+  show = show <<< unArbSeq
+
+instance arbitraryArbSeq :: (Arbitrary a) => Arbitrary (ArbSeq a) where
+  arbitrary = (ArbSeq <<< S.toSeq) <$> (arbitrary :: Gen (Array a))
+
+instance arbitraryArbNESeq :: (Arbitrary a) => Arbitrary (ArbNESeq a) where
+  arbitrary = ArbNESeq <$> (NES.Seq <$> arbitrary <*> (unArbSeq <$> arbitrary))
+
+instance arbitraryArbOrdSeq :: (Ord a, Arbitrary a) => Arbitrary (ArbOSeq a) where
+  arbitrary = (ArbOSeq <<< OS.toOrdSeq) <$> (arbitrary :: Gen (Array a))
 
 foldableSize :: forall f a. (Foldable f) => f a -> Int
 foldableSize = runAdditive <<< foldMap (const (Additive 1))
 
-check1 :: forall p. (Testable p) => p -> QC Unit
+check1 :: forall e p. (Testable p) => p -> QC e Unit
 check1 = quickCheck' 1
 
 abs :: Int -> Int
