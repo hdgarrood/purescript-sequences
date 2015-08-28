@@ -85,6 +85,12 @@ instance arbitraryArbNESeq :: (Arbitrary a) => Arbitrary (ArbNESeq a) where
 newtype ArbOSeq a = ArbOSeq (OS.OrdSeq a)
 unArbOSeq (ArbOSeq xs) = xs
 
+instance eqArbOSeq :: (Eq a) => Eq (ArbOSeq a) where
+  eq = eq `on` unArbOSeq
+
+instance showArbOSeq :: (Show a) => Show (ArbOSeq a) where
+  show = show <<< unArbOSeq
+
 instance arbitraryArbOrdSeq :: (Ord a, Arbitrary a) => Arbitrary (ArbOSeq a) where
   arbitrary = (ArbOSeq <<< OS.toOrdSeq) <$> (arbitrary :: Gen (Array a))
 
