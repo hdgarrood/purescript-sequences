@@ -18,13 +18,14 @@ import qualified Data.Sequence as S
 import qualified Data.Sequence.NonEmpty as NES
 import qualified Data.Sequence.Ordered as OS
 
-newtype ArbSeq a   = ArbSeq   (S.Seq a)
-newtype ArbNESeq a = ArbNESeq (NES.Seq a)
-newtype ArbOSeq  a = ArbOSeq  (OS.OrdSeq a)
+-----------------------------
+--- newtype wrappers
 
-unArbSeq (ArbSeq xs)     = xs
-unArbNESeq (ArbNESeq xs) = xs
-unArbOSea (ArbOSeq xs)   = xs
+-----------------
+-- Data.Sequence
+
+newtype ArbSeq a = ArbSeq (S.Seq a)
+unArbSeq (ArbSeq xs) = xs
 
 instance eqArbSeq :: (Eq a) => Eq (ArbSeq a) where
   eq = eq `on` unArbSeq
@@ -49,11 +50,45 @@ instance showArbSeq :: (Show a) => Show (ArbSeq a) where
 instance arbitraryArbSeq :: (Arbitrary a) => Arbitrary (ArbSeq a) where
   arbitrary = (ArbSeq <<< S.toSeq) <$> (arbitrary :: Gen (Array a))
 
+--------------------------
+-- Data.Sequence.NonEmpty
+
+newtype ArbNESeq a = ArbNESeq (NES.Seq a)
+unArbNESeq (ArbNESeq xs) = xs
+
+instance eqArbNESeq :: (Eq a) => Eq (ArbNESeq a) where
+  eq = eq `on` unArbNESeq
+
+instance functorArbNESeq :: Functor ArbNESeq where
+  map f = ArbNESeq <<< map f <<< unArbNESeq
+
+instance applyArbNESeq :: Apply ArbNESeq where
+  apply fs xs = ArbNESeq (apply (unArbNESeq fs) (unArbNESeq xs))
+
+instance applicativeArbNESeq :: Applicative ArbNESeq where
+  pure = ArbNESeq <<< pure
+
+instance bindArbNESeq :: Bind ArbNESeq where
+  bind xs f = ArbNESeq (bind (unArbNESeq xs) (unArbNESeq <<< f))
+
+instance monadArbNESeq :: Monad ArbNESeq
+
+instance showArbNESeq :: (Show a) => Show (ArbNESeq a) where
+  show = show <<< unArbNESeq
+
 instance arbitraryArbNESeq :: (Arbitrary a) => Arbitrary (ArbNESeq a) where
   arbitrary = ArbNESeq <$> (NES.Seq <$> arbitrary <*> (unArbSeq <$> arbitrary))
 
+--------------------------
+-- Data.Sequence.Ordered
+
+newtype ArbOSeq a = ArbOSeq (OS.OrdSeq a)
+unArbOSeq (ArbOSeq xs) = xs
+
 instance arbitraryArbOrdSeq :: (Ord a, Arbitrary a) => Arbitrary (ArbOSeq a) where
   arbitrary = (ArbOSeq <<< OS.toOrdSeq) <$> (arbitrary :: Gen (Array a))
+
+--------------------------
 
 foldableSize :: forall f a. (Foldable f) => f a -> Int
 foldableSize = runAdditive <<< foldMap (const (Additive 1))
