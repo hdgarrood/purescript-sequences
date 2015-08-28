@@ -6,14 +6,19 @@ node_js:
 env:
   - PATH=$HOME/purescript:$PATH
 install:
-  - rm psc.tix
+  - rm psc.tix || echo "not yet"
   - TAG=$(wget -q -O - https://github.com/purescript/purescript/releases/latest --server-response --max-redirect 0 2>&1 | sed -n -e 's/.*Location:.*tag\///p')
+  - rm psc.tix || echo "not yet"
   - wget -O $HOME/purescript.tar.gz https://github.com/purescript/purescript/releases/download/$TAG/linux64.tar.gz
+  - rm psc.tix || echo "not yet"
   - tar -xvf $HOME/purescript.tar.gz -C $HOME/
+  - rm psc.tix || echo "not yet"
   - chmod a+x $HOME/purescript
   - npm install
   - npm install -g bower
 script:
+  - rm psc.tix || echo "not yet"
   - npm run build
   - npm test
+  - rm psc.tix
   - psc-publish --dry-run
