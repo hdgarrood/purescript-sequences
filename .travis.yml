@@ -15,4 +15,5 @@ install:
 script:
   - npm run build
   - npm test
+  - git status
   - psc-publish --dry-run
