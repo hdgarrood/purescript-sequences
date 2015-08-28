@@ -16,4 +16,5 @@ script:
   - npm run build
   - npm test
   - git status
+  - cat psc.tix
   - psc-publish --dry-run
