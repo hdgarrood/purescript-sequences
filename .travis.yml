@@ -14,11 +14,15 @@ install:
   - tar -xvf $HOME/purescript.tar.gz -C $HOME/
   - rm psc.tix || echo "not yet"
   - chmod a+x $HOME/purescript
+  - rm psc.tix || echo "not yet"
   - npm install
+  - rm psc.tix || echo "not yet"
   - npm install -g bower
+  - rm psc.tix || echo "not yet"
 script:
   - rm psc.tix || echo "not yet"
   - npm run build
+  - rm psc.tix || echo "not yet"
   - npm test
-  - rm psc.tix
+  - rm psc.tix || echo "not yet"
   - psc-publish --dry-run
