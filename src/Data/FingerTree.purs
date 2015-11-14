@@ -59,6 +59,7 @@ import           Data.Monoid       (Monoid, mempty)
 import           Data.Traversable  (Traversable, traverse)
 import           Data.Tuple        (Tuple(Tuple))
 import           Data.Unfoldable   (Unfoldable, unfoldr)
+import Control.Monad.Eff.Exception.Unsafe (unsafeThrow)
 
 import Data.Sequence.Internal (Measured, (!), (<$$$>), measure)
 
@@ -406,6 +407,7 @@ unsafeSplitDigit p i as =
 unsafeSplitTree :: forall a v. (Monoid v, Measured a v) =>
   (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
 unsafeSplitTree p i (Single x) = LazySplit lazyEmpty x lazyEmpty
+unsafeSplitTree _ _ Empty = unsafeThrow "Data.FingerTree.unsafeSplitTree: Empty"
 unsafeSplitTree p i (Deep _ pr m sf) =
   let vpr = i <> measure pr
   in if p vpr

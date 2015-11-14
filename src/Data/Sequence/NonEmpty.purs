@@ -47,8 +47,9 @@ import Prelude hiding (append)
 import Control.Alt      (Alt)
 import Data.Foldable    (Foldable, foldl, foldMap, foldr)
 import Data.Maybe       (Maybe(Just, Nothing), maybe)
+import Data.Maybe.Unsafe (fromJust)
 import Data.Traversable (Traversable, sequence, traverse)
-import Data.Tuple       (Tuple(Tuple), fst)
+import Data.Tuple       (Tuple(Tuple), fst, uncurry)
 import Data.Unfoldable  (Unfoldable)
 
 import qualified Data.Sequence as S
@@ -167,9 +168,7 @@ fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 fromSeq = S.fromSeq <<< toPlain
 
 fromPlainUnsafe :: forall a. S.Seq a -> Seq a
-fromPlainUnsafe xs =
-  case S.uncons xs of
-    Just (Tuple x xs) -> Seq x xs
+fromPlainUnsafe = S.uncons >>> fromJust >>> uncurry Seq
 
 instance showSeq :: (Show a) => Show (Seq a) where
   show (Seq x xs) = "(Seq " <> show x <> " " <> show xs <> ")"
@@ -208,8 +207,6 @@ instance foldableSeq :: Foldable Seq where
   foldl f z = toPlain >>> foldl f z
   foldMap f = toPlain >>> foldMap f
 
-fmap = (<$>)
-
 instance traversableSeq :: Traversable Seq where
-  sequence   = toPlain >>> sequence   >>> fmap fromPlainUnsafe
-  traverse f = toPlain >>> traverse f >>> fmap fromPlainUnsafe
+  sequence   = toPlain >>> sequence   >>> map fromPlainUnsafe
+  traverse f = toPlain >>> traverse f >>> map fromPlainUnsafe
