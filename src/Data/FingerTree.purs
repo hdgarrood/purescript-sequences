@@ -218,10 +218,7 @@ instance traversableFingerTree :: Traversable (FingerTree v) where
            <*> (defer <$> kl)
            <*> traverse f sf
     where
-    l :: m (FingerTree v (Node v a))
     l = traverse (traverse f) (force m)
-
-    kl :: m (Unit -> FingerTree v (Node v a))
     kl = const <$> l
 
   sequence = traverse id
