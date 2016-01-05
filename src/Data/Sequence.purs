@@ -270,7 +270,7 @@ unsafeAdjust f i (Seq xs) =
         g :: Elem a -> Elem a
         g = unsafeCoerce f
 
-        l' = FT.cons (g x) (force l)
+        l' = FT.snoc (force l) (g x)
       in
         Seq (FT.append l' (force r))
 
