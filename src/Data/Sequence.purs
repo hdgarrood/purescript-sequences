@@ -8,8 +8,13 @@
 -- | Structure_][1], Ralf Hinze and Ross Paterson, Journal of Functional
 -- | Programming 16:2 (2006) pp 197-217.
 -- |
--- | This module is intended to be imported qualified, to avoid name clashes or
--- | ambiguity. For example: `import qualified Data.Sequence as S`.
+-- | This module is intended to be imported qualified, to avoid name clashes.
+-- | For example:
+-- |
+-- | ```purescript
+-- | import Data.Sequence (Seq)
+-- | import Data.Sequence as Seq
+-- | ```
 -- |
 -- | [1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
 
