@@ -63,31 +63,25 @@ module Data.Sequence
 
 import Prelude hiding (append, map)
 
-import Control.Alt            (Alt)
-import Control.Alternative    (Alternative)
-import Control.MonadPlus      (MonadPlus)
-import Control.Plus           (Plus)
-import Data.Foldable          (Foldable, foldl, foldMap, foldr)
-import Data.Lazy              (Lazy(), force)
-import Data.Maybe             (Maybe(Just, Nothing))
-import Data.Monoid            (Monoid)
-import Data.Monoid.Additive   (Additive(Additive), runAdditive)
+import Control.Alt (Alt)
+import Control.Alternative (Alternative)
+import Control.MonadPlus (MonadPlus)
+import Control.Plus (Plus)
+import Data.Foldable (Foldable, foldl, foldMap, foldr)
+import Data.Lazy (Lazy(), force)
+import Data.Maybe (Maybe(Just, Nothing))
+import Data.Monoid (Monoid)
+import Data.Monoid.Additive (Additive(Additive), runAdditive)
 import Data.Profunctor.Strong ((***))
-import Data.Traversable       (Traversable, traverse)
-import Data.Tuple             (Tuple(Tuple), fst, snd)
-import Data.Unfoldable        (Unfoldable, unfoldr)
-import Unsafe.Coerce          (unsafeCoerce)
+import Data.Traversable (Traversable, traverse)
+import Data.Tuple (Tuple(Tuple), fst, snd)
+import Data.Unfoldable (Unfoldable, unfoldr)
+import Unsafe.Coerce (unsafeCoerce)
 
-import           Data.Sequence.Internal ( Elem(Elem)
-                                        , mapGetElem
-                                        , getElem
-                                        , liftElem
-                                        , lift2Elem
-                                        , measure
-                                        , strJoin
-                                        )
-import qualified Data.FingerTree        as FT
-import qualified Data.Sequence.Ordered  as Ordered
+import Data.Sequence.Internal (Elem(Elem), mapGetElem, getElem, liftElem,
+                               lift2Elem, measure, strJoin)
+import Data.FingerTree as FT
+import Data.Sequence.Ordered as Ordered
 
 -- TODO: Optimise Apply instance (see Hackage)
 -- TODO: adjust might be suboptimal, see Data.Sequence on Hackage
