@@ -44,15 +44,15 @@ module Data.Sequence.NonEmpty
 
 import Prelude hiding (append)
 
-import Control.Alt      (Alt)
-import Data.Foldable    (Foldable, foldl, foldMap, foldr)
-import Data.Maybe       (Maybe(Just, Nothing), maybe)
+import Control.Alt (Alt)
+import Data.Foldable (Foldable, foldl, foldMap, foldr)
+import Data.Maybe (Maybe(Just, Nothing), maybe)
 import Data.Maybe.Unsafe (fromJust)
 import Data.Traversable (Traversable, sequence, traverse)
-import Data.Tuple       (Tuple(Tuple), fst, uncurry)
-import Data.Unfoldable  (Unfoldable)
+import Data.Tuple (Tuple(Tuple), fst, uncurry)
+import Data.Unfoldable (Unfoldable)
 
-import qualified Data.Sequence as S
+import Data.Sequence as S
 
 -- | A sequence which is guaranteed to contain at least one element.
 data Seq a

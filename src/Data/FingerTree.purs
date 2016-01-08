@@ -50,15 +50,15 @@ module Data.FingerTree
 
 import Prelude hiding (append)
 
-import qualified Data.Array        as A
-import qualified Data.Array.Unsafe as AU
-import           Data.Foldable     (Foldable, foldl, foldr)
-import           Data.Lazy         (Lazy(), defer, force)
-import           Data.Maybe        (Maybe(Just, Nothing))
-import           Data.Monoid       (Monoid, mempty)
-import           Data.Traversable  (Traversable, traverse)
-import           Data.Tuple        (Tuple(Tuple))
-import           Data.Unfoldable   (Unfoldable, unfoldr)
+import Data.Array as A
+import Data.Array.Unsafe as AU
+import Data.Foldable (Foldable, foldl, foldr)
+import Data.Lazy (Lazy(), defer, force)
+import Data.Maybe (Maybe(Just, Nothing))
+import Data.Monoid (Monoid, mempty)
+import Data.Traversable (Traversable, traverse)
+import Data.Tuple (Tuple(Tuple))
+import Data.Unfoldable (Unfoldable, unfoldr)
 import Control.Monad.Eff.Exception.Unsafe (unsafeThrow)
 
 import Data.Sequence.Internal (Measured, (!), (<$$$>), measure)

@@ -16,13 +16,13 @@ module Data.Sequence.Internal
 
 import Prelude
 
-import Data.Array.Unsafe    (unsafeIndex)
-import Data.Foldable        (Foldable, foldl, intercalate)
-import Data.Lazy            (Lazy(), force)
-import Data.Monoid          (Monoid, mempty)
+import Data.Array.Unsafe (unsafeIndex)
+import Data.Foldable (Foldable, foldl, intercalate)
+import Data.Lazy (Lazy(), force)
+import Data.Monoid (Monoid, mempty)
 import Data.Monoid.Additive (Additive(Additive))
-import Data.Traversable     (Traversable)
-import Unsafe.Coerce        (unsafeCoerce)
+import Data.Traversable (Traversable)
+import Unsafe.Coerce (unsafeCoerce)
 
 -----------------------
 -- Various utilities

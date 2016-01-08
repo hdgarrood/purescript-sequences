@@ -40,25 +40,19 @@ module Data.Sequence.Ordered
 
 import Prelude
 
-import Data.Lazy            (force)
-import Data.Tuple           (Tuple(Tuple), fst, snd)
-import Data.Maybe           (Maybe(Just, Nothing))
-import Data.Monoid          (Monoid)
+import Data.Lazy (force)
+import Data.Tuple (Tuple(Tuple), fst, snd)
+import Data.Maybe (Maybe(Just, Nothing))
+import Data.Monoid (Monoid)
 import Data.Monoid.Additive (Additive(Additive), runAdditive)
-import Data.Foldable        (Foldable, foldl, foldMap, foldr)
-import Data.Unfoldable      (Unfoldable)
-import Unsafe.Coerce        (unsafeCoerce)
+import Data.Foldable (Foldable, foldl, foldMap, foldr)
+import Data.Unfoldable (Unfoldable)
+import Unsafe.Coerce (unsafeCoerce)
 
-import           Data.Sequence.Internal ( Elem(Elem)
-                                        , Key(Key)
-                                        , getElem
-                                        , liftElem
-                                        , lift2Elem
-                                        , mapGetElem
-                                        , measure
-                                        , strJoin
-                                        )
-import qualified Data.FingerTree        as FT
+import Data.Sequence.Internal
+  (Elem(Elem), Key(Key), getElem, liftElem, lift2Elem, mapGetElem, measure,
+  strJoin)
+import Data.FingerTree as FT
 
 -- TODO: there may be a better implementation for intersection.
 

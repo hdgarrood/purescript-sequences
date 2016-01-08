@@ -2,20 +2,18 @@ module Tests.Data.Sequence.NonEmpty (nonEmptySequenceTests) where
 
 import Prelude
 
-import           Control.Monad.Eff.Console (log)
-import qualified Data.Array                as A
-import           Data.Foldable             (all, foldl, foldr, sum)
-import           Data.Maybe                (Maybe(Nothing))
-import           Test.QuickCheck           ((<?>), (===), quickCheck)
-import           Data.Tuple                (Tuple(Tuple), fst, snd)
+import Control.Monad.Eff.Console (log)
+import Data.Array as A
+import Data.Foldable (all, foldl, foldr, sum)
+import Data.Maybe (Maybe(Nothing))
+import Test.QuickCheck ((<?>), (===), quickCheck)
+import Data.Tuple (Tuple(Tuple), fst, snd)
 
-import qualified Data.Sequence          as S
-import qualified Data.Sequence.NonEmpty as NonEmpty
-import           Tests.Utils
-import           TypeClassTests         ( checkApplicative
-                                        , checkFunctor
-                                        , checkMonad
-                                        )
+import Data.Sequence as S
+import Data.Sequence.NonEmpty as NonEmpty
+import Tests.Utils
+import TypeClassTests (checkApplicative, checkFunctor, checkMonad)
+
 
 nonEmptySequenceTests = do
   log ""

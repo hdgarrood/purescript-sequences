@@ -3,14 +3,14 @@ module Tests.Data.Sequence (sequenceTests) where
 import Prelude
 
 import Control.Monad.Eff.Console (log)
-import qualified Data.Array      as A
-import Data.Foldable             (all, foldl, foldr, sum)
-import Data.Maybe                (Maybe(..), fromMaybe)
-import Data.Monoid               (mempty)
-import Data.Tuple                (Tuple(..), fst, snd)
-import Test.QuickCheck           ((<?>), (===), quickCheck)
+import Data.Array as A
+import Data.Foldable (all, foldl, foldr, sum)
+import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Monoid (mempty)
+import Data.Tuple (Tuple(..), fst, snd)
+import Test.QuickCheck ((<?>), (===), quickCheck)
 
-import qualified Data.Sequence as S
+import Data.Sequence as S
 import Tests.Utils
 import TypeClassTests
 
