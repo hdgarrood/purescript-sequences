@@ -4,7 +4,12 @@
 -- | elements, in addition to logarithmic time partitioning.
 -- |
 -- | The module is intended to be imported qualified, to avoid ambiguity or
--- | name clashes. For example, `import Data.Sequence.Ordered as OrdSeq`.
+-- | name clashes. For example:
+-- |
+-- | ```purescript
+-- | import Data.Sequence.Ordered (OrdSeq)
+-- | import Data.Sequence.Ordered as OrdSeq
+-- | ```
 
 module Data.Sequence.Ordered
   ( OrdSeq()
