@@ -16,7 +16,12 @@ import Data.Sequence.Ordered (OrdSeq())
 import Data.Sequence.Ordered as OrdSeq
 import Data.Sequence as S
 import Tests.Utils
-import TypeClassTests ()
+
+import Type.Proxy (Proxy(Proxy))
+import Test.QuickCheck.Laws (A())
+import Test.QuickCheck.Laws.Data.Eq (checkEq)
+import Test.QuickCheck.Laws.Data.Semigroup (checkSemigroup)
+import Test.QuickCheck.Laws.Data.Monoid (checkMonoid)
 
 arr :: forall a. (Ord a) => OrdSeq a -> Array a
 arr = OrdSeq.toUnfoldable
@@ -24,21 +29,23 @@ arr = OrdSeq.toUnfoldable
 arrDescending :: forall a. (Ord a) => OrdSeq a -> Array a
 arrDescending = OrdSeq.toUnfoldableDescending
 
+prx :: Proxy (ArbOSeq A)
+prx = Proxy
+
 orderedSequenceTests = do
   log ""
   log "Data.Sequence.Ordered"
   log "====================="
   log ""
 
+  checkEq prx
+  checkSemigroup prx
+  checkMonoid prx
+
   log "Test append"
   quickCheck $ \(ArbOSeq x) (ArbOSeq y) ->
     arr (x <> y) == A.sort (arr x <> arr y :: Array Int)
     <?> ("x: " <> show x <> ", y: " <> show y)
-
-  log "Test semigroup law: associativity"
-  quickCheck $ \(ArbOSeq x) (ArbOSeq y) (ArbOSeq z) ->
-    (x <> y) <> z == x <> (y <> z :: OrdSeq Int)
-      <?> ("x: " <> show x <> ", y: " <> show y <> ", z:" <> show z)
 
   log "Test foldable instance"
   quickCheck $ \f z xs ->

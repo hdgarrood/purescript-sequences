@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "purescript-quickcheck": "^0.12.0",
-    "purescript-benchotron": "^3.0.3"
+    "purescript-benchotron": "^3.0.3",
+    "purescript-quickcheck-laws": "~0.1.0"
   }
 }

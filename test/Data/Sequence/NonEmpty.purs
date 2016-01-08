@@ -8,14 +8,31 @@ import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(Nothing))
 import Test.QuickCheck ((<?>), (===), quickCheck)
 import Data.Tuple (Tuple(Tuple), fst, snd)
+import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2))
 
 import Data.Sequence as S
 import Data.Sequence.NonEmpty as NonEmpty
 import Tests.Utils
-import TypeClassTests (checkApplicative, checkFunctor, checkMonad)
+
+import Test.QuickCheck.Laws (A())
+import Test.QuickCheck.Laws.Data.Eq (checkEq)
+import Test.QuickCheck.Laws.Data.Ord (checkOrd)
+import Test.QuickCheck.Laws.Data.Functor (checkFunctor)
+import Test.QuickCheck.Laws.Control.Apply (checkApply)
+import Test.QuickCheck.Laws.Control.Applicative (checkApplicative)
+import Test.QuickCheck.Laws.Control.Bind (checkBind)
+import Test.QuickCheck.Laws.Control.Monad (checkMonad)
+import Test.QuickCheck.Laws.Data.Semigroup (checkSemigroup)
+import Test.QuickCheck.Laws.Control.Alt (checkAlt)
 
 arr :: forall a. NonEmpty.Seq a -> Array a
 arr = NonEmpty.toUnfoldable
+
+prx :: Proxy (ArbNESeq A)
+prx = Proxy
+
+prx2 :: Proxy2 ArbNESeq
+prx2 = Proxy2
 
 nonEmptySequenceTests = do
   log ""
@@ -23,25 +40,20 @@ nonEmptySequenceTests = do
   log "======================"
   log ""
 
+  checkEq prx
+  checkOrd prx
+  checkFunctor prx2
+  checkApply prx2
+  checkApplicative prx2
+  checkBind prx2
+  checkMonad prx2
+  checkSemigroup prx
+  checkAlt prx2
+
   log "Test toUnfoldable homomorphism"
   quickCheck $ \(ArbNESeq x) (ArbNESeq y) ->
     arr (x <> y) == arr x <> (arr y :: Array Int)
     <?> ("x: " <> show x <> ", y: " <> show y)
-
-  log "Test semigroup law: associativity"
-  quickCheck $ \(ArbNESeq x) (ArbNESeq y) (ArbNESeq z) ->
-    (x <> y) <> z == x <> (y <> z :: NonEmpty.Seq Int)
-      <?> ("x: " <> show x <> ", y: " <> show y <> ", z:" <> show z)
-
-  let proxy = ArbNESeq (NonEmpty.singleton 0)
-  log "Test functor laws"
-  checkFunctor proxy
-
-  log "Test applicative laws"
-  checkApplicative proxy proxy proxy
-
-  log "Test monad laws"
-  checkMonad proxy
 
   log "Test foldable instance"
   quickCheck $ \f z (ArbNESeq xs) ->

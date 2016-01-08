@@ -10,6 +10,10 @@ import Data.Maybe
 import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid
 import Data.Monoid.Additive
+import Control.Alt (Alt, (<|>))
+import Control.Plus (Plus, empty)
+import Control.Alternative
+import Control.MonadPlus
 import Test.QuickCheck
 import Test.QuickCheck.Arbitrary (Arbitrary, arbitrary)
 import Test.QuickCheck.Gen (Gen())
@@ -30,6 +34,9 @@ unArbSeq (ArbSeq xs) = xs
 instance eqArbSeq :: (Eq a) => Eq (ArbSeq a) where
   eq = eq `on` unArbSeq
 
+instance ordArbSeq :: (Ord a) => Ord (ArbSeq a) where
+  compare = compare `on` unArbSeq
+
 instance functorArbSeq :: Functor ArbSeq where
   map f = ArbSeq <<< map f <<< unArbSeq
 
@@ -47,6 +54,22 @@ instance monadArbSeq :: Monad ArbSeq
 instance showArbSeq :: (Show a) => Show (ArbSeq a) where
   show = show <<< unArbSeq
 
+instance semigroupArbSeq :: Semigroup (ArbSeq a) where
+  append (ArbSeq xs) (ArbSeq ys) = ArbSeq (xs <> ys)
+
+instance monoidArbSeq :: Monoid (ArbSeq a) where
+  mempty = ArbSeq mempty
+
+instance altArbSeq :: Alt ArbSeq where
+  alt (ArbSeq xs) (ArbSeq ys) = ArbSeq (xs <|> ys)
+
+instance plusArbSeq :: Plus ArbSeq where
+  empty = ArbSeq empty
+
+instance alternativeArbseq :: Alternative ArbSeq
+
+instance monadPlusArbSeq :: MonadPlus ArbSeq
+
 instance arbitraryArbSeq :: (Arbitrary a) => Arbitrary (ArbSeq a) where
   arbitrary = (ArbSeq <<< S.fromFoldable) <$> (arbitrary :: Gen (Array a))
 
@@ -58,6 +81,9 @@ unArbNESeq (ArbNESeq xs) = xs
 
 instance eqArbNESeq :: (Eq a) => Eq (ArbNESeq a) where
   eq = eq `on` unArbNESeq
+
+instance ordArbNESeq :: (Ord a) => Ord (ArbNESeq a) where
+  compare = compare `on` unArbNESeq
 
 instance functorArbNESeq :: Functor ArbNESeq where
   map f = ArbNESeq <<< map f <<< unArbNESeq
@@ -76,6 +102,12 @@ instance monadArbNESeq :: Monad ArbNESeq
 instance showArbNESeq :: (Show a) => Show (ArbNESeq a) where
   show = show <<< unArbNESeq
 
+instance semigroupArbNESeq :: Semigroup (ArbNESeq a) where
+  append (ArbNESeq xs) (ArbNESeq ys) = ArbNESeq (xs <> ys)
+
+instance altArbNESeq :: Alt ArbNESeq where
+  alt (ArbNESeq xs) (ArbNESeq ys) = ArbNESeq (xs <|> ys)
+
 instance arbitraryArbNESeq :: (Arbitrary a) => Arbitrary (ArbNESeq a) where
   arbitrary = ArbNESeq <$> (NES.Seq <$> arbitrary <*> (unArbSeq <$> arbitrary))
 
@@ -90,6 +122,12 @@ instance eqArbOSeq :: (Eq a) => Eq (ArbOSeq a) where
 
 instance showArbOSeq :: (Show a) => Show (ArbOSeq a) where
   show = show <<< unArbOSeq
+
+instance semigroupArbOrdSeq :: (Ord a) => Semigroup (ArbOSeq a) where
+  append (ArbOSeq xs) (ArbOSeq ys) = ArbOSeq (xs <> ys)
+
+instance monoidArbOrdSeq :: (Ord a) => Monoid (ArbOSeq a) where
+  mempty = ArbOSeq mempty
 
 instance arbitraryArbOrdSeq :: (Ord a, Arbitrary a) => Arbitrary (ArbOSeq a) where
   arbitrary = (ArbOSeq <<< OS.fromFoldable) <$> (arbitrary :: Gen (Array a))

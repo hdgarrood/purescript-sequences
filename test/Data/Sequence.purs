@@ -6,16 +6,36 @@ import Control.Monad.Eff.Console (log)
 import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(..), fromMaybe)
-import Data.Monoid (mempty)
 import Data.Tuple (Tuple(..), fst, snd)
+
 import Test.QuickCheck ((<?>), (===), quickCheck)
+import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2))
+import Test.QuickCheck.Laws (A())
+import Test.QuickCheck.Laws.Data.Eq (checkEq)
+import Test.QuickCheck.Laws.Data.Ord (checkOrd)
+import Test.QuickCheck.Laws.Data.Functor (checkFunctor)
+import Test.QuickCheck.Laws.Control.Apply (checkApply)
+import Test.QuickCheck.Laws.Control.Applicative (checkApplicative)
+import Test.QuickCheck.Laws.Control.Bind (checkBind)
+import Test.QuickCheck.Laws.Control.Monad (checkMonad)
+import Test.QuickCheck.Laws.Data.Semigroup (checkSemigroup)
+import Test.QuickCheck.Laws.Data.Monoid (checkMonoid)
+import Test.QuickCheck.Laws.Control.Alt (checkAlt)
+import Test.QuickCheck.Laws.Control.Plus (checkPlus)
+import Test.QuickCheck.Laws.Control.Alternative (checkAlternative)
+import Test.QuickCheck.Laws.Control.MonadPlus (checkMonadPlus)
 
 import Data.Sequence as S
 import Tests.Utils
-import TypeClassTests
 
 arr :: forall a. S.Seq a -> Array a
 arr = S.toUnfoldable
+
+prx :: Proxy (ArbSeq A)
+prx = Proxy
+
+prx2 :: Proxy2 ArbSeq
+prx2 = Proxy2
 
 sequenceTests = do
   log ""
@@ -23,32 +43,24 @@ sequenceTests = do
   log "============="
   log ""
 
-  log "Test append"
+  checkEq prx
+  checkOrd prx
+  checkFunctor prx2
+  checkApply prx2
+  checkApplicative prx2
+  checkBind prx2
+  checkMonad prx2
+  checkSemigroup prx
+  checkMonoid prx
+  checkAlt prx2
+  checkPlus prx2
+  checkAlternative prx2
+  checkMonadPlus prx2
+
+  log "Test toUnfoldable homomorphism"
   quickCheck $ \(ArbSeq x) (ArbSeq y) ->
     arr (x <> y) == arr x <> (arr y :: Array Number)
     <?> ("x: " <> show x <> ", y: " <> show y)
-
-  log "Test semigroup law: associativity"
-  quickCheck $ \(ArbSeq x) (ArbSeq y) (ArbSeq z) -> (x <> y) <> z == x <> (y <> z :: S.Seq Number)
-    <?> ("x: " <> show x <> ", y: " <> show y <> ", z:" <> show z)
-
-  log "Test monoid law: left identity"
-  quickCheck $ \(ArbSeq x) -> (mempty <> x) == (x :: S.Seq Number)
-    <?> ("x: " <> show x)
-
-  log "Test monoid law: right identity"
-  quickCheck $ \(ArbSeq x) -> (x <> mempty) == (x :: S.Seq Number)
-    <?> ("x: " <> show x)
-
-  let proxy = ArbSeq (S.singleton 0)
-  log "Test functor laws"
-  checkFunctor proxy
-
-  log "Test applicative laws"
-  checkApplicative proxy proxy proxy
-
-  log "Test monad laws"
-  checkMonad proxy
 
   log "Test foldable instance"
   quickCheck $ \f z xs ->
