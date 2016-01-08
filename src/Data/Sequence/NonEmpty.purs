@@ -42,7 +42,7 @@ module Data.Sequence.NonEmpty
   , replace
 
   -- other
-  , fromSeq
+  , toUnfoldable
   ) where
 
 import Prelude hiding (append)
@@ -167,8 +167,8 @@ replace x = adjust (const x)
 
 -- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 -- | any `Unfoldable`.
-fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
-fromSeq = S.fromSeq <<< toPlain
+toUnfoldable :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
+toUnfoldable = S.toUnfoldable <<< toPlain
 
 fromPlainUnsafe :: forall a. S.Seq a -> Seq a
 fromPlainUnsafe = S.uncons >>> fromJust >>> uncurry Seq

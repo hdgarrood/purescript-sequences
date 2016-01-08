@@ -14,6 +14,8 @@ import Data.Sequence.NonEmpty as NonEmpty
 import Tests.Utils
 import TypeClassTests (checkApplicative, checkFunctor, checkMonad)
 
+arr :: forall a. NonEmpty.Seq a -> Array a
+arr = NonEmpty.toUnfoldable
 
 nonEmptySequenceTests = do
   log ""
@@ -23,7 +25,7 @@ nonEmptySequenceTests = do
 
   log "Test fromSeq homomorphism"
   quickCheck $ \(ArbNESeq x) (ArbNESeq y) ->
-    NonEmpty.fromSeq (x <> y) == NonEmpty.fromSeq x <> (NonEmpty.fromSeq y :: Array Int)
+    arr (x <> y) == arr x <> (arr y :: Array Int)
     <?> ("x: " <> show x <> ", y: " <> show y)
 
   log "Test semigroup law: associativity"
@@ -44,14 +46,14 @@ nonEmptySequenceTests = do
   log "Test foldable instance"
   quickCheck $ \f z (ArbNESeq xs) ->
     let types = Tuple (f :: Int -> Int -> Int) (z :: Int)
-    in  foldr f z xs == foldr f z (NonEmpty.fromSeq xs :: Array Int)
+    in  foldr f z xs == foldr f z (arr xs :: Array Int)
 
   quickCheck $ \f z (ArbNESeq xs) ->
     let types = Tuple (f :: Int -> Int -> Int) (z :: Int)
-    in  foldl f z xs == foldl f z (NonEmpty.fromSeq xs :: Array Int)
+    in  foldl f z xs == foldl f z (arr xs :: Array Int)
 
   quickCheck $ \(ArbNESeq xs) ->
-    A.length (NonEmpty.fromSeq xs) == foldableSize (xs :: NonEmpty.Seq Int)
+    A.length (arr xs) == foldableSize (xs :: NonEmpty.Seq Int)
 
   quickCheck $ \(ArbNESeq xs) ->
     NonEmpty.length xs + 1 == NonEmpty.length (NonEmpty.cons 0 xs)

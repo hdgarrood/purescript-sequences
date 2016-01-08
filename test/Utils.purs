@@ -48,7 +48,7 @@ instance showArbSeq :: (Show a) => Show (ArbSeq a) where
   show = show <<< unArbSeq
 
 instance arbitraryArbSeq :: (Arbitrary a) => Arbitrary (ArbSeq a) where
-  arbitrary = (ArbSeq <<< S.toSeq) <$> (arbitrary :: Gen (Array a))
+  arbitrary = (ArbSeq <<< S.fromFoldable) <$> (arbitrary :: Gen (Array a))
 
 --------------------------
 -- Data.Sequence.NonEmpty
