@@ -42,7 +42,7 @@ benchMap = mkBenchmark
   , inputsPerSize: 1
   , gen: randomArray
   , functions: [ benchFn "Array" (map f)
-               , benchFn' "Seq" (S.fullyForce <<< map f) S.toSeq
+               , benchFn' "Seq" (S.fullyForce <<< map f) S.fromFoldable
                ]
   }
   where
@@ -58,7 +58,7 @@ benchFilter = mkBenchmark
   , inputsPerSize: 1
   , gen: randomArray
   , functions: [ benchFn "Array" (A.filter f)
-               , benchFn' "Seq"  (S.filter f) S.toSeq
+               , benchFn' "Seq"  (S.filter f) S.fromFoldable
                ]
   }
   where
@@ -73,7 +73,7 @@ benchApply = mkBenchmark
   , inputsPerSize: 1
   , gen: \n -> Tuple <$> (map const <$> randomArray n) <*> randomArray 100
   , functions: [ benchFn "Array" (uncurry (<*>))
-               , benchFn' "Seq"  (uncurry (<*>)) (bimap S.toSeq S.toSeq)
+               , benchFn' "Seq"  (uncurry (<*>)) (bimap S.fromFoldable S.fromFoldable)
                ]
   }
 
@@ -86,7 +86,7 @@ benchConcatMap = mkBenchmark
   , inputsPerSize: 1
   , gen: randomArray
   , functions: [ benchFn "Array" (A.concatMap f)
-               , benchFn' "Seq"  (S.concatMap g) S.toSeq
+               , benchFn' "Seq"  (S.concatMap g) S.fromFoldable
                ]
   }
   where
@@ -102,7 +102,7 @@ benchFold = mkBenchmark
   , inputsPerSize: 1
   , gen: randomArray
   , functions: [ benchFn "Array" sum
-               , benchFn' "Seq" sum S.toSeq
+               , benchFn' "Seq" sum S.fromFoldable
                ]
   }
 
@@ -115,7 +115,7 @@ benchTraverse = mkBenchmark
   , inputsPerSize: 1
   , gen: randomArray
   , functions: [ benchFn "Array" (traverse Just)
-               , benchFn' "Seq" (traverse Just) S.toSeq
+               , benchFn' "Seq" (traverse Just) S.fromFoldable
                ]
   }
 
@@ -129,7 +129,7 @@ benchAppend = mkBenchmark
   , gen: \n -> Tuple <$> randomArray n <*> randomArray n
   , functions: [ benchFn "Array" (uncurry (<>))
                , benchFn' "Seq"  (S.fullyForce <<< uncurry (<>))
-                                 (bimap S.toSeq S.toSeq)
+                                 (bimap S.fromFoldable S.fromFoldable)
                ]
   }
   where
@@ -144,7 +144,7 @@ benchSort = mkBenchmark
   , inputsPerSize: 1
   , gen: randomArray
   , functions: [ benchFn "Array" A.sort
-               , benchFn' "Seq" S.sort S.toSeq
+               , benchFn' "Seq" S.sort S.fromFoldable
                ]
   }
 
