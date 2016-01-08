@@ -6,7 +6,7 @@
     "microtime": "~1.2.0"
   },
   "scripts": {
-    "postinstall": "pulp dep install",
+    "postinstall": "bower install",
     "bench": "pulp build -I benchmarks --main Benchmark.Main -O --to output/benchmarks.js && (echo '*' | node output/benchmarks.js)",
     "build": "pulp build",
     "test": "pulp test"
