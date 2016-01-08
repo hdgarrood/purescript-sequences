@@ -63,11 +63,11 @@ orderedSequenceTests = do
   quickCheck $ \(ArbOSeq xs) ->
     OrdSeq.length xs + 1 == OrdSeq.length (OrdSeq.insert 0 xs)
 
-  log "Test fromOrdSeq is sorted"
+  log "Test toUnfoldable is sorted"
   quickCheck $ \(ArbOSeq seq) ->
     sorted (arr seq :: Array Int)
 
-  log "Test fromOrdSeqDescending is reverse sorted"
+  log "Test toUnfoldableDescending is reverse sorted"
   quickCheck $ \(ArbOSeq seq) ->
     sortedRev (arrDescending seq :: Array Int)
 

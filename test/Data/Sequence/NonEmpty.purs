@@ -23,7 +23,7 @@ nonEmptySequenceTests = do
   log "======================"
   log ""
 
-  log "Test fromSeq homomorphism"
+  log "Test toUnfoldable homomorphism"
   quickCheck $ \(ArbNESeq x) (ArbNESeq y) ->
     arr (x <> y) == arr x <> (arr y :: Array Int)
     <?> ("x: " <> show x <> ", y: " <> show y)
