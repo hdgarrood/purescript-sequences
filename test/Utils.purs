@@ -5,9 +5,7 @@ import Prelude
 import qualified Data.Array as A
 import Data.Function (on)
 import Data.Foldable
-import Data.Int (fromNumber, toNumber)
 import Data.Maybe
-import Data.Maybe.Unsafe (fromJust)
 import Data.Monoid
 import Data.Monoid.Additive
 import Control.Alt (Alt, (<|>))
