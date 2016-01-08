@@ -2,8 +2,7 @@
   "private": true,
   "devDependencies": {
     "pulp": "^7.0.0",
-    "benchmark": "~1.0.0",
-    "microtime": "~2.0.0"
+    "benchmark": "~1.0.0"
   },
   "scripts": {
     "postinstall": "bower install",
