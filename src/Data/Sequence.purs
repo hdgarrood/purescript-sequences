@@ -25,7 +25,7 @@ module Data.Sequence
   , map
   , concat
   , concatMap
-  , toSeq
+  , fromFoldable
 
   -- queries
   , length
@@ -52,7 +52,7 @@ module Data.Sequence
   , replace
 
   -- other
-  , fromSeq
+  , toUnfoldable
   , fullyForce
   ) where
 
@@ -86,7 +86,7 @@ import qualified Data.Sequence.Ordered  as Ordered
 
 -- TODO: Optimise Apply instance (see Hackage)
 -- TODO: adjust might be suboptimal, see Data.Sequence on Hackage
--- TODO: toSeq can be improved. See Hackage
+-- TODO: fromFoldable can be improved. See Hackage
 
 type SeqInner a = FT.FingerTree (Additive Int) (Elem a)
 newtype Seq a = Seq (SeqInner a)
@@ -103,7 +103,7 @@ instance eqSeq :: (Eq a) => Eq (Seq a) where
   eq (Seq xs) (Seq ys) = FT.eqFingerTree xs ys
 
 instance showSeq :: (Show a) => Show (Seq a) where
-  show xs = "(toSeq [" <> strJoin "," (fromSeq xs) <> "])"
+  show xs = "(Seq.fromFoldable [" <> strJoin "," (toUnfoldable xs) <> "])"
 
 instance semigroupSeq :: Semigroup (Seq a) where
   append = append
@@ -311,13 +311,13 @@ last (Seq xs) = mapGetElem (FT.last xs)
 
 -- | Probably O(n*log(n)), but depends on the Foldable instance. Turn any
 -- | `Foldable` into a `Seq`.
-toSeq :: forall f a. (Foldable f) => f a -> Seq a
-toSeq = foldr cons empty
+fromFoldable :: forall f a. (Foldable f) => f a -> Seq a
+fromFoldable = foldr cons empty
 
 -- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 -- | any `Unfoldable`.
-fromSeq :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
-fromSeq (Seq xs) = mapGetElem (FT.unfoldLeft xs)
+toUnfoldable :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
+toUnfoldable (Seq xs) = mapGetElem (FT.unfoldLeft xs)
 
 -- | O(n). Create a new Seq which contains only those elements of the input
 -- | Seq which satisfy the given predicate.
