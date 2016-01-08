@@ -92,7 +92,7 @@ instance showArbOSeq :: (Show a) => Show (ArbOSeq a) where
   show = show <<< unArbOSeq
 
 instance arbitraryArbOrdSeq :: (Ord a, Arbitrary a) => Arbitrary (ArbOSeq a) where
-  arbitrary = (ArbOSeq <<< OS.toOrdSeq) <$> (arbitrary :: Gen (Array a))
+  arbitrary = (ArbOSeq <<< OS.fromFoldable) <$> (arbitrary :: Gen (Array a))
 
 --------------------------
 
