@@ -48,20 +48,20 @@ module Data.FingerTree
   , fullyForce
   ) where
 
-import Prelude hiding (append)
+import Prelude (class Functor, class Ord, class Eq, class Semigroup, class Show, Ordering(EQ, GT, LT), (<>), (<$>), flip, id, (<*>), const, pure, compare, (==), show, (++))
 
 import Data.Array as A
 import Data.Array.Unsafe as AU
-import Data.Foldable (Foldable, foldl, foldr)
+import Data.Foldable (class Foldable, foldl, foldr)
 import Data.Lazy (Lazy(), defer, force)
 import Data.Maybe (Maybe(Just, Nothing))
-import Data.Monoid (Monoid, mempty)
-import Data.Traversable (Traversable, traverse)
+import Data.Monoid (class Monoid, mempty)
+import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple))
-import Data.Unfoldable (Unfoldable, unfoldr)
+import Data.Unfoldable (class Unfoldable, unfoldr)
 import Control.Monad.Eff.Exception.Unsafe (unsafeThrow)
 
-import Data.Sequence.Internal (Measured, (!), (<$$$>), measure)
+import Data.Sequence.Internal (class Measured, (!), (<$$$>), measure)
 
 data Node v a = Node2 v a a | Node3 v a a a
 
@@ -192,20 +192,25 @@ instance functorFingerTree :: Functor (FingerTree v) where
 instance foldableFingerTree :: Foldable (FingerTree v) where
   foldr (-<) z Empty            = z
   foldr (-<) z (Single x)       = x -< z
-  foldr (-<) z (Deep _ pr m sf) = pr +<< ((force m) -<<< (sf -<< z))
+  foldr (-<) z (Deep _ pr m sf) = flipFoldr' pr (deepFlipFoldr (force m) (flipFoldr sf z))
     where
-    (-<<) = flip (foldr (-<))
+    flipFoldr = flip (foldr (-<))
+--    infix 2 flipFoldr as -<<
     -- this is a hack to get type inference to work
-    (+<<) = flip (foldr (-<))
-    (-<<<) = flip (foldr (flip (foldr (-<))))
+    flipFoldr' = flip (foldr (-<))
+--    infix 2 flipFoldr' as +<<
+    deepFlipFoldr = flip (foldr (flip (foldr (-<))))
+--    infix 2 deepFlipFoldr as -<<<
 
 
   foldl (>-) z Empty            = z
   foldl (>-) z (Single x)       = z >- x
-  foldl (>-) z (Deep _ pr m sf) = ((z >>- pr) >>>- (force m)) >>- sf
+  foldl (>-) z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
     where
-    (>>-) = foldl (>-)
-    (>>>-) = foldl (foldl (>-))
+    leftFold = foldl (>-)
+--    infix 2 leftFold as >>-
+    deepLeftFold = foldl (foldl (>-))
+--    infix 2 deepLeftFold as >>>-
 
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 

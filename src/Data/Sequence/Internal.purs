@@ -1,9 +1,9 @@
 module Data.Sequence.Internal
   ( (!)
-  , (<$$>)
-  , (<$$$>)
+  , (<$$>), fmap
+  , (<$$$>), fmap'
   , strJoin
-  , Measured
+  , class Measured
   , measure
   , Elem(..)
   , getElem
@@ -14,28 +14,31 @@ module Data.Sequence.Internal
   , Key(..)
   ) where
 
-import Prelude
+import Prelude (class Ord, class Semigroup, class Show, class Eq, class Functor, Ordering(GT, LT), compare, show, (<>), (==), map, (<<<), (<$>))
 
 import Data.Array.Unsafe (unsafeIndex)
-import Data.Foldable (Foldable, foldl, intercalate)
+import Data.Foldable (class Foldable, foldl, intercalate)
 import Data.Lazy (Lazy(), force)
-import Data.Monoid (Monoid, mempty)
+import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Additive (Additive(Additive))
-import Data.Traversable (Traversable)
+import Data.Traversable (class Traversable)
 import Unsafe.Coerce (unsafeCoerce)
 
 -----------------------
 -- Various utilities
-(!) :: forall a. Array a -> Int -> a
-(!) = unsafeIndex
+infix 2 unsafeIndex as !
 
-(<$$>) :: forall f g a b. (Functor f, Functor g) =>
+fmap :: forall f g a b. (Functor f, Functor g) =>
   (a -> b) -> f (g a) -> f (g b)
-(<$$>) = (<$>) <<< (<$>)
+fmap = (<$>) <<< (<$>)
 
-(<$$$>) :: forall f g h a b. (Functor f, Functor g, Functor h) =>
+infix 2 fmap as <$$>
+
+fmap' :: forall f g h a b. (Functor f, Functor g, Functor h) =>
   (a -> b) -> f (g (h a)) -> f (g (h b))
-(<$$$>) = (<$$>) <<< (<$>)
+fmap' = (<$$>) <<< (<$>)
+
+infix 2 fmap' as <$$$>
 
 strJoin :: forall a. (Show a) => String -> Array a -> String
 strJoin glue = intercalate glue <<< map show

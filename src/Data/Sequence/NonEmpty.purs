@@ -45,15 +45,15 @@ module Data.Sequence.NonEmpty
   , toUnfoldable
   ) where
 
-import Prelude hiding (append)
+import Prelude (class Semigroup, class Monad, class Bind, class Applicative, class Apply, class Functor, class Ord, class Eq, class Show, Ordering(EQ), map, (>>>), (<>), (<<<), (>>=), (<*>), (<$>), compare, (==), (&&), show, const, (-), id, (+))
 
-import Control.Alt (Alt)
-import Data.Foldable (Foldable, foldl, foldMap, foldr)
+import Control.Alt (class Alt)
+import Data.Foldable (class Foldable, foldl, foldMap, foldr)
 import Data.Maybe (Maybe(Just, Nothing), maybe)
 import Data.Maybe.Unsafe (fromJust)
-import Data.Traversable (Traversable, sequence, traverse)
+import Data.Traversable (class Traversable, sequence, traverse)
 import Data.Tuple (Tuple(Tuple), fst, uncurry)
-import Data.Unfoldable (Unfoldable)
+import Data.Unfoldable (class Unfoldable)
 
 import Data.Sequence as S
 
