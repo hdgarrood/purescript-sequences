@@ -1,8 +1,11 @@
 module Tests.Data.Sequence (sequenceTests) where
 
-import Prelude
+import Prelude (($), bind, (-), const, show, (<>), (<=), (&&), (==), (<$>), (+), not, negate, id, (>), Unit)
 
-import Control.Monad.Eff.Console (log)
+import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Console (CONSOLE, log)
+import Control.Monad.Eff.Exception (EXCEPTION)
+import Control.Monad.Eff.Random (RANDOM)
 import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -26,7 +29,7 @@ import Test.QuickCheck.Laws.Control.Alternative (checkAlternative)
 import Test.QuickCheck.Laws.Control.MonadPlus (checkMonadPlus)
 
 import Data.Sequence as S
-import Tests.Utils
+import Tests.Utils (ArbSeq(ArbSeq), err, abs, integerBetween, foldableSize)
 
 arr :: forall a. S.Seq a -> Array a
 arr = S.toUnfoldable
@@ -37,6 +40,14 @@ prx = Proxy
 prx2 :: Proxy2 ArbSeq
 prx2 = Proxy2
 
+sequenceTests :: forall t.
+        Eff
+          ( console :: CONSOLE
+          , random :: RANDOM
+          , err :: EXCEPTION
+          | t
+          )
+          Unit
 sequenceTests = do
   log ""
   log "Data.Sequence"

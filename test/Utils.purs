@@ -1,24 +1,24 @@
 module Tests.Utils where
 
-import Prelude
+import Prelude (class Ord, class Semigroup, class Eq, class Show, class Monad, class Bind, class Applicative, class Apply, class Functor, Unit, Ordering(GT, EQ, LT), (<>), (<<<), map, compare, (==), (<*>), append, (<$>), show, (-), mod, (+), negate, (<), const, eq, bind, pure, apply)
 
-import qualified Data.Array as A
+import Data.Array as A
 import Data.Function (on)
-import Data.Foldable
-import Data.Maybe
-import Data.Monoid
-import Data.Monoid.Additive
-import Control.Alt (Alt, (<|>))
-import Control.Plus (Plus, empty)
-import Control.Alternative
-import Control.MonadPlus
-import Test.QuickCheck
-import Test.QuickCheck.Arbitrary (Arbitrary, arbitrary)
+import Data.Foldable (class Foldable, intercalate, foldr, foldMap)
+import Data.Maybe (Maybe(Nothing, Just))
+import Data.Monoid (class Monoid, mempty)
+import Data.Monoid.Additive (Additive(Additive), runAdditive)
+import Control.Alt (class Alt, (<|>))
+import Control.Plus (class Plus, empty)
+import Control.Alternative (class Alternative)
+import Control.MonadPlus (class MonadPlus)
+import Test.QuickCheck (class Testable, QC, (<?>), quickCheck', Result)
+import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
 import Test.QuickCheck.Gen (Gen())
 
-import qualified Data.Sequence as S
-import qualified Data.Sequence.NonEmpty as NES
-import qualified Data.Sequence.Ordered as OS
+import Data.Sequence as S
+import Data.Sequence.NonEmpty as NES
+import Data.Sequence.Ordered as OS
 
 -----------------------------
 --- newtype wrappers
@@ -27,6 +27,7 @@ import qualified Data.Sequence.Ordered as OS
 -- Data.Sequence
 
 newtype ArbSeq a = ArbSeq (S.Seq a)
+unArbSeq :: forall b. ArbSeq b -> S.Seq b
 unArbSeq (ArbSeq xs) = xs
 
 instance eqArbSeq :: (Eq a) => Eq (ArbSeq a) where
@@ -75,6 +76,7 @@ instance arbitraryArbSeq :: (Arbitrary a) => Arbitrary (ArbSeq a) where
 -- Data.Sequence.NonEmpty
 
 newtype ArbNESeq a = ArbNESeq (NES.Seq a)
+unArbNESeq :: forall b. ArbNESeq b -> NES.Seq b
 unArbNESeq (ArbNESeq xs) = xs
 
 instance eqArbNESeq :: (Eq a) => Eq (ArbNESeq a) where
@@ -113,6 +115,7 @@ instance arbitraryArbNESeq :: (Arbitrary a) => Arbitrary (ArbNESeq a) where
 -- Data.Sequence.Ordered
 
 newtype ArbOSeq a = ArbOSeq (OS.OrdSeq a)
+unArbOSeq :: forall b. ArbOSeq b -> OS.OrdSeq b
 unArbOSeq (ArbOSeq xs) = xs
 
 instance eqArbOSeq :: (Eq a) => Eq (ArbOSeq a) where
@@ -144,11 +147,11 @@ abs x = if x < 0 then (-x) else x
 integerBetween :: Int -> Int -> Int -> Int
 integerBetween lo hi x = (abs x `mod` hi - lo) + lo
 
-sorted :: forall a. (Show a, Ord a) => Array a -> _
+sorted :: forall a. (Show a, Ord a) => Array a -> Result
 sorted xs = xs == A.sort xs
               <?> show xs <> " is not sorted."
 
-sortedRev :: forall a. (Show a, Ord a) => Array a -> _
+sortedRev :: forall a. (Show a, Ord a) => Array a -> Result
 sortedRev xs = xs == A.reverse (A.sort xs)
                 <?> show xs <> " is not sorted in reverse order."
 
