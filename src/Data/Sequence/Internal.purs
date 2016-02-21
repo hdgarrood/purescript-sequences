@@ -1,7 +1,7 @@
 module Data.Sequence.Internal
   ( (!)
-  , (<$$>), fmap
-  , (<$$$>), fmap'
+  , (<$$>), mapmap
+  , (<$$$>), mapmapmap
   , strJoin
   , class Measured
   , measure
@@ -28,17 +28,17 @@ import Unsafe.Coerce (unsafeCoerce)
 -- Various utilities
 infix 2 unsafeIndex as !
 
-fmap :: forall f g a b. (Functor f, Functor g) =>
+mapmap :: forall f g a b. (Functor f, Functor g) =>
   (a -> b) -> f (g a) -> f (g b)
-fmap = (<$>) <<< (<$>)
+mapmap = (<$>) <<< (<$>)
 
-infix 2 fmap as <$$>
+infix 2 mapmap as <$$>
 
-fmap' :: forall f g h a b. (Functor f, Functor g, Functor h) =>
+mapmapmap :: forall f g h a b. (Functor f, Functor g, Functor h) =>
   (a -> b) -> f (g (h a)) -> f (g (h b))
-fmap' = (<$$>) <<< (<$>)
+mapmapmap = (<$$>) <<< (<$>)
 
-infix 2 fmap' as <$$$>
+infix 2 mapmapmap as <$$$>
 
 strJoin :: forall a. (Show a) => String -> Array a -> String
 strJoin glue = intercalate glue <<< map show
