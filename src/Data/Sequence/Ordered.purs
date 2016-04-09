@@ -43,15 +43,15 @@ module Data.Sequence.Ordered
   , sort
   ) where
 
-import Prelude
+import Prelude (class Ord, class Functor, class Semigroup, class Show, class Eq, Ordering(GT, EQ, LT), (<<<), compare, (<>), (>), (>=), const)
 
 import Data.Lazy (force)
 import Data.Tuple (Tuple(Tuple), fst, snd)
 import Data.Maybe (Maybe(Just, Nothing))
-import Data.Monoid (Monoid)
+import Data.Monoid (class Monoid)
 import Data.Monoid.Additive (Additive(Additive), runAdditive)
-import Data.Foldable (Foldable, foldl, foldMap, foldr)
-import Data.Unfoldable (Unfoldable)
+import Data.Foldable (class Foldable, foldl, foldMap, foldr)
+import Data.Unfoldable (class Unfoldable)
 import Unsafe.Coerce (unsafeCoerce)
 
 import Data.Sequence.Internal

@@ -1,8 +1,11 @@
 module Tests.Data.Sequence.NonEmpty (nonEmptySequenceTests) where
 
-import Prelude
+import Prelude (Unit, ($), bind, (-), show, (>=), const, (<>), (<=), (&&), (==), (+), (<$>), not, negate, id)
 
-import Control.Monad.Eff.Console (log)
+import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Console (CONSOLE, log)
+import Control.Monad.Eff.Exception (EXCEPTION)
+import Control.Monad.Eff.Random (RANDOM)
 import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(Nothing))
@@ -12,7 +15,7 @@ import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2))
 
 import Data.Sequence as S
 import Data.Sequence.NonEmpty as NonEmpty
-import Tests.Utils
+import Tests.Utils (ArbNESeq(ArbNESeq), err, abs, integerBetween, foldableSize)
 
 import Test.QuickCheck.Laws (A())
 import Test.QuickCheck.Laws.Data.Eq (checkEq)
@@ -34,6 +37,14 @@ prx = Proxy
 prx2 :: Proxy2 ArbNESeq
 prx2 = Proxy2
 
+nonEmptySequenceTests :: forall a.
+        Eff
+          ( console :: CONSOLE
+          , random :: RANDOM
+          , err :: EXCEPTION
+          | a
+          )
+          Unit
 nonEmptySequenceTests = do
   log ""
   log "Data.Sequence.NonEmpty"

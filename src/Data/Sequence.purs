@@ -61,21 +61,21 @@ module Data.Sequence
   , fullyForce
   ) where
 
-import Prelude hiding (append, map)
+import Prelude  (class Ord, class Functor, class Monad, class Bind, class Applicative, class Apply, class Semigroup, class Show, class Eq, (<$>), const, (<), (&&), (<=), (<<<), flip, ap, id, (<>))
 
-import Control.Alt (Alt)
-import Control.Alternative (Alternative)
-import Control.MonadPlus (MonadPlus)
-import Control.Plus (Plus)
-import Data.Foldable (Foldable, foldl, foldMap, foldr)
+import Control.Alt (class Alt)
+import Control.Alternative (class Alternative)
+import Control.MonadPlus (class MonadPlus)
+import Control.Plus (class Plus)
+import Data.Foldable (class Foldable, foldl, foldMap, foldr)
 import Data.Lazy (Lazy(), force)
 import Data.Maybe (Maybe(Just, Nothing))
-import Data.Monoid (Monoid)
+import Data.Monoid (class Monoid)
 import Data.Monoid.Additive (Additive(Additive), runAdditive)
 import Data.Profunctor.Strong ((***))
-import Data.Traversable (Traversable, traverse)
+import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple), fst, snd)
-import Data.Unfoldable (Unfoldable, unfoldr)
+import Data.Unfoldable (class Unfoldable, unfoldr)
 import Unsafe.Coerce (unsafeCoerce)
 
 import Data.Sequence.Internal (Elem(Elem), mapGetElem, getElem, liftElem,
