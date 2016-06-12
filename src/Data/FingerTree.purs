@@ -48,10 +48,10 @@ module Data.FingerTree
   , fullyForce
   ) where
 
-import Prelude (class Functor, class Ord, class Eq, class Semigroup, class Show, Ordering(EQ, GT, LT), (<>), (<$>), flip, id, (<*>), const, pure, compare, (==), show, (++))
+import Prelude (class Functor, class Ord, class Eq, class Semigroup, class Show, Ordering(EQ, GT, LT), (<>), (<$>), flip, id, (<*>), const, pure, compare, (==), show)
 
 import Data.Array as A
-import Data.Array.Unsafe as AU
+import Data.Array.Partial as AU
 import Data.Foldable (class Foldable, foldl, foldr)
 import Data.Lazy (Lazy(), defer, force)
 import Data.Maybe (Maybe(Just, Nothing))
@@ -67,16 +67,16 @@ data Node v a = Node2 v a a | Node3 v a a a
 
 instance showNode :: (Show a, Show v) => Show (Node v a) where
   show (Node2 v a b) =
-    ("Node2 (" ++ show v
-     ++ ") (" ++ show a
-     ++ ") (" ++ show b
-     ++ ")")
+    ("Node2 (" <> show v
+     <> ") (" <> show a
+     <> ") (" <> show b
+     <> ")")
   show (Node3 v a b c) =
-    ("Node3 (" ++ show v
-     ++ ") (" ++ show a
-     ++ ") (" ++ show b
-     ++ ") (" ++ show c
-     ++ ")")
+    ("Node3 (" <> show v
+     <> ") (" <> show a
+     <> ") (" <> show b
+     <> ") (" <> show c
+     <> ")")
 
 node2 :: forall a v. (Monoid v, Measured a v) => a -> a -> Node v a
 node2 a b = Node2 (measure a <> measure b) a b
@@ -93,10 +93,10 @@ instance functorNode :: Functor (Node v) where
   map f (Node3 v a b c) = Node3 v (f a) (f b) (f c)
 
 instance foldableNode :: Foldable (Node v) where
-  foldr (-<) z (Node2 _ a b)   = a -< (b -< z)
-  foldr (-<) z (Node3 _ a b c) = a -< (b -< (c -< z))
-  foldl (>-) z (Node2 _ a b)   = (z >- a) >- b
-  foldl (>-) z (Node3 _ a b c) = ((z >- a) >- b) >- c
+  foldr (larrow) z (Node2 _ a b)   = a larrow (b larrow z)
+  foldr (larrow) z (Node3 _ a b c) = a larrow (b larrow (c larrow z))
+  foldl (rarrow) z (Node2 _ a b)   = (z rarrow a) rarrow b
+  foldl (rarrow) z (Node3 _ a b c) = ((z rarrow a) rarrow b) rarrow c
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
 instance traversableNode :: Traversable (Node v) where
@@ -136,13 +136,13 @@ type Digit a = Array a
 
 instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
   show Empty = "Empty"
-  show (Single a) = "Single (" ++ show a ++ ")"
+  show (Single a) = "Single (" <> show a <> ")"
   show (Deep v pr m sf) =
-    ("Deep (" ++ show v
-     ++ ") (" ++ show pr
-     ++ ") (" ++ show m
-     ++ ") (" ++ show sf
-     ++ ")")
+    ("Deep (" <> show v
+     <> ") (" <> show pr
+     <> ") (" <> show m
+     <> ") (" <> show sf
+     <> ")")
 
 instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTree v a) where
   append = append
@@ -190,26 +190,27 @@ instance functorFingerTree :: Functor (FingerTree v) where
   map f (Deep v pr m sf) = Deep v (f <$> pr) (f <$$$> m) (f <$> sf)
 
 instance foldableFingerTree :: Foldable (FingerTree v) where
-  foldr (-<) z Empty            = z
-  foldr (-<) z (Single x)       = x -< z
-  foldr (-<) z (Deep _ pr m sf) = flipFoldr' pr (deepFlipFoldr (force m) (flipFoldr sf z))
+  foldr (larrow) z Empty            = z
+  foldr (larrow) z (Single x)       = x larrow z
+  foldr (larrow) z (Deep _ pr m sf) = 
+    flipFoldr' pr (deepFlipFoldr (force m) (flipFoldr sf z))
     where
-    flipFoldr = flip (foldr (-<))
+    flipFoldr = flip (foldr (larrow))
 --    infix 2 flipFoldr as -<<
     -- this is a hack to get type inference to work
-    flipFoldr' = flip (foldr (-<))
+    flipFoldr' = flip (foldr (larrow))
 --    infix 2 flipFoldr' as +<<
-    deepFlipFoldr = flip (foldr (flip (foldr (-<))))
+    deepFlipFoldr = flip (foldr (flip (foldr (larrow))))
 --    infix 2 deepFlipFoldr as -<<<
 
 
-  foldl (>-) z Empty            = z
-  foldl (>-) z (Single x)       = z >- x
-  foldl (>-) z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
+  foldl (rarrow) z Empty            = z
+  foldl (rarrow) z (Single x)       = z rarrow x
+  foldl (rarrow) z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
     where
-    leftFold = foldl (>-)
+    leftFold = foldl (rarrow)
 --    infix 2 leftFold as >>-
-    deepLeftFold = foldl (foldl (>-))
+    deepLeftFold = foldl (foldl (rarrow))
 --    infix 2 deepLeftFold as >>>-
 
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
@@ -281,7 +282,7 @@ data ViewL s a = NilL | ConsL a (Lazy (s a))
 
 instance functorViewL :: (Functor s) => Functor (ViewL s) where
   map f NilL = NilL
-  map f (ConsL x xs) = ConsL (f x) ((f <$>) <$> xs)
+  map f (ConsL x xs) = ConsL (f x) ((f (<$>)) <$> xs)
 
 headDigit :: forall a. Digit a -> a
 headDigit = AU.head
