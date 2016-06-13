@@ -118,7 +118,7 @@ nonEmptySequenceTests = do
   quickCheck $ \(ArbNESeq seq) idx ->
     let seq' = const 0 <$> (seq :: NonEmpty.Seq Unit)
         idx' = integerBetween 0 (NonEmpty.length seq') idx
-        result = sum (NonEmpty.adjust (+1) idx' seq')
+        result = sum (NonEmpty.adjust (_+1) idx' seq')
     in  result == 1 <?> "seq': " <> show seq' <> ", result: " <> show result
 
   log "Test take"
