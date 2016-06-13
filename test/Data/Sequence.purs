@@ -1,6 +1,6 @@
 module Tests.Data.Sequence (sequenceTests) where
 
-import Prelude (($), bind, (-), const, show, (<>), (<=), (&&), (==), (<$>), (+), not, negate, id, (>), Unit)
+import Prelude
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
@@ -129,14 +129,14 @@ sequenceTests = do
   quickCheck $ \(ArbSeq seq) idx ->
     let seq' = const 0 <$> S.cons 0 seq
         idx' = integerBetween 0 (S.length seq') idx
-        result = sum (S.adjust (+1) idx' seq')
+        result = sum (S.adjust (_+1) idx' seq')
     in  result == 1 <?> "seq': " <> show seq' <> ", result: " <> show result
 
   log "Test adjust modifies at the correct index"
   quickCheck $ \(ArbSeq seq) idx ->
     let seq' = const "hello" <$> S.cons 0 seq
         idx' = integerBetween 0 (S.length seq') idx
-        result = S.index idx' (S.adjust (<> ", world") idx' seq')
+        result = S.index idx' (S.adjust (append ", world") idx' seq')
     in  (result == Just "hello, world")
           <?> "seq': " <> show seq' <> ", result: " <> show result
 

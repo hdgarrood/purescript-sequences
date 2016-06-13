@@ -48,10 +48,10 @@ module Data.FingerTree
   , fullyForce
   ) where
 
-import Prelude (class Functor, class Ord, class Eq, class Semigroup, class Show, Ordering(EQ, GT, LT), (<>), (<$>), flip, id, (<*>), const, pure, compare, (==), show, (++))
+import Prelude hiding (append)
 
 import Data.Array as A
-import Data.Array.Unsafe as AU
+import Data.Array.Partial as AU
 import Data.Foldable (class Foldable, foldl, foldr)
 import Data.Lazy (Lazy(), defer, force)
 import Data.Maybe (Maybe(Just, Nothing))
@@ -60,6 +60,7 @@ import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple))
 import Data.Unfoldable (class Unfoldable, unfoldr)
 import Control.Monad.Eff.Exception.Unsafe (unsafeThrow)
+import Partial.Unsafe (unsafePartial)
 
 import Data.Sequence.Internal (class Measured, (!), (<$$$>), measure)
 
@@ -67,16 +68,16 @@ data Node v a = Node2 v a a | Node3 v a a a
 
 instance showNode :: (Show a, Show v) => Show (Node v a) where
   show (Node2 v a b) =
-    ("Node2 (" ++ show v
-     ++ ") (" ++ show a
-     ++ ") (" ++ show b
-     ++ ")")
+    ("Node2 (" <> show v
+     <> ") (" <> show a
+     <> ") (" <> show b
+     <> ")")
   show (Node3 v a b c) =
-    ("Node3 (" ++ show v
-     ++ ") (" ++ show a
-     ++ ") (" ++ show b
-     ++ ") (" ++ show c
-     ++ ")")
+    ("Node3 (" <> show v
+     <> ") (" <> show a
+     <> ") (" <> show b
+     <> ") (" <> show c
+     <> ")")
 
 node2 :: forall a v. (Monoid v, Measured a v) => a -> a -> Node v a
 node2 a b = Node2 (measure a <> measure b) a b
@@ -93,10 +94,10 @@ instance functorNode :: Functor (Node v) where
   map f (Node3 v a b c) = Node3 v (f a) (f b) (f c)
 
 instance foldableNode :: Foldable (Node v) where
-  foldr (-<) z (Node2 _ a b)   = a -< (b -< z)
-  foldr (-<) z (Node3 _ a b c) = a -< (b -< (c -< z))
-  foldl (>-) z (Node2 _ a b)   = (z >- a) >- b
-  foldl (>-) z (Node3 _ a b c) = ((z >- a) >- b) >- c
+  foldr (larrow) z (Node2 _ a b)   = larrow a (larrow b z)
+  foldr (larrow) z (Node3 _ a b c) = larrow a (larrow b (larrow c z))
+  foldl (rarrow) z (Node2 _ a b)   = rarrow (rarrow z a) b
+  foldl (rarrow) z (Node3 _ a b c) = rarrow (rarrow (rarrow z a) b) c
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
 instance traversableNode :: Traversable (Node v) where
@@ -136,13 +137,13 @@ type Digit a = Array a
 
 instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
   show Empty = "Empty"
-  show (Single a) = "Single (" ++ show a ++ ")"
+  show (Single a) = "Single (" <> show a <> ")"
   show (Deep v pr m sf) =
-    ("Deep (" ++ show v
-     ++ ") (" ++ show pr
-     ++ ") (" ++ show m
-     ++ ") (" ++ show sf
-     ++ ")")
+    ("Deep (" <> show v
+     <> ") (" <> show pr
+     <> ") (" <> show m
+     <> ") (" <> show sf
+     <> ")")
 
 instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTree v a) where
   append = append
@@ -190,26 +191,27 @@ instance functorFingerTree :: Functor (FingerTree v) where
   map f (Deep v pr m sf) = Deep v (f <$> pr) (f <$$$> m) (f <$> sf)
 
 instance foldableFingerTree :: Foldable (FingerTree v) where
-  foldr (-<) z Empty            = z
-  foldr (-<) z (Single x)       = x -< z
-  foldr (-<) z (Deep _ pr m sf) = flipFoldr' pr (deepFlipFoldr (force m) (flipFoldr sf z))
+  foldr (larrow) z Empty            = z
+  foldr (larrow) z (Single x)       = larrow x z
+  foldr (larrow) z (Deep _ pr m sf) = 
+    flipFoldr' pr (deepFlipFoldr (force m) (flipFoldr sf z))
     where
-    flipFoldr = flip (foldr (-<))
+    flipFoldr = flip (foldr (larrow))
 --    infix 2 flipFoldr as -<<
     -- this is a hack to get type inference to work
-    flipFoldr' = flip (foldr (-<))
+    flipFoldr' = flip (foldr (larrow))
 --    infix 2 flipFoldr' as +<<
-    deepFlipFoldr = flip (foldr (flip (foldr (-<))))
+    deepFlipFoldr = flip (foldr (flip (foldr (larrow))))
 --    infix 2 deepFlipFoldr as -<<<
 
 
-  foldl (>-) z Empty            = z
-  foldl (>-) z (Single x)       = z >- x
-  foldl (>-) z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
+  foldl (rarrow) z Empty            = z
+  foldl (rarrow) z (Single x)       = rarrow z x
+  foldl (rarrow) z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
     where
-    leftFold = foldl (>-)
+    leftFold = foldl (rarrow)
 --    infix 2 leftFold as >>-
-    deepLeftFold = foldl (foldl (>-))
+    deepLeftFold = foldl (foldl (rarrow))
 --    infix 2 deepLeftFold as >>>-
 
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
@@ -281,13 +283,13 @@ data ViewL s a = NilL | ConsL a (Lazy (s a))
 
 instance functorViewL :: (Functor s) => Functor (ViewL s) where
   map f NilL = NilL
-  map f (ConsL x xs) = ConsL (f x) ((f <$>) <$> xs)
+  map f (ConsL x xs) = ConsL (f x) (map f  <$> xs)
 
 headDigit :: forall a. Digit a -> a
-headDigit = AU.head
+headDigit = unsafePartial $ AU.head
 
 tailDigit :: forall a. Digit a -> Digit a
-tailDigit = AU.tail
+tailDigit = unsafePartial $ AU.tail
 
 viewL :: forall a v. (Monoid v, Measured a v)
       => FingerTree v a -> ViewL (FingerTree v) a
@@ -333,11 +335,11 @@ tail x = case viewL x of
   ConsL _ x' -> Just (force x')
   NilL       -> Nothing
 
-lastDigit :: forall a. Digit a -> a
-lastDigit = AU.last
+lastDigit :: forall a.Digit a -> a
+lastDigit = unsafePartial $ AU.last
 
-initDigit :: forall a. Digit a -> Digit a
-initDigit = AU.init
+initDigit :: forall a.Digit a -> Digit a
+initDigit = unsafePartial $ AU.init
 
 data ViewR s a = NilR | SnocR (Lazy (s a)) a
 
@@ -383,7 +385,7 @@ nodes :: forall a v. (Monoid v, Measured a v) => Array a -> Array (Node v a)
 nodes [a, b]       = [node2 a b]
 nodes [a, b, c]    = [node3 a b c]
 nodes [a, b, c, d] = [node2 a b, node2 c d]
-nodes xs           = node3 (xs ! 0) (xs ! 1) (xs ! 2) A.: nodes (A.drop 3 xs)
+nodes xs           = unsafePartial $ node3 (xs ! 0) (xs ! 1) (xs ! 2) A.: nodes (A.drop 3 xs)
 
 append :: forall a v. (Monoid v, Measured a v)
      => FingerTree v a -> FingerTree v a -> FingerTree v a
@@ -395,16 +397,17 @@ data LazySplit f a = LazySplit (Lazy (f a)) a (Lazy (f a))
 unsafeSplitDigit :: forall a v. (Monoid v, Measured a v) =>
   (v -> Boolean) -> v -> Digit a -> Split Array a
 unsafeSplitDigit p i as =
-  case A.length as of
-    1 -> Split [] (as ! 0) []
-    _ ->
-      let a = as ! 0
-          bs = A.drop 1 as
-          i' = i <> measure a
-      in if p i'
-           then Split [] a bs
-           else case unsafeSplitDigit p i' bs of
-                  Split l x r -> Split (A.cons a l) x r
+  unsafePartial $
+    case A.length as of
+      1 -> Split [] (as ! 0) []
+      _ ->
+        let a = as ! 0
+            bs = A.drop 1 as
+            i' = i <> measure a
+        in if p i'
+             then Split [] a bs
+             else case unsafeSplitDigit p i' bs of
+                    Split l x r -> Split (A.cons a l) x r
 
 unsafeSplitTree :: forall a v. (Monoid v, Measured a v) =>
   (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a

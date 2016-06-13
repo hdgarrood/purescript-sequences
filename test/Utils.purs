@@ -1,6 +1,6 @@
 module Tests.Utils where
 
-import Prelude (class Ord, class Semigroup, class Eq, class Show, class Monad, class Bind, class Applicative, class Apply, class Functor, Unit, Ordering(GT, EQ, LT), (<>), (<<<), map, compare, (==), (<*>), append, (<$>), show, (-), mod, (+), negate, (<), const, eq, bind, pure, apply)
+import Prelude
 
 import Data.Array as A
 import Data.Function (on)
@@ -12,6 +12,7 @@ import Control.Alt (class Alt, (<|>))
 import Control.Plus (class Plus, empty)
 import Control.Alternative (class Alternative)
 import Control.MonadPlus (class MonadPlus)
+import Control.MonadZero (class MonadZero)
 import Test.QuickCheck (class Testable, QC, (<?>), quickCheck', Result)
 import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
 import Test.QuickCheck.Gen (Gen())
@@ -68,6 +69,8 @@ instance plusArbSeq :: Plus ArbSeq where
 instance alternativeArbseq :: Alternative ArbSeq
 
 instance monadPlusArbSeq :: MonadPlus ArbSeq
+
+instance monadZeroArbSeq :: MonadZero ArbSeq
 
 instance arbitraryArbSeq :: (Arbitrary a) => Arbitrary (ArbSeq a) where
   arbitrary = (ArbSeq <<< S.fromFoldable) <$> (arbitrary :: Gen (Array a))
