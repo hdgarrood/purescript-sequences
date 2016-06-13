@@ -284,10 +284,10 @@ instance functorViewL :: (Functor s) => Functor (ViewL s) where
   map f NilL = NilL
   map f (ConsL x xs) = ConsL (f x) ((f (<$>)) <$> xs)
 
-headDigit :: forall a. Digit a -> a
+headDigit :: forall a. Partial => Digit a -> a
 headDigit = AU.head
 
-tailDigit :: forall a. Digit a -> Digit a
+tailDigit :: forall a. Partial => Digit a -> Digit a
 tailDigit = AU.tail
 
 viewL :: forall a v. (Monoid v, Measured a v)
@@ -334,10 +334,10 @@ tail x = case viewL x of
   ConsL _ x' -> Just (force x')
   NilL       -> Nothing
 
-lastDigit :: forall a. Digit a -> a
+lastDigit :: forall a.Partial => Digit a -> a
 lastDigit = AU.last
 
-initDigit :: forall a. Digit a -> Digit a
+initDigit :: forall a.Partial => Digit a -> Digit a
 initDigit = AU.init
 
 data ViewR s a = NilR | SnocR (Lazy (s a)) a
@@ -380,7 +380,7 @@ app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
   in
    deep pr1 (defer computeM') sf2
 
-nodes :: forall a v. (Monoid v, Measured a v) => Array a -> Array (Node v a)
+nodes :: forall a v. (Partial, Monoid v, Measured a v) => Array a -> Array (Node v a)
 nodes [a, b]       = [node2 a b]
 nodes [a, b, c]    = [node3 a b c]
 nodes [a, b, c, d] = [node2 a b, node2 c d]
@@ -393,7 +393,7 @@ append xs ys = app3 xs [] ys
 data Split f a = Split (f a) a (f a)
 data LazySplit f a = LazySplit (Lazy (f a)) a (Lazy (f a))
 
-unsafeSplitDigit :: forall a v. (Monoid v, Measured a v) =>
+unsafeSplitDigit :: forall a v. (Partial, Monoid v, Measured a v) =>
   (v -> Boolean) -> v -> Digit a -> Split Array a
 unsafeSplitDigit p i as =
   case A.length as of
