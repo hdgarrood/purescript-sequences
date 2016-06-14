@@ -43,15 +43,15 @@ module Data.Sequence.Ordered
   , sort
   ) where
 
-import Prelude (class Ord, class Functor, class Semigroup, class Show, class Eq, Ordering(GT, EQ, LT), (<<<), compare, (<>), (>), (>=), const)
-
+import Prelude
+import Data.Foldable (class Foldable, foldl, foldMap, foldr)
 import Data.Lazy (force)
-import Data.Tuple (Tuple(Tuple), fst, snd)
 import Data.Maybe (Maybe(Just, Nothing))
 import Data.Monoid (class Monoid)
 import Data.Monoid.Additive (Additive(Additive), runAdditive)
-import Data.Foldable (class Foldable, foldl, foldMap, foldr)
+import Data.Tuple (Tuple(Tuple), fst, snd)
 import Data.Unfoldable (class Unfoldable)
+import Partial.Unsafe (unsafePartial)
 import Unsafe.Coerce (unsafeCoerce)
 
 import Data.Sequence.Internal
@@ -164,7 +164,7 @@ intersection (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
 -- | is empty.
 least :: forall a. (Ord a) => OrdSeq a -> Maybe a
 least (OrdSeq xs) =
-  case FT.viewL xs of
+  case unsafePartial $ FT.viewL xs of
     FT.NilL      -> Nothing
     FT.ConsL x _ -> Just (getElem x)
 
@@ -172,7 +172,7 @@ least (OrdSeq xs) =
 -- | the remainder of the sequence. If the sequence is empty, return Nothing.
 popLeast :: forall a. (Ord a) => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
 popLeast (OrdSeq xs) =
-  case FT.viewL xs of
+  case unsafePartial $ FT.viewL xs of
     FT.NilL       -> Nothing
     FT.ConsL x xs -> Just (Tuple (getElem x) (OrdSeq (force xs)))
 
@@ -180,7 +180,7 @@ popLeast (OrdSeq xs) =
 -- | sequence is empty.
 greatest :: forall a. (Ord a) => OrdSeq a -> Maybe a
 greatest (OrdSeq xs) =
-  case FT.viewR xs of
+  case unsafePartial $ FT.viewR xs of
     FT.NilR      -> Nothing
     FT.SnocR _ x -> Just (getElem x)
 
@@ -189,7 +189,7 @@ greatest (OrdSeq xs) =
 -- | Nothing.
 popGreatest :: forall a. (Ord a) => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
 popGreatest (OrdSeq xs) =
-  case FT.viewR xs of
+  case unsafePartial $ FT.viewR xs of
     FT.NilR       -> Nothing
     FT.SnocR xs x -> Just (Tuple (getElem x) (OrdSeq (force xs)))
 
@@ -201,12 +201,12 @@ fromFoldable = foldr insert empty
 -- | Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
 -- | sequence in ascending order.
 toUnfoldable :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
-toUnfoldable (OrdSeq xs) = mapGetElem (FT.unfoldLeft xs)
+toUnfoldable (OrdSeq xs) = mapGetElem (unsafePartial $ FT.unfoldLeft xs)
 
 -- | Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
 -- | sequence in descending order.
 toUnfoldableDescending :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
-toUnfoldableDescending (OrdSeq xs) = mapGetElem (FT.unfoldRight xs)
+toUnfoldableDescending (OrdSeq xs) = mapGetElem (unsafePartial $ FT.unfoldRight xs)
 
 -- | Sort any structure (which has Foldable, Unfoldable, and Functor instances)
 -- | by converting to an OrdSeq and back again. I am fairly sure this is

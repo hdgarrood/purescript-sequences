@@ -255,7 +255,7 @@ index i xs = if inBounds i xs then Just (unsafeIndex i xs) else Nothing
 -- | sequence.
 unsafeIndex :: forall a. Int -> Seq a -> a
 unsafeIndex i (Seq xs) =
-  case FT.unsafeSplitTree (\n -> i < runAdditive n) (Additive 0) xs of
+  case FT.splitTree (\n -> i < runAdditive n) (Additive 0) xs of
     FT.LazySplit _ x _ -> getElem x
 
 -- | O(log(min(i,n-i))). Adjust the element at the specified index by
@@ -266,7 +266,7 @@ adjust f i xs = if inBounds i xs then unsafeAdjust f i xs else xs
 
 unsafeAdjust :: forall a. (a -> a) -> Int -> Seq a -> Seq a
 unsafeAdjust f i (Seq xs) =
-  case FT.unsafeSplitTree (\n -> i < runAdditive n) (Additive 0) xs of
+  case FT.splitTree (\n -> i < runAdditive n) (Additive 0) xs of
     FT.LazySplit l x r ->
       let
         g :: Elem a -> Elem a
