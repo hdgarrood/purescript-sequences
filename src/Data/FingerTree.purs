@@ -94,10 +94,10 @@ instance functorNode :: Functor (Node v) where
   map f (Node3 v a b c) = Node3 v (f a) (f b) (f c)
 
 instance foldableNode :: Foldable (Node v) where
-  foldr (larrow) z (Node2 _ a b)   = larrow a (larrow b z)
-  foldr (larrow) z (Node3 _ a b c) = larrow a (larrow b (larrow c z))
-  foldl (rarrow) z (Node2 _ a b)   = rarrow (rarrow z a) b
-  foldl (rarrow) z (Node3 _ a b c) = rarrow (rarrow (rarrow z a) b) c
+  foldr (f) z (Node2 _ a b)   = f a (f b z)
+  foldr (f) z (Node3 _ a b c) = f a (f b (f c z))
+  foldl (f) z (Node2 _ a b)   = f (f z a) b
+  foldl (f) z (Node3 _ a b c) = f (f (f z a) b) c
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
 instance traversableNode :: Traversable (Node v) where
@@ -191,27 +191,27 @@ instance functorFingerTree :: Functor (FingerTree v) where
   map f (Deep v pr m sf) = Deep v (f <$> pr) (f <$$$> m) (f <$> sf)
 
 instance foldableFingerTree :: Foldable (FingerTree v) where
-  foldr (larrow) z Empty            = z
-  foldr (larrow) z (Single x)       = larrow x z
-  foldr (larrow) z (Deep _ pr m sf) = 
+  foldr (f) z Empty            = z
+  foldr (f) z (Single x)       = f x z
+  foldr (f) z (Deep _ pr m sf) = 
     flipFoldr' pr (deepFlipFoldr (force m) (flipFoldr sf z))
     where
-    flipFoldr = flip (foldr (larrow))
+    flipFoldr = flip (foldr (f))
 --    infix 2 flipFoldr as -<<
     -- this is a hack to get type inference to work
-    flipFoldr' = flip (foldr (larrow))
+    flipFoldr' = flip (foldr (f))
 --    infix 2 flipFoldr' as +<<
-    deepFlipFoldr = flip (foldr (flip (foldr (larrow))))
+    deepFlipFoldr = flip (foldr (flip (foldr (f))))
 --    infix 2 deepFlipFoldr as -<<<
 
 
-  foldl (rarrow) z Empty            = z
-  foldl (rarrow) z (Single x)       = rarrow z x
-  foldl (rarrow) z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
+  foldl (f) z Empty            = z
+  foldl (f) z (Single x)       = f z x
+  foldl (f) z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
     where
-    leftFold = foldl (rarrow)
+    leftFold = foldl (f)
 --    infix 2 leftFold as >>-
-    deepLeftFold = foldl (foldl (rarrow))
+    deepLeftFold = foldl (foldl (f))
 --    infix 2 deepLeftFold as >>>-
 
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
