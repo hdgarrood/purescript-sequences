@@ -335,7 +335,7 @@ tail x = case viewL x of
   ConsL _ x' -> Just (force x')
   NilL       -> Nothing
 
-lastDigit :: forall a.Digit a -> a
+lastDigit :: forall a. Digit a -> a
 lastDigit = unsafePartial $ AU.last
 
 initDigit :: forall a.Digit a -> Digit a
