@@ -49,18 +49,16 @@ module Data.FingerTree
   ) where
 
 import Prelude hiding (append)
-
 import Data.Array as A
 import Data.Array.Partial as AU
 import Data.Foldable (class Foldable, foldl, foldr)
-import Data.Lazy (Lazy(), defer, force)
+import Data.Lazy (Lazy, defer, force)
 import Data.Maybe (Maybe(Just, Nothing))
 import Data.Monoid (class Monoid, mempty)
 import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple))
 import Data.Unfoldable (class Unfoldable, unfoldr)
-import Control.Monad.Eff.Exception.Unsafe (unsafeThrow)
-import Partial.Unsafe (unsafePartial)
+import Partial.Unsafe (unsafeCrashWith, unsafePartial)
 
 import Data.Sequence.Internal (class Measured, (!), (<$$$>), measure)
 
@@ -94,10 +92,10 @@ instance functorNode :: Functor (Node v) where
   map f (Node3 v a b c) = Node3 v (f a) (f b) (f c)
 
 instance foldableNode :: Foldable (Node v) where
-  foldr (f) z (Node2 _ a b)   = f a (f b z)
-  foldr (f) z (Node3 _ a b c) = f a (f b (f c z))
-  foldl (f) z (Node2 _ a b)   = f (f z a) b
-  foldl (f) z (Node3 _ a b c) = f (f (f z a) b) c
+  foldr r z (Node2 _ a b)   = r a (r b z)
+  foldr r z (Node3 _ a b c) = r a (r b (r c z))
+  foldl l z (Node2 _ a b)   = l (l z a) b
+  foldl l z (Node3 _ a b c) = l (l (l z a) b) c
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
 instance traversableNode :: Traversable (Node v) where
@@ -191,27 +189,27 @@ instance functorFingerTree :: Functor (FingerTree v) where
   map f (Deep v pr m sf) = Deep v (f <$> pr) (f <$$$> m) (f <$> sf)
 
 instance foldableFingerTree :: Foldable (FingerTree v) where
-  foldr (f) z Empty            = z
-  foldr (f) z (Single x)       = f x z
-  foldr (f) z (Deep _ pr m sf) = 
+  foldr _ z Empty            = z
+  foldr r z (Single x)       = r x z
+  foldr r z (Deep _ pr m sf) =
     flipFoldr' pr (deepFlipFoldr (force m) (flipFoldr sf z))
     where
-    flipFoldr = flip (foldr (f))
+    flipFoldr = flip (foldr r)
 --    infix 2 flipFoldr as -<<
     -- this is a hack to get type inference to work
-    flipFoldr' = flip (foldr (f))
+    flipFoldr' = flip (foldr r)
 --    infix 2 flipFoldr' as +<<
-    deepFlipFoldr = flip (foldr (flip (foldr (f))))
+    deepFlipFoldr = flip (foldr (flip (foldr r)))
 --    infix 2 deepFlipFoldr as -<<<
 
 
-  foldl (f) z Empty            = z
-  foldl (f) z (Single x)       = f z x
-  foldl (f) z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
+  foldl _ z Empty            = z
+  foldl l z (Single x)       = l z x
+  foldl l z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
     where
-    leftFold = foldl (f)
+    leftFold = foldl l
 --    infix 2 leftFold as >>-
-    deepLeftFold = foldl (foldl (f))
+    deepLeftFold = foldl (foldl l)
 --    infix 2 deepLeftFold as >>>-
 
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
@@ -286,10 +284,10 @@ instance functorViewL :: (Functor s) => Functor (ViewL s) where
   map f (ConsL x xs) = ConsL (f x) (map f  <$> xs)
 
 headDigit :: forall a. Digit a -> a
-headDigit = unsafePartial $ AU.head
+headDigit = AU.head
 
 tailDigit :: forall a. Digit a -> Digit a
-tailDigit = unsafePartial $ AU.tail
+tailDigit = AU.tail
 
 viewL :: forall a v. (Monoid v, Measured a v)
       => FingerTree v a -> ViewL (FingerTree v) a
@@ -412,7 +410,7 @@ unsafeSplitDigit p i as =
 unsafeSplitTree :: forall a v. (Monoid v, Measured a v) =>
   (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
 unsafeSplitTree p i (Single x) = LazySplit lazyEmpty x lazyEmpty
-unsafeSplitTree _ _ Empty = unsafeThrow "Data.FingerTree.unsafeSplitTree: Empty"
+unsafeSplitTree _ _ Empty = unsafeCrashWith "Data.FingerTree.unsafeSplitTree: Empty"
 unsafeSplitTree p i (Deep _ pr m sf) =
   let vpr = i <> measure pr
   in if p vpr
