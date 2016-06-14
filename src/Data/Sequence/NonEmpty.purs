@@ -170,8 +170,8 @@ replace x = adjust (const x)
 toUnfoldable :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 toUnfoldable = S.toUnfoldable <<< toPlain
 
-fromPlainUnsafe :: forall a. S.Seq a -> Seq a
-fromPlainUnsafe = unsafePartial $ S.uncons >>> fromJust >>> uncurry Seq
+fromPlain :: forall a. Partial => S.Seq a -> Seq a
+fromPlain = S.uncons >>> fromJust >>> uncurry Seq
 
 instance showSeq :: (Show a) => Show (Seq a) where
   show (Seq x xs) = "(Seq " <> show x <> " " <> show xs <> ")"
@@ -189,13 +189,13 @@ instance functorSeq :: Functor Seq where
   map f (Seq x xs) = Seq (f x) (f <$> xs)
 
 instance applySeq :: Apply Seq where
-  apply fs xs = fromPlainUnsafe (toPlain fs <*> toPlain xs)
+  apply fs xs = fromPlain (toPlain fs <*> toPlain xs)
 
 instance applicativeSeq :: Applicative Seq where
   pure x = Seq x S.empty
 
 instance bindSeq :: Bind Seq where
-  bind xs f = fromPlainUnsafe (toPlain xs >>= (toPlain <<< f))
+  bind xs f = fromPlain (toPlain xs >>= (toPlain <<< f))
 
 instance monadSeq :: Monad Seq
 
@@ -211,5 +211,5 @@ instance foldableSeq :: Foldable Seq where
   foldMap f = toPlain >>> foldMap f
 
 instance traversableSeq :: Traversable Seq where
-  sequence   = toPlain >>> sequence   >>> map fromPlainUnsafe
-  traverse f = toPlain >>> traverse f >>> map fromPlainUnsafe
+  sequence   = toPlain >>> sequence   >>> map fromPlain
+  traverse f = toPlain >>> traverse f >>> map fromPlain
