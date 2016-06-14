@@ -136,7 +136,7 @@ sequenceTests = do
   quickCheck $ \(ArbSeq seq) idx ->
     let seq' = const "hello" <$> S.cons 0 seq
         idx' = integerBetween 0 (S.length seq') idx
-        result = S.index idx' (S.adjust (append ", world") idx' seq')
+        result = S.index idx' (S.adjust (_ <> ", world") idx' seq')
     in  (result == Just "hello, world")
           <?> "seq': " <> show seq' <> ", result: " <> show result
 
