@@ -48,10 +48,10 @@ module Data.FingerTree
   , fullyForce
   ) where
 
-import Prelude (class Functor, class Ord, class Eq, class Semigroup, class Show, Ordering(EQ, GT, LT), (<>), (<$>), flip, id, (<*>), const, pure, compare, (==), show, (++))
+import Prelude (class Functor, class Ord, class Eq, class Semigroup, class Show, Ordering(..), map, flip, id, const, pure, compare, show, (<>), (<$>), (<*>), (==))
 
 import Data.Array as A
-import Data.Array.Unsafe as AU
+import Data.Array.Partial as AP
 import Data.Foldable (class Foldable, foldl, foldr)
 import Data.Lazy (Lazy(), defer, force)
 import Data.Maybe (Maybe(Just, Nothing))
@@ -60,23 +60,24 @@ import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple))
 import Data.Unfoldable (class Unfoldable, unfoldr)
 import Control.Monad.Eff.Exception.Unsafe (unsafeThrow)
+import Partial.Unsafe (unsafePartial)
 
-import Data.Sequence.Internal (class Measured, (!), (<$$$>), measure)
+import Data.Sequence.Internal (class Measured, (<$$$>), measure)
 
 data Node v a = Node2 v a a | Node3 v a a a
 
 instance showNode :: (Show a, Show v) => Show (Node v a) where
   show (Node2 v a b) =
-    ("Node2 (" ++ show v
-     ++ ") (" ++ show a
-     ++ ") (" ++ show b
-     ++ ")")
+    ("Node2 (" <> show v
+     <> ") (" <> show a
+     <> ") (" <> show b
+     <> ")")
   show (Node3 v a b c) =
-    ("Node3 (" ++ show v
-     ++ ") (" ++ show a
-     ++ ") (" ++ show b
-     ++ ") (" ++ show c
-     ++ ")")
+    ("Node3 (" <> show v
+     <> ") (" <> show a
+     <> ") (" <> show b
+     <> ") (" <> show c
+     <> ")")
 
 node2 :: forall a v. (Monoid v, Measured a v) => a -> a -> Node v a
 node2 a b = Node2 (measure a <> measure b) a b
@@ -93,10 +94,10 @@ instance functorNode :: Functor (Node v) where
   map f (Node3 v a b c) = Node3 v (f a) (f b) (f c)
 
 instance foldableNode :: Foldable (Node v) where
-  foldr (-<) z (Node2 _ a b)   = a -< (b -< z)
-  foldr (-<) z (Node3 _ a b c) = a -< (b -< (c -< z))
-  foldl (>-) z (Node2 _ a b)   = (z >- a) >- b
-  foldl (>-) z (Node3 _ a b c) = ((z >- a) >- b) >- c
+  foldr f z (Node2 _ a b)   = a `f` (b `f` z)
+  foldr f z (Node3 _ a b c) = a `f` (b `f` (c `f` z))
+  foldl f z (Node2 _ a b)   = (z `f` a) `f` b
+  foldl f z (Node3 _ a b c) = ((z `f` a) `f` b) `f` c
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
 instance traversableNode :: Traversable (Node v) where
@@ -134,21 +135,26 @@ deep pr m sf =
 -- If Digit has two or three elements, it is safe; otherwise it is dangerous.
 type Digit a = Array a
 
+indexDigit :: forall a. Digit a -> Int -> a
+indexDigit = unsafePartial AP.unsafeIndex
+
+infixl 8 indexDigit as !
+
 instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
   show Empty = "Empty"
-  show (Single a) = "Single (" ++ show a ++ ")"
+  show (Single a) = "Single (" <> show a <> ")"
   show (Deep v pr m sf) =
-    ("Deep (" ++ show v
-     ++ ") (" ++ show pr
-     ++ ") (" ++ show m
-     ++ ") (" ++ show sf
-     ++ ")")
+    ("Deep (" <> show v
+     <> ") (" <> show pr
+     <> ") (" <> show m
+     <> ") (" <> show sf
+     <> ")")
 
 instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTree v a) where
   append = append
 
--- We don't implement an Eq instance because we don't want to make assumptions
--- about the meaning of the data, and because we expect actual uses of
+-- We don't implement an Eq instance becAPse we don't want to make assumptions
+-- about the meaning of the data, and becAPse we expect actual uses of
 -- FingerTrees to use newtypes, so we provide this function instead to help
 -- with defining Ord instances.
 eqFingerTree :: forall a v. (Monoid v, Measured a v, Eq a) =>
@@ -167,8 +173,8 @@ eqFingerTree xs ys =
          else
            false
 
--- We don't implement an Ord instance because we can't implement a good Eq
--- instance, and because we expect actual uses of FingerTrees to use newtypes,
+-- We don't implement an Ord instance becAPse we can't implement a good Eq
+-- instance, and becAPse we expect actual uses of FingerTrees to use newtypes,
 -- so we provide this function instead to help with defining Ord instances.
 compareFingerTree :: forall a v. (Monoid v, Measured a v, Ord a) =>
   FingerTree v a -> FingerTree v a -> Ordering
@@ -190,27 +196,27 @@ instance functorFingerTree :: Functor (FingerTree v) where
   map f (Deep v pr m sf) = Deep v (f <$> pr) (f <$$$> m) (f <$> sf)
 
 instance foldableFingerTree :: Foldable (FingerTree v) where
-  foldr (-<) z Empty            = z
-  foldr (-<) z (Single x)       = x -< z
-  foldr (-<) z (Deep _ pr m sf) = flipFoldr' pr (deepFlipFoldr (force m) (flipFoldr sf z))
+  foldr f z Empty            = z
+  foldr f z (Single x)       = x `f` z
+  foldr f z (Deep _ pr m sf) = flipFoldr' pr (deepFlipFoldr (force m) (flipFoldr sf z))
     where
-    flipFoldr = flip (foldr (-<))
---    infix 2 flipFoldr as -<<
+    flipFoldr = flip (foldr f)
+--    infix 2 flipFoldr as `f`<
     -- this is a hack to get type inference to work
-    flipFoldr' = flip (foldr (-<))
+    flipFoldr' = flip (foldr f)
 --    infix 2 flipFoldr' as +<<
-    deepFlipFoldr = flip (foldr (flip (foldr (-<))))
---    infix 2 deepFlipFoldr as -<<<
+    deepFlipFoldr = flip (foldr (flip (foldr f)))
+--    infix 2 deepFlipFoldr as `f`<<
 
 
-  foldl (>-) z Empty            = z
-  foldl (>-) z (Single x)       = z >- x
-  foldl (>-) z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
+  foldl f z Empty            = z
+  foldl f z (Single x)       = z `f` x
+  foldl f z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
     where
-    leftFold = foldl (>-)
---    infix 2 leftFold as >>-
-    deepLeftFold = foldl (foldl (>-))
---    infix 2 deepLeftFold as >>>-
+    leftFold = foldl f
+--    infix 2 leftFold as >`f`
+    deepLeftFold = foldl (foldl f)
+--    infix 2 deepLeftFold as >>`f`
 
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
@@ -281,13 +287,13 @@ data ViewL s a = NilL | ConsL a (Lazy (s a))
 
 instance functorViewL :: (Functor s) => Functor (ViewL s) where
   map f NilL = NilL
-  map f (ConsL x xs) = ConsL (f x) ((f <$>) <$> xs)
+  map f (ConsL x xs) = ConsL (f x) (map f <$> xs)
 
 headDigit :: forall a. Digit a -> a
-headDigit = AU.head
+headDigit = unsafePartial AP.head
 
 tailDigit :: forall a. Digit a -> Digit a
-tailDigit = AU.tail
+tailDigit = unsafePartial AP.tail
 
 viewL :: forall a v. (Monoid v, Measured a v)
       => FingerTree v a -> ViewL (FingerTree v) a
@@ -334,10 +340,10 @@ tail x = case viewL x of
   NilL       -> Nothing
 
 lastDigit :: forall a. Digit a -> a
-lastDigit = AU.last
+lastDigit = unsafePartial AP.last
 
 initDigit :: forall a. Digit a -> Digit a
-initDigit = AU.init
+initDigit = unsafePartial AP.init
 
 data ViewR s a = NilR | SnocR (Lazy (s a)) a
 
@@ -375,11 +381,11 @@ app3 xs ts (Single x) = snoc (snocAll xs ts) x
 app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
   let
     computeM' _ =
-      app3 (force m1) (nodes (sf1 <> ts <> pr2)) (force m2)
+      app3 (force m1) (unsafePartial nodes (sf1 <> ts <> pr2)) (force m2)
   in
    deep pr1 (defer computeM') sf2
 
-nodes :: forall a v. (Monoid v, Measured a v) => Array a -> Array (Node v a)
+nodes :: forall a v. (Partial, Monoid v, Measured a v) => Array a -> Array (Node v a)
 nodes [a, b]       = [node2 a b]
 nodes [a, b, c]    = [node3 a b c]
 nodes [a, b, c, d] = [node2 a b, node2 c d]

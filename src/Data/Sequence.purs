@@ -66,6 +66,7 @@ import Prelude  (class Ord, class Functor, class Monad, class Bind, class Applic
 import Control.Alt (class Alt)
 import Control.Alternative (class Alternative)
 import Control.MonadPlus (class MonadPlus)
+import Control.MonadZero (class MonadZero)
 import Control.Plus (class Plus)
 import Data.Foldable (class Foldable, foldl, foldMap, foldr)
 import Data.Lazy (Lazy(), force)
@@ -145,6 +146,8 @@ instance plusSeq :: Plus Seq where
   empty = empty
 
 instance alternativeSeq :: Alternative Seq
+
+instance monadZeroSeq :: MonadZero Seq
 
 instance monadPlusSeq :: MonadPlus Seq
 
