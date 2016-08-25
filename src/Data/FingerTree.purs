@@ -153,8 +153,8 @@ instance showFingerTree :: (Show v, Show a) => Show (FingerTree v a) where
 instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTree v a) where
   append = append
 
--- We don't implement an Eq instance becAPse we don't want to make assumptions
--- about the meaning of the data, and becAPse we expect actual uses of
+-- We don't implement an Eq instance because we don't want to make assumptions
+-- about the meaning of the data, and because we expect actual uses of
 -- FingerTrees to use newtypes, so we provide this function instead to help
 -- with defining Ord instances.
 eqFingerTree :: forall a v. (Monoid v, Measured a v, Eq a) =>
@@ -173,8 +173,8 @@ eqFingerTree xs ys =
          else
            false
 
--- We don't implement an Ord instance becAPse we can't implement a good Eq
--- instance, and becAPse we expect actual uses of FingerTrees to use newtypes,
+-- We don't implement an Ord instance because we can't implement a good Eq
+-- instance, and because we expect actual uses of FingerTrees to use newtypes,
 -- so we provide this function instead to help with defining Ord instances.
 compareFingerTree :: forall a v. (Monoid v, Measured a v, Ord a) =>
   FingerTree v a -> FingerTree v a -> Ordering
@@ -201,12 +201,12 @@ instance foldableFingerTree :: Foldable (FingerTree v) where
   foldr f z (Deep _ pr m sf) = flipFoldr' pr (deepFlipFoldr (force m) (flipFoldr sf z))
     where
     flipFoldr = flip (foldr f)
---    infix 2 flipFoldr as `f`<
+--    infix 2 flipFoldr as -<<
     -- this is a hack to get type inference to work
     flipFoldr' = flip (foldr f)
 --    infix 2 flipFoldr' as +<<
     deepFlipFoldr = flip (foldr (flip (foldr f)))
---    infix 2 deepFlipFoldr as `f`<<
+--    infix 2 deepFlipFoldr as -<<
 
 
   foldl f z Empty            = z
@@ -214,9 +214,9 @@ instance foldableFingerTree :: Foldable (FingerTree v) where
   foldl f z (Deep _ pr m sf) = leftFold (deepLeftFold (leftFold z pr) (force m)) sf
     where
     leftFold = foldl f
---    infix 2 leftFold as >`f`
+--    infix 2 leftFold as >>-
     deepLeftFold = foldl (foldl f)
---    infix 2 deepLeftFold as >>`f`
+--    infix 2 deepLeftFold as >>-
 
   foldMap f xs = foldr (\x acc -> f x <> acc) mempty xs
 
