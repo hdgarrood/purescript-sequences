@@ -1,24 +1,23 @@
 module Tests.Utils where
 
-import Prelude (class Ord, class Semigroup, class Eq, class Show, class Monad, class Bind, class Applicative, class Apply, class Functor, Unit, Ordering(GT, EQ, LT), (<>), (<<<), map, compare, (==), (<*>), append, (<$>), show, (-), mod, (+), negate, (<), const, eq, bind, pure, apply)
-
 import Data.Array as A
-import Data.Function (on)
-import Data.Foldable (class Foldable, intercalate, foldr, foldMap)
-import Data.Maybe (Maybe(Nothing, Just))
-import Data.Monoid (class Monoid, mempty)
-import Data.Monoid.Additive (Additive(Additive), runAdditive)
-import Control.Alt (class Alt, (<|>))
-import Control.Plus (class Plus, empty)
-import Control.Alternative (class Alternative)
-import Control.MonadPlus (class MonadPlus)
-import Test.QuickCheck (class Testable, QC, (<?>), quickCheck', Result)
-import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
-import Test.QuickCheck.Gen (Gen())
-
 import Data.Sequence as S
 import Data.Sequence.NonEmpty as NES
 import Data.Sequence.Ordered as OS
+import Control.Alt (class Alt, (<|>))
+import Control.Alternative (class Alternative)
+import Control.MonadPlus (class MonadPlus)
+import Control.MonadZero (class MonadZero)
+import Control.Plus (class Plus, empty)
+import Data.Foldable (class Foldable, intercalate, foldr, foldMap)
+import Data.Function (on)
+import Data.Maybe (Maybe(Nothing, Just))
+import Data.Monoid (class Monoid, mempty)
+import Data.Monoid.Additive (Additive(Additive), runAdditive)
+import Prelude (class Ord, class Semigroup, class Eq, class Show, class Monad, class Bind, class Applicative, class Apply, class Functor, Unit, Ordering(GT, EQ, LT), (<>), (<<<), map, compare, (==), (<*>), append, (<$>), show, (-), mod, (+), negate, (<), const, eq, bind, pure, apply)
+import Test.QuickCheck (class Testable, QC, (<?>), quickCheck', Result)
+import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
+import Test.QuickCheck.Gen (Gen)
 
 -----------------------------
 --- newtype wrappers
@@ -66,6 +65,8 @@ instance plusArbSeq :: Plus ArbSeq where
   empty = ArbSeq empty
 
 instance alternativeArbseq :: Alternative ArbSeq
+
+instance monadZeroArbSeq :: MonadZero ArbSeq
 
 instance monadPlusArbSeq :: MonadPlus ArbSeq
 

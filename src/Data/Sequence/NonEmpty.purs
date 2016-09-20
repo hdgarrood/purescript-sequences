@@ -45,17 +45,15 @@ module Data.Sequence.NonEmpty
   , toUnfoldable
   ) where
 
-import Prelude (class Semigroup, class Monad, class Bind, class Applicative, class Apply, class Functor, class Ord, class Eq, class Show, Ordering(EQ), map, (>>>), (<>), (<<<), (>>=), (<*>), (<$>), compare, (==), (&&), show, const, (-), id, (+))
-
+import Data.Sequence as S
 import Control.Alt (class Alt)
 import Data.Foldable (class Foldable, foldl, foldMap, foldr)
-import Data.Maybe (Maybe(Just, Nothing), maybe)
-import Data.Maybe.Unsafe (fromJust)
+import Data.Maybe (fromJust, Maybe(Just, Nothing), maybe)
 import Data.Traversable (class Traversable, sequence, traverse)
 import Data.Tuple (Tuple(Tuple), fst, uncurry)
 import Data.Unfoldable (class Unfoldable)
-
-import Data.Sequence as S
+import Partial.Unsafe (unsafePartial)
+import Prelude (($), class Semigroup, class Monad, class Bind, class Applicative, class Apply, class Functor, class Ord, class Eq, class Show, Ordering(EQ), map, (>>>), (<>), (<<<), (>>=), (<*>), (<$>), compare, (==), (&&), show, const, (-), id, (+))
 
 -- | A sequence which is guaranteed to contain at least one element.
 data Seq a
@@ -171,7 +169,7 @@ toUnfoldable :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 toUnfoldable = S.toUnfoldable <<< toPlain
 
 fromPlainUnsafe :: forall a. S.Seq a -> Seq a
-fromPlainUnsafe = S.uncons >>> fromJust >>> uncurry Seq
+fromPlainUnsafe = unsafePartial $ S.uncons >>> fromJust >>> uncurry Seq
 
 instance showSeq :: (Show a) => Show (Seq a) where
   show (Seq x xs) = "(Seq " <> show x <> " " <> show xs <> ")"

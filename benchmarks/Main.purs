@@ -5,8 +5,9 @@ import Data.Foldable
 import Data.Traversable
 import Data.Tuple
 import Data.Maybe
-import qualified Data.Array as A
-import qualified Data.Sequence as S
+import Data.Array as A
+import Data.Array((..))
+import Data.Sequence as S
 import Math (floor, sqrt)
 import Test.QuickCheck.Gen (Gen(), vectorOf)
 import Test.QuickCheck.Arbitrary (Arbitrary, arbitrary)
@@ -14,8 +15,6 @@ import Control.Monad.Eff
 
 import Benchotron.Core
 import Benchotron.UI.Console
-
-(..) = A.(..)
 
 bimap :: forall a b c d. (a -> b) -> (c -> d) -> Tuple a c -> Tuple b d
 bimap f g (Tuple x y) = Tuple (f x) (g y)
