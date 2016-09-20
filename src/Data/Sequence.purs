@@ -61,27 +61,25 @@ module Data.Sequence
   , fullyForce
   ) where
 
-import Prelude  (class Ord, class Functor, class Monad, class Bind, class Applicative, class Apply, class Semigroup, class Show, class Eq, (<$>), const, (<), (&&), (<=), (<<<), flip, ap, id, (<>))
-
+import Data.FingerTree as FT
+import Data.Sequence.Ordered as Ordered
 import Control.Alt (class Alt)
 import Control.Alternative (class Alternative)
 import Control.MonadPlus (class MonadPlus)
+import Control.MonadZero (class MonadZero)
 import Control.Plus (class Plus)
 import Data.Foldable (class Foldable, foldl, foldMap, foldr)
-import Data.Lazy (Lazy(), force)
+import Data.Lazy (Lazy, force)
 import Data.Maybe (Maybe(Just, Nothing))
 import Data.Monoid (class Monoid)
 import Data.Monoid.Additive (Additive(Additive), runAdditive)
 import Data.Profunctor.Strong ((***))
+import Data.Sequence.Internal (Elem(Elem), mapGetElem, getElem, liftElem, lift2Elem, measure, strJoin)
 import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple), fst, snd)
 import Data.Unfoldable (class Unfoldable, unfoldr)
+import Prelude (class Ord, class Functor, class Monad, class Bind, class Applicative, class Apply, class Semigroup, class Show, class Eq, (<$>), const, (<), (&&), (<=), (<<<), flip, ap, id, (<>))
 import Unsafe.Coerce (unsafeCoerce)
-
-import Data.Sequence.Internal (Elem(Elem), mapGetElem, getElem, liftElem,
-                               lift2Elem, measure, strJoin)
-import Data.FingerTree as FT
-import Data.Sequence.Ordered as Ordered
 
 -- TODO: Optimise Apply instance (see Hackage)
 -- TODO: adjust might be suboptimal, see Data.Sequence on Hackage
@@ -145,6 +143,8 @@ instance plusSeq :: Plus Seq where
   empty = empty
 
 instance alternativeSeq :: Alternative Seq
+
+instance monadZeroSeq :: MonadZero Seq
 
 instance monadPlusSeq :: MonadPlus Seq
 
