@@ -46,12 +46,10 @@ module Data.FingerTree
 
 import Prelude hiding (append)
 import Data.Array as A
-import Data.Array.Partial as AP
 import Data.Foldable (class Foldable, foldl, foldr)
 import Data.Lazy (Lazy, defer, force)
 import Data.Maybe (Maybe(Just, Nothing))
 import Data.Monoid (class Monoid, mempty)
-import Data.Newtype (class Newtype, unwrap, over)
 import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple))
 import Data.Unfoldable (class Unfoldable, unfoldr)
@@ -59,8 +57,8 @@ import Partial (crashWith)
 import Partial.Unsafe (unsafePartial)
 
 import Data.FingerTree.Digit (Digit, initDigit, headDigit, tailDigit,
-  lastDigit, mkDigit, mkDigit1, mkDigit2, mkDigit3, mkDigitMay, runDigit, (!),
-  dropDigit, digitLength, snocDigit, consDigit)
+  lastDigit, mkDigit, mkDigit1, mkDigit2, mkDigit3, mkDigitMay, runDigit,
+  digitLength, snocDigit, consDigit)
 import Data.FingerTree.Digit as Digit
 import Data.Sequence.Internal (class Measured, (<$$$>), measure)
 
