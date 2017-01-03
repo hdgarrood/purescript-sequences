@@ -32,8 +32,8 @@ module Data.FingerTree
   , app3
   , nodes
   , append
-  , Split(Split)
-  , LazySplit(LazySplit)
+  , Split(..)
+  , LazySplit(..)
   , splitDigit
   , splitTree
   , split
