@@ -5,17 +5,16 @@ import Data.Foldable
 import Data.Traversable
 import Data.Tuple
 import Data.Maybe
-import qualified Data.Array as A
-import qualified Data.Sequence as S
+import Data.Array ((..))
+import Data.Array as A
+import Data.Sequence as S
 import Math (floor, sqrt)
 import Test.QuickCheck.Gen (Gen(), vectorOf)
-import Test.QuickCheck.Arbitrary (Arbitrary, arbitrary)
+import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
 import Control.Monad.Eff
 
 import Benchotron.Core
 import Benchotron.UI.Console
-
-(..) = A.(..)
 
 bimap :: forall a b c d. (a -> b) -> (c -> d) -> Tuple a c -> Tuple b d
 bimap f g (Tuple x y) = Tuple (f x) (g y)
@@ -24,7 +23,7 @@ benchInsertLots :: Benchmark
 benchInsertLots = mkBenchmark
   { slug: "insert-lots"
   , title: "Insert lots of elements into an empty structure"
-  , sizes: (1..50) <#> (*1000)
+  , sizes: (1..50) <#> (_ * 1000)
   , sizeInterpretation: "Number of elements to be inserted"
   , inputsPerSize: 1
   , gen: randomArray
@@ -37,7 +36,7 @@ benchMap :: Benchmark
 benchMap = mkBenchmark
   { slug: "map"
   , title: "Map over a structure"
-  , sizes: (1..50) <#> (*1500)
+  , sizes: (1..50) <#> (_ * 1500)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: randomArray
@@ -47,13 +46,13 @@ benchMap = mkBenchmark
   }
   where
   map = (<$>)
-  f = (*5)
+  f = (_ * 5)
 
 benchFilter :: Benchmark
 benchFilter = mkBenchmark
   { slug: "filter"
   , title: "Filter a structure"
-  , sizes: (1..50) <#> (*1500)
+  , sizes: (1..50) <#> (_ * 1500)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: randomArray
@@ -62,13 +61,13 @@ benchFilter = mkBenchmark
                ]
   }
   where
-  f = (> 0)
+  f = (_ > 0)
 
 benchApply :: Benchmark
 benchApply = mkBenchmark
   { slug: "apply"
   , title: "Apply over a structure with (<*>)"
-  , sizes: (1..50) <#> (*100)
+  , sizes: (1..50) <#> (_ * 100)
   , sizeInterpretation: "Number of elements in the function structure"
   , inputsPerSize: 1
   , gen: \n -> Tuple <$> (map const <$> randomArray n) <*> randomArray 100
@@ -81,7 +80,7 @@ benchConcatMap :: Benchmark
 benchConcatMap = mkBenchmark
   { slug: "concat-map"
   , title: "concatMap over a structure"
-  , sizes: (1..50) <#> (*1000)
+  , sizes: (1..50) <#> (_ * 1000)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: randomArray
@@ -97,7 +96,7 @@ benchFold :: Benchmark
 benchFold = mkBenchmark
   { slug: "fold"
   , title: "Fold a structure"
-  , sizes: (1..50) <#> (*1500)
+  , sizes: (1..50) <#> (_ * 1500)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: randomArray
@@ -110,7 +109,7 @@ benchTraverse :: Benchmark
 benchTraverse = mkBenchmark
   { slug: "traverse"
   , title: "Traverse a structure"
-  , sizes: (1..50) <#> (*1000)
+  , sizes: (1..50) <#> (_ * 1000)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: randomArray
@@ -123,7 +122,7 @@ benchAppend :: Benchmark
 benchAppend = mkBenchmark
   { slug: "append"
   , title: "Append two structures together"
-  , sizes: (1..50) <#> (*4000)
+  , sizes: (1..50) <#> (_ * 4000)
   , sizeInterpretation: "Number of elements in each structure"
   , inputsPerSize: 1
   , gen: \n -> Tuple <$> randomArray n <*> randomArray n
@@ -139,7 +138,7 @@ benchSort :: Benchmark
 benchSort = mkBenchmark
   { slug: "sort"
   , title: "Sort a structure"
-  , sizes: (1..8) <#> (*1500)
+  , sizes: (1..8) <#> (_ * 1500)
   , sizeInterpretation: "Number of elements in the structure"
   , inputsPerSize: 1
   , gen: randomArray
