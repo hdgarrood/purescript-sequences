@@ -189,13 +189,13 @@ instance functorSeq :: Functor Seq where
   map f (Seq x xs) = Seq (f x) (f <$> xs)
 
 instance applySeq :: Apply Seq where
-  apply fs xs = fromPlain (toPlain fs <*> toPlain xs)
+  apply fs xs = unsafePartial $ fromPlain (toPlain fs <*> toPlain xs)
 
 instance applicativeSeq :: Applicative Seq where
   pure x = Seq x S.empty
 
 instance bindSeq :: Bind Seq where
-  bind xs f = fromPlain (toPlain xs >>= (toPlain <<< f))
+  bind xs f = unsafePartial $ fromPlain (toPlain xs >>= (toPlain <<< f))
 
 instance monadSeq :: Monad Seq
 
@@ -211,5 +211,5 @@ instance foldableSeq :: Foldable Seq where
   foldMap f = toPlain >>> foldMap f
 
 instance traversableSeq :: Traversable Seq where
-  sequence   = toPlain >>> sequence   >>> map fromPlain
-  traverse f = toPlain >>> traverse f >>> map fromPlain
+  sequence   = unsafePartial $ toPlain >>> sequence   >>> map fromPlain
+  traverse f = unsafePartial $ toPlain >>> traverse f >>> map fromPlain

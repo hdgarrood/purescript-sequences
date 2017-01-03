@@ -1,6 +1,5 @@
 module Data.Sequence.Internal
-  ( (!)
-  , (<$$>), mapmap
+  ( (<$$>), mapmap
   , (<$$$>), mapmapmap
   , strJoin
   , class Measured
@@ -16,7 +15,6 @@ module Data.Sequence.Internal
 
 import Prelude
 
-import Data.Array.Partial (unsafeIndex)
 import Data.Foldable (class Foldable, foldl, intercalate)
 import Data.Lazy (Lazy(), force)
 import Data.Monoid (class Monoid, mempty)
@@ -26,7 +24,6 @@ import Unsafe.Coerce (unsafeCoerce)
 
 -----------------------
 -- Various utilities
-infix 2 unsafeIndex as !
 
 mapmap :: forall f g a b. (Functor f, Functor g) =>
   (a -> b) -> f (g a) -> f (g b)
