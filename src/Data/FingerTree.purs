@@ -407,23 +407,27 @@ append xs ys = app3 xs [] ys
 data Split f a = Split (f a) a (f a)
 data LazySplit f a = LazySplit (Lazy (f a)) a (Lazy (f a))
 
-splitDigit :: forall a v. (Monoid v, Measured a v, Partial) =>
+splitDigit :: forall a v. (Monoid v, Measured a v) =>
   (v -> Boolean) -> v -> Digit a -> Split Array a
 splitDigit p i as =
   case digitLength as of
-    1 -> Split [] (as ! 0) []
+    1 -> Split [] (headDigit as) []
     _ ->
       let
-        a = as ! 0
-        bs = dropDigit 1 as
+        a = headDigit as
+        bs' = tailDigit as
+        -- This use of unsafePartial is safe because we have already ensured
+        -- that `as` has at least 2 elements.
+        bs = unsafePartial $ mkDigit bs'
         i' = i <> measure a
       in
         if p i'
-          then Split [] a bs
-          else case splitDigit p i' (unsafePartial (mkDigit bs)) of
+          then Split [] a bs'
+          else case splitDigit p i' bs of
             Split l x r ->
               Split (A.cons a l) x r
 
+-- | This function throws an error if the argument is empty.
 splitTree :: forall a v. (Monoid v, Measured a v, Partial) =>
   (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
 splitTree p i (Single x) = LazySplit lazyEmpty x lazyEmpty
@@ -452,7 +456,10 @@ splitTree p i (Deep _ pr m sf) =
                        x
                        (defer (\_ -> toFingerTree r))
 
--- TODO: Document when the result of this function is undefined.
+-- | Split a finger tree according to which elements satisfy a predicate. This
+-- | function is partial because it requires that the result of applying the
+-- | predicate to mempty is false; if this is not the case, the behaviour is
+-- | undefined.
 split :: forall a v. (Monoid v, Measured a v, Partial)
       => (v -> Boolean)
       -> FingerTree v a
@@ -461,7 +468,7 @@ split p Empty = Tuple lazyEmpty lazyEmpty
 split p xs =
   if p (measure xs)
     then
-      case splitTree p mempty xs of
+      case unsafePartial $ splitTree p mempty xs of
         LazySplit l x r ->
           Tuple l (defer (\_ -> cons x (force r)))
     else
