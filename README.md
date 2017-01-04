@@ -87,7 +87,4 @@ often not so good. For example:
 ![traverse](benchmarks/graphs/traverse.png)
 ![sort](benchmarks/graphs/sort.png)
 
-## When is this approach _not_ suitable?
-
-
 [1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
