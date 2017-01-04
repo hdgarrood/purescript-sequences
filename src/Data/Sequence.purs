@@ -61,21 +61,24 @@ module Data.Sequence
   , fullyForce
   ) where
 
-import Prelude  (class Ord, class Functor, class Monad, class Bind, class Applicative, class Apply, class Semigroup, class Show, class Eq, (<$>), const, (<), (&&), (<=), (<<<), flip, ap, id, (<>))
+import Prelude hiding (append, map)
 
 import Control.Alt (class Alt)
 import Control.Alternative (class Alternative)
 import Control.MonadPlus (class MonadPlus)
+import Control.MonadZero (class MonadZero)
 import Control.Plus (class Plus)
 import Data.Foldable (class Foldable, foldl, foldMap, foldr)
 import Data.Lazy (Lazy(), force)
 import Data.Maybe (Maybe(Just, Nothing))
 import Data.Monoid (class Monoid)
-import Data.Monoid.Additive (Additive(Additive), runAdditive)
+import Data.Monoid.Additive (Additive(Additive))
+import Data.Newtype (unwrap, un)
 import Data.Profunctor.Strong ((***))
 import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple), fst, snd)
 import Data.Unfoldable (class Unfoldable, unfoldr)
+import Partial.Unsafe (unsafePartial)
 import Unsafe.Coerce (unsafeCoerce)
 
 import Data.Sequence.Internal (Elem(Elem), mapGetElem, getElem, liftElem,
@@ -148,6 +151,8 @@ instance alternativeSeq :: Alternative Seq
 
 instance monadPlusSeq :: MonadPlus Seq
 
+instance monadZeroSeq :: MonadZero Seq
+
 -- | A sequence with no elements.
 empty :: forall a. Seq a
 empty = Seq FT.Empty
@@ -182,7 +187,7 @@ concatMap f = concat <<< map f
 
 -- | O(1). The number of elements in the sequence.
 length :: forall a. Seq a -> Int
-length (Seq xs) = runAdditive (measure xs)
+length (Seq xs) = un Additive (measure xs)
 
 -- | O(1). True if the sequence has no elements, false otherwise.
 null :: forall a. Seq a -> Boolean
@@ -210,7 +215,7 @@ unsnoc (Seq xs) =
 splitAt' :: forall a. Int -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
 splitAt' i (Seq xs) = seqify tuple
   where
-  tuple = FT.split (\n -> i < runAdditive n) xs
+  tuple = unsafePartial $ FT.split (\n -> i < unwrap n) xs
 
   seqify :: forall f. (Functor f) =>
     Tuple (f (SeqInner a)) (f (SeqInner a)) -> Tuple (f (Seq a)) (f (Seq a))
@@ -245,25 +250,32 @@ inBounds i seq = 0 <= i && i < length seq
 -- | sequence. This function is zero-based; that is, the first element in a
 -- | sequence `xs` can be retrieved with `index 0 xs`.
 index :: forall a. Int -> Seq a -> Maybe a
-index i xs = if inBounds i xs then Just (unsafeIndex i xs) else Nothing
+index i xs =
+  if inBounds i xs
+    then unsafePartial $ Just $ unsafeIndex i xs
+    else Nothing
 
 -- | O(log(min(i,n-i))). Like `index`, but this function will throw an error
--- | instead of returning Nothing if no element exists at the specified
--- | sequence.
-unsafeIndex :: forall a. Int -> Seq a -> a
+-- | instead of returning Nothing if the index is out of bounds.
+unsafeIndex :: forall a. Partial => Int -> Seq a -> a
 unsafeIndex i (Seq xs) =
-  case FT.unsafeSplitTree (\n -> i < runAdditive n) (Additive 0) xs of
+  case FT.splitTree (\n -> i < unwrap n) (Additive 0) xs of
     FT.LazySplit _ x _ -> getElem x
 
 -- | O(log(min(i,n-i))). Adjust the element at the specified index by
 -- | applying the given function to it. If the index is out of range, the
 -- | sequence is returned unchanged.
 adjust :: forall a. (a -> a) -> Int -> Seq a -> Seq a
-adjust f i xs = if inBounds i xs then unsafeAdjust f i xs else xs
+adjust f i xs =
+  if inBounds i xs
+    then unsafePartial $ unsafeAdjust f i xs
+    else xs
 
-unsafeAdjust :: forall a. (a -> a) -> Int -> Seq a -> Seq a
+-- | Adjust the element at a specified index. This function throws an error
+-- | if the index supplied is out of bounds.
+unsafeAdjust :: forall a. Partial => (a -> a) -> Int -> Seq a -> Seq a
 unsafeAdjust f i (Seq xs) =
-  case FT.unsafeSplitTree (\n -> i < runAdditive n) (Additive 0) xs of
+  case FT.splitTree (\n -> i < unwrap n) (Additive 0) xs of
     FT.LazySplit l x r ->
       let
         g :: Elem a -> Elem a

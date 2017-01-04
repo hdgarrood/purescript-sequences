@@ -22,22 +22,23 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-lazy": "^0.4.0",
-    "purescript-arrays": "^0.4.0",
-    "purescript-maybe": "^0.3.1",
-    "purescript-tuples": "^0.4.0",
-    "purescript-monoid": "^0.3.0",
-    "purescript-foldable-traversable": "^0.4.0",
-    "purescript-unfoldable": "^0.4.0",
-    "purescript-control": "^0.3.0",
-    "purescript-identity": "^0.4.0",
-    "purescript-profunctor": "^0.3.0",
-    "purescript-unsafe-coerce": "^0.1.0",
-    "purescript-exceptions": "^0.3.1"
+    "purescript-arrays": "^3.1.0",
+    "purescript-control": "^2.0.0",
+    "purescript-exceptions": "^2.0.0",
+    "purescript-foldable-traversable": "^2.0.0",
+    "purescript-identity": "^2.0.0",
+    "purescript-lazy": "^2.0.0",
+    "purescript-maybe": "^2.0.1",
+    "purescript-monoid": "^2.2.0",
+    "purescript-profunctor": "^2.0.0",
+    "purescript-tuples": "^3.1.0",
+    "purescript-unfoldable": "^2.0.0",
+    "purescript-unsafe-coerce": "^2.0.0",
+    "purescript-newtype": "^1.2.0"
   },
   "devDependencies": {
-    "purescript-quickcheck": "^0.12.0",
-    "purescript-benchotron": "^3.0.3",
-    "purescript-quickcheck-laws": "~0.1.0"
+    "purescript-quickcheck": "^3.1.1",
+    "purescript-quickcheck-laws": "^2.1.0",
+    "purescript-benchotron": "^5.0.0"
   }
 }

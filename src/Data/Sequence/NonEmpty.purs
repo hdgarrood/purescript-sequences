@@ -45,15 +45,15 @@ module Data.Sequence.NonEmpty
   , toUnfoldable
   ) where
 
-import Prelude (class Semigroup, class Monad, class Bind, class Applicative, class Apply, class Functor, class Ord, class Eq, class Show, Ordering(EQ), map, (>>>), (<>), (<<<), (>>=), (<*>), (<$>), compare, (==), (&&), show, const, (-), id, (+))
+import Prelude
 
 import Control.Alt (class Alt)
 import Data.Foldable (class Foldable, foldl, foldMap, foldr)
-import Data.Maybe (Maybe(Just, Nothing), maybe)
-import Data.Maybe.Unsafe (fromJust)
+import Data.Maybe (Maybe(Just, Nothing), maybe, fromJust)
 import Data.Traversable (class Traversable, sequence, traverse)
 import Data.Tuple (Tuple(Tuple), fst, uncurry)
 import Data.Unfoldable (class Unfoldable)
+import Partial.Unsafe (unsafePartial)
 
 import Data.Sequence as S
 
@@ -170,8 +170,8 @@ replace x = adjust (const x)
 toUnfoldable :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
 toUnfoldable = S.toUnfoldable <<< toPlain
 
-fromPlainUnsafe :: forall a. S.Seq a -> Seq a
-fromPlainUnsafe = S.uncons >>> fromJust >>> uncurry Seq
+fromPlain :: forall a. Partial => S.Seq a -> Seq a
+fromPlain = S.uncons >>> fromJust >>> uncurry Seq
 
 instance showSeq :: (Show a) => Show (Seq a) where
   show (Seq x xs) = "(Seq " <> show x <> " " <> show xs <> ")"
@@ -189,13 +189,13 @@ instance functorSeq :: Functor Seq where
   map f (Seq x xs) = Seq (f x) (f <$> xs)
 
 instance applySeq :: Apply Seq where
-  apply fs xs = fromPlainUnsafe (toPlain fs <*> toPlain xs)
+  apply fs xs = unsafePartial $ fromPlain (toPlain fs <*> toPlain xs)
 
 instance applicativeSeq :: Applicative Seq where
   pure x = Seq x S.empty
 
 instance bindSeq :: Bind Seq where
-  bind xs f = fromPlainUnsafe (toPlain xs >>= (toPlain <<< f))
+  bind xs f = unsafePartial $ fromPlain (toPlain xs >>= (toPlain <<< f))
 
 instance monadSeq :: Monad Seq
 
@@ -211,5 +211,5 @@ instance foldableSeq :: Foldable Seq where
   foldMap f = toPlain >>> foldMap f
 
 instance traversableSeq :: Traversable Seq where
-  sequence   = toPlain >>> sequence   >>> map fromPlainUnsafe
-  traverse f = toPlain >>> traverse f >>> map fromPlainUnsafe
+  sequence   = unsafePartial $ toPlain >>> sequence   >>> map fromPlain
+  traverse f = unsafePartial $ toPlain >>> traverse f >>> map fromPlain

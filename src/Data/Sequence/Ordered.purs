@@ -43,19 +43,20 @@ module Data.Sequence.Ordered
   , sort
   ) where
 
-import Prelude (class Ord, class Functor, class Semigroup, class Show, class Eq, Ordering(GT, EQ, LT), (<<<), compare, (<>), (>), (>=), const)
-
-import Data.Lazy (force)
-import Data.Tuple (Tuple(Tuple), fst, snd)
-import Data.Maybe (Maybe(Just, Nothing))
-import Data.Monoid (class Monoid)
-import Data.Monoid.Additive (Additive(Additive), runAdditive)
+import Prelude
+import Data.Newtype (unwrap)
 import Data.Foldable (class Foldable, foldl, foldMap, foldr)
+import Data.Lazy (Lazy, force)
+import Data.Maybe (Maybe(..))
+import Data.Monoid (class Monoid)
+import Data.Monoid.Additive (Additive(..))
+import Data.Tuple (Tuple(..), fst, snd)
 import Data.Unfoldable (class Unfoldable)
+import Partial.Unsafe (unsafePartial)
 import Unsafe.Coerce (unsafeCoerce)
 
 import Data.Sequence.Internal
-  (Elem(Elem), Key(Key), getElem, liftElem, lift2Elem, mapGetElem, measure,
+  (Elem(..), Key(..), getElem, liftElem, lift2Elem, mapGetElem, measure,
   strJoin)
 import Data.FingerTree as FT
 
@@ -97,9 +98,37 @@ null :: forall a. OrdSeq a -> Boolean
 null (OrdSeq FT.Empty) = true
 null _ = false
 
+splitGT :: forall a.
+  Ord a =>
+  a ->
+  OrdSeqInner a ->
+  Tuple (Lazy (OrdSeqInner a)) (Lazy (OrdSeqInner a))
+splitGT = unsafePartial (split (>))
+
+splitGEQ :: forall a.
+  Ord a =>
+  a ->
+  OrdSeqInner a ->
+  Tuple (Lazy (OrdSeqInner a)) (Lazy (OrdSeqInner a))
+splitGEQ = unsafePartial (split (>=))
+
+split :: forall a.
+  Partial =>
+  (Key a -> Key a -> Boolean) ->
+  a ->
+  OrdSeqInner a ->
+  Tuple (Lazy (OrdSeqInner a)) (Lazy (OrdSeqInner a))
+split f x =
+  FT.split (\y -> f y (Key x))
+ -- where
+ -- coerce :: Tuple (Lazy (OrdSeqInner a)) (Lazy (OrdSeqInner a))
+ --        -> Tuple (Lazy (OrdSeq      a)) (Lazy (OrdSeq      a))
+ -- coerce = unsafeCoerce
+
 -- | O(n). Return the length of the sequence.
+-- TODO: this can probably be made neater with a combinator from newtype
 length :: forall a. OrdSeq a -> Int
-length = runAdditive <<< foldMap (const (Additive 1))
+length = unwrap <<< foldMap (const (Additive 1))
 
 -- | O(log(n)). Split an ordered sequence into two halves. The first element
 -- | of the returned tuple contains all elements which compared less than or
@@ -107,7 +136,7 @@ length = runAdditive <<< foldMap (const (Additive 1))
 partition :: forall a. (Ord a) => a -> OrdSeq a -> Tuple (OrdSeq a) (OrdSeq a)
 partition k (OrdSeq xs) = Tuple (OrdSeq (force l)) (OrdSeq (force r))
   where
-  t = FT.split (\y -> y >= Key k) xs
+  t = splitGEQ k xs
   l = fst t
   r = snd t
 
@@ -115,7 +144,7 @@ partition k (OrdSeq xs) = Tuple (OrdSeq (force l)) (OrdSeq (force r))
 insert :: forall a. (Ord a) => a -> OrdSeq a -> OrdSeq a
 insert x (OrdSeq xs) = OrdSeq (FT.append (force l) (FT.cons (Elem x) (force r)))
   where
-  t = FT.split (\y -> y >= Key x) xs
+  t = splitGEQ x xs
   l = fst t
   r = snd t
 
@@ -124,10 +153,10 @@ insert x (OrdSeq xs) = OrdSeq (FT.append (force l) (FT.cons (Elem x) (force r)))
 deleteAll :: forall a. (Ord a) => a -> OrdSeq a -> OrdSeq a
 deleteAll x (OrdSeq xs) = OrdSeq (l <> r')
   where
-  t = FT.split (\y -> y >= Key x) xs
+  t = splitGEQ x xs
   l = force (fst t)
   r = force (snd t)
-  t' = FT.split (\y -> y > Key x) r
+  t' = splitGT x r
   r' = force (snd t')
 
 -- | O(m*log(n/m)), where m and n are the lengths of the longer and shorter
@@ -140,7 +169,7 @@ merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
     case FT.viewL bs of
       FT.NilL        -> as
       FT.ConsL a bs' ->
-        let t = FT.split (\c -> c > measure a) as
+        let t = unsafePartial $ FT.split (\c -> c > measure a) as
             l = force (fst t)
             r = force (snd t)
         in l <> (FT.cons a (go (force bs') r))
@@ -174,7 +203,7 @@ popLeast :: forall a. (Ord a) => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
 popLeast (OrdSeq xs) =
   case FT.viewL xs of
     FT.NilL       -> Nothing
-    FT.ConsL x xs -> Just (Tuple (getElem x) (OrdSeq (force xs)))
+    FT.ConsL y ys -> Just (Tuple (getElem y) (OrdSeq (force ys)))
 
 -- | O(1). Access the greatest element of the sequence, or Nothing if the
 -- | sequence is empty.
@@ -191,7 +220,7 @@ popGreatest :: forall a. (Ord a) => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
 popGreatest (OrdSeq xs) =
   case FT.viewR xs of
     FT.NilR       -> Nothing
-    FT.SnocR xs x -> Just (Tuple (getElem x) (OrdSeq (force xs)))
+    FT.SnocR ys y -> Just (Tuple (getElem y) (OrdSeq (force ys)))
 
 -- | Probably O(n*log(n)), but depends on the Foldable instance. Consruct an
 -- | ordered sequence from any any `Foldable`.

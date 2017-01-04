@@ -103,7 +103,7 @@ orderedSequenceTests = do
     let seq' = OrdSeq.insert 1 seq -- ensure nonempty
     in case OrdSeq.popLeast seq' of
          Nothing -> false
-         Just (Tuple x seq'') -> all (>= x) seq''
+         Just (Tuple x seq'') -> all (_ >= x) seq''
 
   log "Test greatest"
   quickCheck $ \(ArbOSeq seq) ->
@@ -121,7 +121,7 @@ orderedSequenceTests = do
     let seq' = OrdSeq.insert 0 seq -- ensure nonempty
     in case OrdSeq.popGreatest seq' of
          Nothing -> false
-         Just (Tuple x seq'') -> all (<= x) seq''
+         Just (Tuple x seq'') -> all (_ <= x) seq''
 
   log "Test sort is the same as Data.Array.sort"
   quickCheck $ \array ->

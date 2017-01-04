@@ -1,17 +1,19 @@
 module Tests.Utils where
 
-import Prelude (class Ord, class Semigroup, class Eq, class Show, class Monad, class Bind, class Applicative, class Apply, class Functor, Unit, Ordering(GT, EQ, LT), (<>), (<<<), map, compare, (==), (<*>), append, (<$>), show, (-), mod, (+), negate, (<), const, eq, bind, pure, apply)
+import Prelude
 
 import Data.Array as A
 import Data.Function (on)
 import Data.Foldable (class Foldable, intercalate, foldr, foldMap)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Monoid (class Monoid, mempty)
-import Data.Monoid.Additive (Additive(Additive), runAdditive)
+import Data.Monoid.Additive (Additive(Additive))
+import Data.Newtype (un)
 import Control.Alt (class Alt, (<|>))
 import Control.Plus (class Plus, empty)
 import Control.Alternative (class Alternative)
 import Control.MonadPlus (class MonadPlus)
+import Control.MonadZero (class MonadZero)
 import Test.QuickCheck (class Testable, QC, (<?>), quickCheck', Result)
 import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
 import Test.QuickCheck.Gen (Gen())
@@ -68,6 +70,8 @@ instance plusArbSeq :: Plus ArbSeq where
 instance alternativeArbseq :: Alternative ArbSeq
 
 instance monadPlusArbSeq :: MonadPlus ArbSeq
+
+instance monadZeroArbSeq :: MonadZero ArbSeq
 
 instance arbitraryArbSeq :: (Arbitrary a) => Arbitrary (ArbSeq a) where
   arbitrary = (ArbSeq <<< S.fromFoldable) <$> (arbitrary :: Gen (Array a))
@@ -136,7 +140,7 @@ instance arbitraryArbOrdSeq :: (Ord a, Arbitrary a) => Arbitrary (ArbOSeq a) whe
 --------------------------
 
 foldableSize :: forall f a. (Foldable f) => f a -> Int
-foldableSize = runAdditive <<< foldMap (const (Additive 1))
+foldableSize = un Additive <<< foldMap (const (Additive 1))
 
 check1 :: forall e p. (Testable p) => p -> QC e Unit
 check1 = quickCheck' 1
