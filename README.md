@@ -13,14 +13,12 @@ initial work on this.
 
 ## Documentation
 
-You probably want one of:
-
-* [Data.Sequence][]
-* [Data.Sequence.NonEmpty][]
-* [Data.Sequence.Ordered][]
-
-This package also provides [Data.FingerTree][], which is what these are based
-on, and may be useful for implementing other data structures.
+Documentation is published on
+[Pursuit](https://pursuit.purescript.org/packages/purescript-sequences). You
+probably want one of `Data.Sequence`, `Data.Sequence.NonEmpty`, or
+`Data.Sequence.Ordered`. This package also provides `Data.FingerTree`, which is
+the common foundation with which these three types are implemented, and may
+also be useful for implementing other data structures.
 
 ## Why not just use Arrays all the time?
 
@@ -35,14 +33,14 @@ bs[0] = 10
 ```
 
 `as[0]` should still be 1 after executing these statements. Therefore, `concat`
-has to copy the whole array, and is therefore O(this.length + n), where n is
-the length of the argument.
+has to copy the whole array, and is therefore O(n + m), where n and m are the
+lengths of the arguments.
 
-However in PureScript, values are immutable (ignoring the FFI). So we may take
-advantage of this by writing functions that reuse parts of data structures
-where possible. Sequences are one such structure - in this case, the amortized
-complexity of `concat` is reduced to O(log(min(n1, n2))), where n1 and n2 are
-the lengths of the arguments.
+However in PureScript, values are immutable. So we may take advantage of this
+by writing functions that reuse parts of data structures where possible.
+Sequences are one such structure &mdash; in this case, the amortized complexity
+of `concat` is reduced to O(log(min(n1, n2))), where n1 and n2 are the lengths
+of the arguments.
 
 Amortized complexities of other operations:
 
@@ -53,9 +51,31 @@ Amortized complexities of other operations:
 | setAt i       | O(n)         | O(log(min(i, n-i))) |
 | splitAt i     | O(n)         | O(log(min(i, n-i))) |
 
+
+## When to use Seq (and when not to)
+
+Unfortunately the constant factors for this library are not fantastic at the
+moment &mdash; see the following heading for more information. In particular,
+for small structures (those which have less than 1000 elements), `Array` tends
+to outperform `Seq`. Therefore, I suggest sticking with `Array` in most cases.
+If you know that your sequences will be much larger than this, or if you have
+already diagnosed and identified the `Array` type as the source of a
+performance issue, `Seq` ought to be a good option.
+
+Additionally, if you are using JavaScript libraries via the FFI, and passing
+Arrays back and forth between PureScript and JavaScript, you might find that
+it's easier and more efficient to just use Arrays. Generally, JavaScript
+libraries will not be able to use the `Seq` type in this library, and so you
+would have to convert between `Seq` and `Array` at the PS/JS boundaries. The
+conversion in either direction is O(n).
+
 ## Is it faster?
 
-Not always. For example:
+Not always. As of yet, the PureScript compiler's optimizer is not very
+sophisticated, particularly with respect to the code generation when using type
+classes. Because of how this library is written, it suffers from this &mdash;
+even though the asymptotics for `Seq` are very good, the constant factors are
+often not so good. For example:
 
 ![insert-lots](benchmarks/graphs/insert-lots.png)
 ![append](benchmarks/graphs/append.png)
@@ -69,15 +89,5 @@ Not always. For example:
 
 ## When is this approach _not_ suitable?
 
-If you are using JavaScript libraries via the FFI, and passing Arrays back and
-forth between PureScript and JavaScript, you might find that it's easier and
-more efficient to just use Arrays. Generally, JavaScript libraries will not be
-able to use the Seq type in this library, and so you would have to convert
-between Seqs and Arrays at the PS/JS boundaries. The conversion in either
-direction is O(n).
 
 [1]: http://staff.city.ac.uk/~ross/papers/FingerTree.pdf
-[Data.Sequence]: docs/Data/Sequence.md
-[Data.Sequence.NonEmpty]: docs/Data/Sequence/NonEmpty.md
-[Data.Sequence.Ordered]: docs/Data/Sequence/Ordered.md
-[Data.FingerTree]: docs/Data/FingerTree.md
