@@ -6,3 +6,4 @@ tmp/
 .psci_modules/
 .pulp-cache/
 npm-debug.log
+docs/
