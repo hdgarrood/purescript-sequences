@@ -229,7 +229,7 @@ fromFoldable = foldr insert empty
 
 -- | Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
 -- | sequence in ascending order.
-toUnfoldable :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
+toUnfoldable :: forall f. (Functor f, Unfoldable f) => OrdSeq ~> f
 toUnfoldable (OrdSeq xs) = mapGetElem (FT.unfoldLeft xs)
 
 -- | Probably O(n), but depends on the Unfoldable instance. Unfold an ordered

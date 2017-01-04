@@ -120,7 +120,7 @@ last (Seq x xs) = maybe x id (S.last xs)
 
 -- | O(1). Turn a non-empty sequence into a "plain" sequence (i.e. one from
 -- | Data.Sequence), containing the same elements.
-toPlain :: forall a. Seq a -> S.Seq a
+toPlain :: Seq ~> S.Seq
 toPlain (Seq x xs) = S.cons x xs
 
 -- | O(log(min(i,n-i))). Split the sequence into two (possibly empty) subsequences.
@@ -167,10 +167,10 @@ replace x = adjust (const x)
 
 -- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 -- | any `Unfoldable`.
-toUnfoldable :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
+toUnfoldable :: forall f. (Functor f, Unfoldable f) => Seq ~> f
 toUnfoldable = S.toUnfoldable <<< toPlain
 
-fromPlain :: forall a. Partial => S.Seq a -> Seq a
+fromPlain :: Partial => S.Seq ~> Seq
 fromPlain = S.uncons >>> fromJust >>> uncurry Seq
 
 instance showSeq :: (Show a) => Show (Seq a) where

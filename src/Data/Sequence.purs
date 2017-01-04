@@ -322,12 +322,12 @@ last (Seq xs) = mapGetElem (FT.last xs)
 
 -- | Probably O(n*log(n)), but depends on the Foldable instance. Turn any
 -- | `Foldable` into a `Seq`.
-fromFoldable :: forall f a. (Foldable f) => f a -> Seq a
+fromFoldable :: forall f. (Foldable f) => f ~> Seq
 fromFoldable = foldr cons empty
 
 -- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 -- | any `Unfoldable`.
-toUnfoldable :: forall f a. (Functor f, Unfoldable f) => Seq a -> f a
+toUnfoldable :: forall f. (Functor f, Unfoldable f) => Seq ~> f
 toUnfoldable (Seq xs) = mapGetElem (FT.unfoldLeft xs)
 
 -- | O(n). Create a new Seq which contains only those elements of the input
