@@ -133,7 +133,7 @@ length = unwrap <<< foldMap (const (Additive 1))
 -- | O(log(n)). Split an ordered sequence into two halves. The first element
 -- | of the returned tuple contains all elements which compared less than or
 -- | equal to the argument; the second element contains the rest.
-partition :: forall a. (Ord a) => a -> OrdSeq a -> Tuple (OrdSeq a) (OrdSeq a)
+partition :: forall a. Ord a => a -> OrdSeq a -> Tuple (OrdSeq a) (OrdSeq a)
 partition k (OrdSeq xs) = Tuple (OrdSeq (force l)) (OrdSeq (force r))
   where
   t = splitGEQ k xs
@@ -141,7 +141,7 @@ partition k (OrdSeq xs) = Tuple (OrdSeq (force l)) (OrdSeq (force r))
   r = snd t
 
 -- | O(log(n)). Insert the given value into the correct place in the sequence.
-insert :: forall a. (Ord a) => a -> OrdSeq a -> OrdSeq a
+insert :: forall a. Ord a => a -> OrdSeq a -> OrdSeq a
 insert x (OrdSeq xs) = OrdSeq (FT.append (force l) (FT.cons (Elem x) (force r)))
   where
   t = splitGEQ x xs
@@ -150,7 +150,7 @@ insert x (OrdSeq xs) = OrdSeq (FT.append (force l) (FT.cons (Elem x) (force r)))
 
 -- | O(log(n)). Delete all elements from the sequence which compare EQ to the
 -- | given value.
-deleteAll :: forall a. (Ord a) => a -> OrdSeq a -> OrdSeq a
+deleteAll :: forall a. Ord a => a -> OrdSeq a -> OrdSeq a
 deleteAll x (OrdSeq xs) = OrdSeq (l <> r')
   where
   t = splitGEQ x xs
@@ -162,7 +162,7 @@ deleteAll x (OrdSeq xs) = OrdSeq (l <> r')
 -- | O(m*log(n/m)), where m and n are the lengths of the longer and shorter
 -- | sequences respectively. Create a new sequence containing every element
 -- | in both of the given sequences.
-merge :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
+merge :: forall a. Ord a => OrdSeq a -> OrdSeq a -> OrdSeq a
 merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
   where
   go as bs =
@@ -176,7 +176,7 @@ merge (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
 
 -- | O(n*log(n)), where n is the length of the longer sequence. Create a new
 -- | sequence containing only elements which are common to both sequences.
-intersection :: forall a. (Ord a) => OrdSeq a -> OrdSeq a -> OrdSeq a
+intersection :: forall a. Ord a => OrdSeq a -> OrdSeq a -> OrdSeq a
 intersection (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
   where
   go as bs =
@@ -191,7 +191,7 @@ intersection (OrdSeq xs) (OrdSeq ys) = OrdSeq (go xs ys)
 
 -- | O(1). Access the least element of the sequence, or Nothing if the sequence
 -- | is empty.
-least :: forall a. (Ord a) => OrdSeq a -> Maybe a
+least :: forall a. Ord a => OrdSeq a -> Maybe a
 least (OrdSeq xs) =
   case FT.viewL xs of
     FT.NilL      -> Nothing
@@ -199,7 +199,7 @@ least (OrdSeq xs) =
 
 -- | O(1). Remove the least element of the sequence, returning that element and
 -- | the remainder of the sequence. If the sequence is empty, return Nothing.
-popLeast :: forall a. (Ord a) => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
+popLeast :: forall a. Ord a => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
 popLeast (OrdSeq xs) =
   case FT.viewL xs of
     FT.NilL       -> Nothing
@@ -207,7 +207,7 @@ popLeast (OrdSeq xs) =
 
 -- | O(1). Access the greatest element of the sequence, or Nothing if the
 -- | sequence is empty.
-greatest :: forall a. (Ord a) => OrdSeq a -> Maybe a
+greatest :: forall a. Ord a => OrdSeq a -> Maybe a
 greatest (OrdSeq xs) =
   case FT.viewR xs of
     FT.NilR      -> Nothing
@@ -216,7 +216,7 @@ greatest (OrdSeq xs) =
 -- | O(1). Remove the greatest element of the sequence, returning that element
 -- | and the remainder of the sequence. If the sequence is empty, return
 -- | Nothing.
-popGreatest :: forall a. (Ord a) => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
+popGreatest :: forall a. Ord a => OrdSeq a -> Maybe (Tuple a (OrdSeq a))
 popGreatest (OrdSeq xs) =
   case FT.viewR xs of
     FT.NilR       -> Nothing
@@ -224,22 +224,22 @@ popGreatest (OrdSeq xs) =
 
 -- | Probably O(n*log(n)), but depends on the Foldable instance. Consruct an
 -- | ordered sequence from any any `Foldable`.
-fromFoldable :: forall f a. (Foldable f, Ord a) => f a -> OrdSeq a
+fromFoldable :: forall f a. Foldable f => Ord a => f a -> OrdSeq a
 fromFoldable = foldr insert empty
 
 -- | Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
 -- | sequence in ascending order.
-toUnfoldable :: forall f. (Functor f, Unfoldable f) => OrdSeq ~> f
+toUnfoldable :: forall f. Functor f => Unfoldable f => OrdSeq ~> f
 toUnfoldable (OrdSeq xs) = mapGetElem (FT.unfoldLeft xs)
 
 -- | Probably O(n), but depends on the Unfoldable instance. Unfold an ordered
 -- | sequence in descending order.
-toUnfoldableDescending :: forall f a. (Functor f, Unfoldable f) => OrdSeq a -> f a
+toUnfoldableDescending :: forall f a. Functor f => Unfoldable f => OrdSeq a -> f a
 toUnfoldableDescending (OrdSeq xs) = mapGetElem (FT.unfoldRight xs)
 
 -- | Sort any structure (which has Foldable, Unfoldable, and Functor instances)
 -- | by converting to an OrdSeq and back again. I am fairly sure this is
 -- | usually O(n*log(n)), although of course this depends on the Unfoldable and
 -- | Foldable instances.
-sort :: forall f a. (Functor f, Foldable f, Unfoldable f, Ord a) => f a -> f a
+sort :: forall f a. Functor f => Foldable f => Unfoldable f => Ord a => f a -> f a
 sort = toUnfoldable <<< fromFoldable

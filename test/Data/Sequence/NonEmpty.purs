@@ -1,6 +1,6 @@
 module Tests.Data.Sequence.NonEmpty (nonEmptySequenceTests) where
 
-import Prelude (Unit, ($), bind, (-), show, (>=), const, (<>), (<=), (&&), (==), (+), (<$>), not, negate, id)
+import Prelude (Unit, ($), bind, (-), show, (>=), const, (<>), (<=), (&&), (==), (+), (<$>), not, negate, id, discard)
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
@@ -41,7 +41,7 @@ nonEmptySequenceTests :: forall a.
         Eff
           ( console :: CONSOLE
           , random :: RANDOM
-          , err :: EXCEPTION
+          , exception :: EXCEPTION
           | a
           )
           Unit

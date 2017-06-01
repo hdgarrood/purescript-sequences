@@ -1,6 +1,6 @@
 module Tests.Data.Sequence.Ordered (orderedSequenceTests) where
 
-import Prelude (class Eq, class Ord, class Functor, bind, ($), (<=), show, (<>), (==), (>=), (+), (>), Unit)
+import Prelude (class Eq, class Ord, class Functor, bind, ($), (<=), show, (<>), (==), (>=), (+), (>), Unit, discard)
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE, log)
@@ -24,10 +24,10 @@ import Test.QuickCheck.Laws.Data.Eq (checkEq)
 import Test.QuickCheck.Laws.Data.Semigroup (checkSemigroup)
 import Test.QuickCheck.Laws.Data.Monoid (checkMonoid)
 
-arr :: forall a. (Ord a) => OrdSeq a -> Array a
+arr :: forall a. Ord a => OrdSeq a -> Array a
 arr = OrdSeq.toUnfoldable
 
-arrDescending :: forall a. (Ord a) => OrdSeq a -> Array a
+arrDescending :: forall a. Ord a => OrdSeq a -> Array a
 arrDescending = OrdSeq.toUnfoldableDescending
 
 prx :: Proxy (ArbOSeq A)
@@ -37,7 +37,7 @@ orderedSequenceTests :: forall t.
         Eff
           ( console :: CONSOLE
           , random :: RANDOM
-          , err :: EXCEPTION
+          , exception :: EXCEPTION
           | t
           )
           Unit
@@ -132,5 +132,5 @@ orderedSequenceTests = do
   quickCheck \xs          -> sortIdempotent (xs :: Array Int)
 
   where
-  sortIdempotent :: forall f a. (Functor f, Unfoldable f, Foldable f, Ord a, Eq (f a)) => f a -> Boolean
+  sortIdempotent :: forall f a. Functor f => Unfoldable f => Foldable f => Ord a => Eq (f a) => f a -> Boolean
   sortIdempotent xs = let xs' = OrdSeq.sort xs in xs' == OrdSeq.sort xs'
