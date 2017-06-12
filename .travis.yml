@@ -14,4 +14,6 @@ install:
 script:
   - npm run build
   - npm test
-  - purs publish --dry-run
+  - RESOLUTIONS=$(mktemp) &&
+      bower list --json --offline > $RESOLUTIONS &&
+      purs publish --dry-run --manifest bower.json --resolutions $RESOLUTIONS
