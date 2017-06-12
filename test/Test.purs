@@ -1,6 +1,6 @@
 module Test.Main (main) where
 
-import Prelude (bind, Unit)
+import Prelude (Unit, discard)
 
 import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE)
@@ -15,7 +15,7 @@ main :: forall a.
         Eff
           ( console :: CONSOLE
           , random :: RANDOM
-          , err :: EXCEPTION
+          , exception :: EXCEPTION
           | a
           )
           Unit

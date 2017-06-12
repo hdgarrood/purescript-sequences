@@ -322,12 +322,12 @@ last (Seq xs) = mapGetElem (FT.last xs)
 
 -- | Probably O(n*log(n)), but depends on the Foldable instance. Turn any
 -- | `Foldable` into a `Seq`.
-fromFoldable :: forall f. (Foldable f) => f ~> Seq
+fromFoldable :: forall f. Foldable f => f ~> Seq
 fromFoldable = foldr cons empty
 
 -- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 -- | any `Unfoldable`.
-toUnfoldable :: forall f. (Functor f, Unfoldable f) => Seq ~> f
+toUnfoldable :: forall f. Functor f => Unfoldable f => Seq ~> f
 toUnfoldable (Seq xs) = mapGetElem (FT.unfoldLeft xs)
 
 -- | O(n). Create a new Seq which contains only those elements of the input
@@ -340,7 +340,7 @@ filter p (Seq xs) = Seq (FT.filter q xs)
 
 -- | O(n*log(n)). Sort the sequence, using the `sort` from
 -- | `Data.Sequence.Ordered`. Note that this sorting algorithm is unstable.
-sort :: forall a. (Ord a) => Seq a -> Seq a
+sort :: forall a. Ord a => Seq a -> Seq a
 sort = Ordered.sort
 
 -- | Force evaluation of all unevaluated thunks within the sequence.

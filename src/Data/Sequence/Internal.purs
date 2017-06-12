@@ -25,19 +25,19 @@ import Unsafe.Coerce (unsafeCoerce)
 -----------------------
 -- Various utilities
 
-mapmap :: forall f g a b. (Functor f, Functor g) =>
+mapmap :: forall f g a b. Functor f => Functor g =>
   (a -> b) -> f (g a) -> f (g b)
 mapmap = (<$>) <<< (<$>)
 
 infix 2 mapmap as <$$>
 
-mapmapmap :: forall f g h a b. (Functor f, Functor g, Functor h) =>
+mapmapmap :: forall f g h a b. Functor f => Functor g => Functor h =>
   (a -> b) -> f (g (h a)) -> f (g (h b))
 mapmapmap = (<$$>) <<< (<$>)
 
 infix 2 mapmapmap as <$$$>
 
-strJoin :: forall a. (Show a) => String -> Array a -> String
+strJoin :: forall a. Show a => String -> Array a -> String
 strJoin glue = intercalate glue <<< map show
 
 ----------------------------------------
@@ -59,12 +59,12 @@ getElem (Elem a) = a
 
 -- `map Elem` is a no-op, since Elem is a newtype. Use this function instead
 -- to avoid an unnecessary traversal of the structure.
-mapElem :: forall f a. (Functor f) => f a -> f (Elem a)
+mapElem :: forall f a. Functor f => f a -> f (Elem a)
 mapElem = unsafeCoerce
 
 -- `map getElem` is a no-op, since Elem is a newtype. Use this function
 -- instead to avoid an unnecessary traversal of the structure.
-mapGetElem :: forall f a. (Functor f) => f (Elem a) -> f a
+mapGetElem :: forall f a. Functor f => f (Elem a) -> f a
 mapGetElem = unsafeCoerce
 
 lift2Elem :: forall a b. (b -> a -> b) -> b -> Elem a -> b

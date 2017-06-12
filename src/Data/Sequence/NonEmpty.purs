@@ -167,7 +167,7 @@ replace x = adjust (const x)
 
 -- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
 -- | any `Unfoldable`.
-toUnfoldable :: forall f. (Functor f, Unfoldable f) => Seq ~> f
+toUnfoldable :: forall f. Functor f => Unfoldable f => Seq ~> f
 toUnfoldable = S.toUnfoldable <<< toPlain
 
 fromPlain :: Partial => S.Seq ~> Seq

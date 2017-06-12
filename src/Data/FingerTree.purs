@@ -77,10 +77,10 @@ instance showNode :: (Show a, Show v) => Show (Node v a) where
      <> ") (" <> show c
      <> ")")
 
-node2 :: forall a v. (Monoid v, Measured a v) => a -> a -> Node v a
+node2 :: forall a v. Monoid v => Measured a v => a -> a -> Node v a
 node2 a b = Node2 (measure a <> measure b) a b
 
-node3 :: forall a v. (Monoid v, Measured a v) => a -> a -> a -> Node v a
+node3 :: forall a v. Monoid v => Measured a v => a -> a -> a -> Node v a
 node3 a b c = Node3 (measure a <> measure b <> measure c) a b c
 
 nodeToDigit :: forall a v. Node v a -> Digit a
@@ -123,7 +123,7 @@ data FingerTree v a = Empty
 lazyEmpty :: forall v a. Lazy (FingerTree v a)
 lazyEmpty = defer (\_ -> Empty)
 
-deep :: forall a v. (Monoid v, Measured a v)
+deep :: forall a v. Monoid v => Measured a v
      => Digit a
      -> Lazy (FingerTree v (Node v a))
      -> Digit a
@@ -148,7 +148,7 @@ instance semigroupFingerTree :: (Monoid v, Measured a v) => Semigroup (FingerTre
 -- about the meaning of the data, and because we expect actual uses of
 -- FingerTrees to use newtypes, so we provide this function instead to help
 -- with defining Ord instances.
-eqFingerTree :: forall a v. (Monoid v, Measured a v, Eq a) =>
+eqFingerTree :: forall a v. Monoid v => Measured a v => Eq a =>
   FingerTree v a -> FingerTree v a -> Boolean
 eqFingerTree xs ys =
   case Tuple (viewL xs) (viewL ys) of
@@ -167,7 +167,7 @@ eqFingerTree xs ys =
 -- We don't implement an Ord instance because we can't implement a good Eq
 -- instance, and because we expect actual uses of FingerTrees to use newtypes,
 -- so we provide this function instead to help with defining Ord instances.
-compareFingerTree :: forall a v. (Monoid v, Measured a v, Ord a) =>
+compareFingerTree :: forall a v. Monoid v => Measured a v => Ord a =>
   FingerTree v a -> FingerTree v a -> Ordering
 compareFingerTree xs ys =
   case Tuple (viewL xs) (viewL ys) of
@@ -232,7 +232,7 @@ instance measuredFingerTree :: (Monoid v, Measured a v)
   measure (Single x) = measure x
   measure (Deep v _ _ _) = (force v)
 
-cons :: forall a v. (Monoid v, Measured a v) =>
+cons :: forall a v. Monoid v => Measured a v =>
   a -> FingerTree v a -> FingerTree v a
 cons a Empty            = Single a
 cons a (Single b)       = deep (mkDigit1 a) lazyEmpty (mkDigit1 b)
@@ -260,7 +260,7 @@ cons a (Deep _ pr m sf) =
       in
         deep pr' m sf
 
-snoc :: forall a v. (Monoid v, Measured a v) =>
+snoc :: forall a v. Monoid v => Measured a v =>
   FingerTree v a -> a -> FingerTree v a
 snoc Empty                      a = Single a
 snoc (Single b)                 a = deep (mkDigit1 b) lazyEmpty (mkDigit1 a)
@@ -274,25 +274,25 @@ snoc (Deep _ pr m sf) a =
     _ ->
       deep pr m (unsafePartial (snocDigit sf a))
 
-consAll :: forall f a v. (Monoid v, Measured a v, Foldable f) =>
+consAll :: forall f a v. Monoid v => Measured a v => Foldable f =>
   f a -> FingerTree v a -> FingerTree v a
 consAll = flip (foldr cons)
 
-snocAll :: forall f a v. (Monoid v, Measured a v, Foldable f) =>
+snocAll :: forall f a v. Monoid v => Measured a v => Foldable f =>
  FingerTree v a -> f a -> FingerTree v a
 snocAll = foldl snoc
 
-toFingerTree :: forall f a v. (Monoid v, Measured a v, Foldable f) =>
+toFingerTree :: forall f a v. Monoid v => Measured a v => Foldable f =>
   f a -> FingerTree v a
 toFingerTree s = snocAll Empty s
 
 data ViewL s a = NilL | ConsL a (Lazy (s a))
 
-instance functorViewL :: (Functor s) => Functor (ViewL s) where
+instance functorViewL :: Functor s => Functor (ViewL s) where
   map f NilL = NilL
   map f (ConsL x xs) = ConsL (f x) (map f  <$> xs)
 
-viewL :: forall a v. (Monoid v, Measured a v)
+viewL :: forall a v.  Monoid v => Measured a v
       => FingerTree v a -> ViewL (FingerTree v) a
 viewL Empty            = NilL
 viewL (Single x)       = ConsL x lazyEmpty
@@ -312,7 +312,7 @@ viewL (Single x)       = ConsL x lazyEmpty
 --   one debit to outer suspension satisfies the constraint.
 viewL (Deep _ pr m sf) = ConsL (headDigit pr) (defer (\_ -> deepL (tailDigit pr) m sf))
 
-deepL :: forall a v. (Monoid v, Measured a v)
+deepL :: forall a v.  Monoid v => Measured a v
       => Array a -> Lazy (FingerTree v (Node v a)) -> Digit a -> FingerTree v a
 deepL pr' m sf =
   case mkDigitMay pr' of
@@ -323,17 +323,17 @@ deepL pr' m sf =
         NilL       -> toFingerTree sf
         ConsL a m' -> deep (nodeToDigit a) m' sf
 
-isEmpty :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Boolean
+isEmpty :: forall a v. Monoid v => Measured a v => FingerTree v a -> Boolean
 isEmpty x = case viewL x of
   NilL      -> true
   ConsL _ _ -> false
 
-head :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
+head :: forall a v. Monoid v => Measured a v => FingerTree v a -> Maybe a
 head x = case viewL x of
   ConsL a _ -> Just a
   NilL      -> Nothing
 
-tail :: forall a v. (Monoid v, Measured a v) =>
+tail :: forall a v. Monoid v => Measured a v =>
   FingerTree v a -> Maybe (FingerTree v a)
 tail x = case viewL x of
   ConsL _ x' -> Just (force x')
@@ -341,14 +341,14 @@ tail x = case viewL x of
 
 data ViewR s a = NilR | SnocR (Lazy (s a)) a
 
-viewR :: forall a v. (Monoid v, Measured a v)
+viewR :: forall a v.  Monoid v => Measured a v
       => FingerTree v a -> ViewR (FingerTree v) a
 viewR Empty            = NilR
 viewR (Single x)       = SnocR lazyEmpty x
 viewR (Deep _ pr m sf) =
   SnocR (defer (\_ -> deepR pr m (initDigit sf))) (lastDigit sf)
 
-deepR :: forall a v. (Monoid v, Measured a v)
+deepR :: forall a v. Monoid v => Measured a v
       => Digit a -> Lazy (FingerTree v (Node v a)) -> Array a -> FingerTree v a
 deepR pr m sf' =
   case mkDigitMay sf' of
@@ -359,18 +359,18 @@ deepR pr m sf' =
         NilR       -> toFingerTree pr
         SnocR m' a -> deep pr m' (nodeToDigit a)
 
-last :: forall a v. (Monoid v, Measured a v) => FingerTree v a -> Maybe a
+last :: forall a v. Monoid v => Measured a v => FingerTree v a -> Maybe a
 last x = case viewR x of
   SnocR _ a -> Just a
   NilR      -> Nothing
 
-init :: forall a v. (Monoid v, Measured a v) =>
+init :: forall a v. Monoid v => Measured a v =>
   FingerTree v a -> Maybe (FingerTree v a)
 init x = case viewR x of
   SnocR x' _ -> Just (force x')
   NilR       -> Nothing
 
-app3 :: forall a v. (Monoid v, Measured a v)
+app3 :: forall a v. Monoid v => Measured a v
      => FingerTree v a -> Array a -> FingerTree v a -> FingerTree v a
 app3 Empty ts xs      = consAll ts xs
 app3 xs ts Empty      = snocAll xs ts
@@ -383,7 +383,7 @@ app3 (Deep _ pr1 m1 sf1) ts (Deep _ pr2 m2 sf2) =
   in
    deep pr1 (defer computeM') sf2
 
-nodes :: forall a v. (Monoid v, Measured a v) => Array a -> Array (Node v a)
+nodes :: forall a v. Monoid v => Measured a v => Array a -> Array (Node v a)
 nodes xs =
   case xs of
     [a, b] ->
@@ -398,14 +398,14 @@ nodes xs =
       in
         node3 (idx xs 0) (idx xs 1) (idx xs 2) A.: nodes (A.drop 3 xs)
 
-append :: forall a v. (Monoid v, Measured a v)
+append :: forall a v. Monoid v => Measured a v
      => FingerTree v a -> FingerTree v a -> FingerTree v a
 append xs ys = app3 xs [] ys
 
 data Split f a = Split (f a) a (f a)
 data LazySplit f a = LazySplit (Lazy (f a)) a (Lazy (f a))
 
-splitDigit :: forall a v. (Monoid v, Measured a v) =>
+splitDigit :: forall a v. Monoid v => Measured a v =>
   (v -> Boolean) -> v -> Digit a -> Split Array a
 splitDigit p i as =
   case digitLength as of
@@ -426,7 +426,7 @@ splitDigit p i as =
               Split (A.cons a l) x r
 
 -- | This function throws an error if the argument is empty.
-splitTree :: forall a v. (Monoid v, Measured a v, Partial) =>
+splitTree :: forall a v. Monoid v => Measured a v => Partial =>
   (v -> Boolean) -> v -> FingerTree v a -> LazySplit (FingerTree v) a
 splitTree p i (Single x) = LazySplit lazyEmpty x lazyEmpty
 splitTree _ _ Empty = crashWith "Data.FingerTree.splitTree: Empty"
@@ -458,7 +458,7 @@ splitTree p i (Deep _ pr m sf) =
 -- | function is partial because it requires that the result of applying the
 -- | predicate to mempty is false; if this is not the case, the behaviour is
 -- | undefined.
-split :: forall a v. (Monoid v, Measured a v, Partial)
+split :: forall a v. Monoid v => Measured a v => Partial
       => (v -> Boolean)
       -> FingerTree v a
       -> Tuple (Lazy (FingerTree v a)) (Lazy (FingerTree v a))
@@ -472,11 +472,11 @@ split p xs =
     else
       Tuple (defer (\_ -> xs)) lazyEmpty
 
-filter :: forall a v. (Monoid v, Measured a v)
+filter :: forall a v. Monoid v => Measured a v
   => (a -> Boolean) -> FingerTree v a -> FingerTree v a
 filter p = foldr (\x acc -> if p x then cons x acc else acc) Empty
 
-unfoldLeft :: forall f a v. (Unfoldable f, Monoid v, Measured a v) =>
+unfoldLeft :: forall f a v. Unfoldable f => Monoid v => Measured a v =>
   FingerTree v a -> f a
 unfoldLeft = unfoldr step
   where
@@ -484,7 +484,7 @@ unfoldLeft = unfoldr step
                 ConsL x xs -> Just (Tuple x (force xs))
                 NilL       -> Nothing
 
-unfoldRight :: forall f a v. (Unfoldable f, Monoid v, Measured a v) =>
+unfoldRight :: forall f a v. Unfoldable f => Monoid v => Measured a v =>
   FingerTree v a -> f a
 unfoldRight = unfoldr step
   where

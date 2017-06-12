@@ -44,7 +44,7 @@ sequenceTests :: forall t.
         Eff
           ( console :: CONSOLE
           , random :: RANDOM
-          , err :: EXCEPTION
+          , exception :: EXCEPTION
           | t
           )
           Unit
