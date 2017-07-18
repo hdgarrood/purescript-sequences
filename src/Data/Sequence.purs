@@ -55,36 +55,39 @@ module Data.Sequence
   , index
   , adjust
   , replace
+  , elemIndex
 
   -- other
   , toUnfoldable
   , fullyForce
   ) where
 
-import Prelude hiding (append, map)
-
 import Control.Alt (class Alt)
 import Control.Alternative (class Alternative)
 import Control.MonadPlus (class MonadPlus)
 import Control.MonadZero (class MonadZero)
 import Control.Plus (class Plus)
+import Data.Array (findIndex)
+import Data.Array as A
+import Data.Either (Either(..))
+import Data.FingerTree (FingerTree)
+import Data.FingerTree as FT
+import Data.FingerTree.Digit (Digit)
 import Data.Foldable (class Foldable, foldl, foldMap, foldr)
-import Data.Lazy (Lazy(), force)
-import Data.Maybe (Maybe(Just, Nothing))
+import Data.Lazy (Lazy, force)
+import Data.Maybe (Maybe(..))
 import Data.Monoid (class Monoid)
 import Data.Monoid.Additive (Additive(Additive))
 import Data.Newtype (unwrap, un)
 import Data.Profunctor.Strong ((***))
+import Data.Sequence.Internal (Elem(Elem), mapGetElem, getElem, liftElem, lift2Elem, measure, strJoin)
+import Data.Sequence.Ordered as Ordered
 import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple), fst, snd)
 import Data.Unfoldable (class Unfoldable, unfoldr)
 import Partial.Unsafe (unsafePartial)
+import Prelude hiding (append,map)
 import Unsafe.Coerce (unsafeCoerce)
-
-import Data.Sequence.Internal (Elem(Elem), mapGetElem, getElem, liftElem,
-                               lift2Elem, measure, strJoin)
-import Data.FingerTree as FT
-import Data.Sequence.Ordered as Ordered
 
 -- TODO: Optimise Apply instance (see Hackage)
 -- TODO: adjust might be suboptimal, see Data.Sequence on Hackage
@@ -261,6 +264,57 @@ unsafeIndex :: forall a. Partial => Int -> Seq a -> a
 unsafeIndex i (Seq xs) =
   case FT.splitTree (\n -> i < unwrap n) (Additive 0) xs of
     FT.LazySplit _ x _ -> getElem x
+
+elemIndex :: forall a. Eq a => a -> Seq a -> Maybe Int
+elemIndex e (Seq xs) =
+  case search (\x -> if (getElem x) == e then Left 0 else Right 1) xs of
+  Left i -> Just i
+  Right _ -> Nothing
+  where
+    -- Left i means result is at index i
+    -- Right l means no result, length of tree is l
+    search :: forall a. (a -> Either Int Int) -> FT.FingerTree (Additive Int) a -> Either Int Int
+    search _ FT.Empty = Right 0
+    search p (FT.Single x) = p x
+    search p (FT.Deep _ pr m sf) =
+      case searchDigit p pr of
+      result@(Left _) -> result
+      Right lpr ->
+        case search (searchNode p) (force m) of
+        Left i -> Left (lpr + i)
+        Right lm ->
+          case searchDigit p sf of
+          Left i -> Left (lpr + lm + i)
+          Right lsf -> Right (lpr + lm + lsf)
+    searchDigit :: forall a. (a -> Either Int Int) -> Digit a -> Either Int Int
+    searchDigit p arr =
+      A.foldl (digitFolder p) (Right 0) arr
+    searchNode :: forall a. (a -> Either Int Int) -> FT.Node (Additive Int) a -> Either Int Int
+    searchNode p (FT.Node2 _ a b) =
+      case p a of
+      result@(Left _) -> result
+      Right la ->
+        case p b of
+        Left i -> Left (la + i)
+        Right lb -> Right (la + lb)
+    searchNode p (FT.Node3 _ a b c) =
+      case p a of
+      result@(Left _) -> result
+      Right la ->
+        case p b of
+        Left i -> Left (la + i)
+        Right lb ->
+          case p c of
+          Left i -> Left (la + lb + i)
+          Right lc -> Right (la + lb + lc)
+    digitFolder :: forall a. (a -> Either Int Int) -> Either Int Int -> a -> Either Int Int
+    digitFolder p soFar x =
+      case soFar of
+      result@(Left _) -> result
+      Right lSoFar ->
+        case p x of
+        Left i -> Left (lSoFar + i)
+        Right l -> Right (lSoFar + l)
 
 -- | O(log(min(i,n-i))). Adjust the element at the specified index by
 -- | applying the given function to it. If the index is out of range, the

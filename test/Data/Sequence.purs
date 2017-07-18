@@ -9,27 +9,26 @@ import Control.Monad.Eff.Random (RANDOM)
 import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(..), fromMaybe)
+import Data.Sequence (index)
+import Data.Sequence as S
 import Data.Tuple (Tuple(..), fst, snd)
-
 import Test.QuickCheck ((<?>), (===), quickCheck)
-import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2))
-import Test.QuickCheck.Laws (A())
-import Test.QuickCheck.Laws.Data.Eq (checkEq)
-import Test.QuickCheck.Laws.Data.Ord (checkOrd)
-import Test.QuickCheck.Laws.Data.Functor (checkFunctor)
-import Test.QuickCheck.Laws.Control.Apply (checkApply)
+import Test.QuickCheck.Laws (A)
+import Test.QuickCheck.Laws.Control.Alt (checkAlt)
+import Test.QuickCheck.Laws.Control.Alternative (checkAlternative)
 import Test.QuickCheck.Laws.Control.Applicative (checkApplicative)
+import Test.QuickCheck.Laws.Control.Apply (checkApply)
 import Test.QuickCheck.Laws.Control.Bind (checkBind)
 import Test.QuickCheck.Laws.Control.Monad (checkMonad)
-import Test.QuickCheck.Laws.Data.Semigroup (checkSemigroup)
-import Test.QuickCheck.Laws.Data.Monoid (checkMonoid)
-import Test.QuickCheck.Laws.Control.Alt (checkAlt)
-import Test.QuickCheck.Laws.Control.Plus (checkPlus)
-import Test.QuickCheck.Laws.Control.Alternative (checkAlternative)
 import Test.QuickCheck.Laws.Control.MonadPlus (checkMonadPlus)
-
-import Data.Sequence as S
+import Test.QuickCheck.Laws.Control.Plus (checkPlus)
+import Test.QuickCheck.Laws.Data.Eq (checkEq)
+import Test.QuickCheck.Laws.Data.Functor (checkFunctor)
+import Test.QuickCheck.Laws.Data.Monoid (checkMonoid)
+import Test.QuickCheck.Laws.Data.Ord (checkOrd)
+import Test.QuickCheck.Laws.Data.Semigroup (checkSemigroup)
 import Tests.Utils (ArbSeq(ArbSeq), err, abs, integerBetween, foldableSize)
+import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2))
 
 arr :: forall a. S.Seq a -> Array a
 arr = S.toUnfoldable
@@ -39,6 +38,15 @@ prx = Proxy
 
 prx2 :: Proxy2 ArbSeq
 prx2 = Proxy2
+
+checkElemIndex :: forall a. Eq a => S.Seq a -> a -> Boolean
+checkElemIndex seq x =
+    case S.elemIndex x seq of
+    Nothing -> S.null (S.filter (eq x) seq)
+    Just i ->
+      case S.index i seq of
+      Nothing -> false
+      Just e -> e == x && S.null (S.filter (eq x) (S.take i seq))
 
 sequenceTests :: forall t.
         Eff
@@ -187,3 +195,9 @@ sequenceTests = do
   log "Test last"
   quickCheck $ \(ArbSeq seq) x ->
     S.last (S.snoc seq x) === Just (x :: Number)
+
+  log "Test elemIndex"
+  quickCheck $ \(ArbSeq seq) x ->
+    checkElemIndex seq (x :: Number)
+  quickCheck $ \(ArbSeq left) x (ArbSeq right) ->
+    checkElemIndex (S.append left (S.cons x right)) (x :: Number)
