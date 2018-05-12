@@ -6,6 +6,7 @@ import Control.Monad.Eff (Eff)
 import Control.Monad.Eff.Console (CONSOLE)
 import Control.Monad.Eff.Exception (EXCEPTION)
 import Control.Monad.Eff.Random (RANDOM)
+import Test.Assert (ASSERT)
 
 import Tests.Data.Sequence          (sequenceTests)
 import Tests.Data.Sequence.NonEmpty (nonEmptySequenceTests)
@@ -16,6 +17,7 @@ main :: forall a.
           ( console :: CONSOLE
           , random :: RANDOM
           , exception :: EXCEPTION
+          , assert :: ASSERT
           | a
           )
           Unit
