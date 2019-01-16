@@ -17,7 +17,6 @@ import Prelude
 
 import Data.Foldable (class Foldable, foldl, intercalate)
 import Data.Lazy (Lazy(), force)
-import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Additive (Additive(Additive))
 import Data.Traversable (class Traversable)
 import Unsafe.Coerce (unsafeCoerce)

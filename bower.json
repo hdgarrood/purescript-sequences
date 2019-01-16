@@ -22,24 +22,17 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-arrays": "^4.0.1",
-    "purescript-control": "^3.0.0",
-    "purescript-exceptions": "^3.0.0",
-    "purescript-foldable-traversable": "^3.0.0",
-    "purescript-identity": "^3.0.0",
-    "purescript-lazy": "^3.0.0",
-    "purescript-maybe": "^3.0.0",
-    "purescript-monoid": "^3.0.0",
-    "purescript-profunctor": "^3.0.0",
-    "purescript-tuples": "^4.0.0",
-    "purescript-unfoldable": "^3.0.0",
-    "purescript-unsafe-coerce": "^3.0.0",
-    "purescript-newtype": "^2.0.0"
+    "purescript-prelude": "^4.1.0",
+    "purescript-unsafe-coerce": "^4.0.0",
+    "purescript-partial": "^2.0.0",
+    "purescript-unfoldable": "^4.0.0",
+    "purescript-lazy": "^4.0.0",
+    "purescript-arrays": "^5.2.0",
+    "purescript-profunctor": "^4.0.0"
   },
   "devDependencies": {
-    "purescript-quickcheck": "^4.0.0",
-    "purescript-quickcheck-laws": "^3.0.0",
-    "purescript-benchotron": "^6.0.0",
-    "purescript-psci-support": "^3.0.0"
+    "purescript-psci-support": "^4.0.0",
+    "purescript-quickcheck-laws": "^4.0.0",
+    "purescript-benchotron": "^7.0.0"
   }
 }

@@ -2,10 +2,8 @@ module Tests.Data.Sequence (sequenceTests) where
 
 import Prelude
 
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE, log)
-import Control.Monad.Eff.Exception (EXCEPTION)
-import Control.Monad.Eff.Random (RANDOM)
+import Effect (Effect)
+import Effect.Console (log)
 import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(..), fromMaybe)
@@ -40,14 +38,7 @@ prx = Proxy
 prx2 :: Proxy2 ArbSeq
 prx2 = Proxy2
 
-sequenceTests :: forall t.
-        Eff
-          ( console :: CONSOLE
-          , random :: RANDOM
-          , exception :: EXCEPTION
-          | t
-          )
-          Unit
+sequenceTests :: Effect Unit
 sequenceTests = do
   log ""
   log "Data.Sequence"
@@ -108,7 +99,7 @@ sequenceTests = do
 
   log "Test that adjust is safe"
   quickCheck $ \(ArbSeq seq) ->
-    let f n = S.adjust id n (seq :: S.Seq Number)
+    let f n = S.adjust identity n (seq :: S.Seq Number)
     in f (-1) == f (S.length seq)
 
   log "Test that index is safe"
