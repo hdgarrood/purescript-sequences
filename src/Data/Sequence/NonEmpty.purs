@@ -116,7 +116,7 @@ init = fst <<< unsnoc
 
 -- | O(1). Get the last element of a non-empty sequence.
 last :: forall a. Seq a -> a
-last (Seq x xs) = maybe x id (S.last xs)
+last (Seq x xs) = maybe x identity (S.last xs)
 
 -- | O(1). Turn a non-empty sequence into a "plain" sequence (i.e. one from
 -- | Data.Sequence), containing the same elements.

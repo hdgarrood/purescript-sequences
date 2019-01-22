@@ -19,7 +19,6 @@ module Data.FingerTree.Digit
   ) where
 
 import Prelude
-import Data.Monoid (class Monoid)
 import Data.Maybe (Maybe(..))
 import Data.Array as A
 import Data.Array.Partial as AP

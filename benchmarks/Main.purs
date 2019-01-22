@@ -11,7 +11,7 @@ import Data.Sequence as S
 import Math (floor, sqrt)
 import Test.QuickCheck.Gen (Gen(), vectorOf)
 import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
-import Control.Monad.Eff
+import Effect
 
 import Benchotron.Core
 import Benchotron.UI.Console

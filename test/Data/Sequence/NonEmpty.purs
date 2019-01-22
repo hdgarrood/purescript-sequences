@@ -1,11 +1,9 @@
 module Tests.Data.Sequence.NonEmpty (nonEmptySequenceTests) where
 
-import Prelude (Unit, ($), bind, (-), show, (>=), const, (<>), (<=), (&&), (==), (+), (<$>), not, negate, id, discard)
+import Prelude (Unit, ($), bind, (-), show, (>=), const, (<>), (<=), (&&), (==), (+), (<$>), not, negate, identity, discard)
 
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE, log)
-import Control.Monad.Eff.Exception (EXCEPTION)
-import Control.Monad.Eff.Random (RANDOM)
+import Effect (Effect)
+import Effect.Console (log)
 import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(Nothing))
@@ -37,14 +35,7 @@ prx = Proxy
 prx2 :: Proxy2 ArbNESeq
 prx2 = Proxy2
 
-nonEmptySequenceTests :: forall a.
-        Eff
-          ( console :: CONSOLE
-          , random :: RANDOM
-          , exception :: EXCEPTION
-          | a
-          )
-          Unit
+nonEmptySequenceTests :: Effect Unit
 nonEmptySequenceTests = do
   log ""
   log "Data.Sequence.NonEmpty"
@@ -97,7 +88,7 @@ nonEmptySequenceTests = do
 
   log "Test that adjust is safe"
   quickCheck $ \(ArbNESeq seq) ->
-    let f n = NonEmpty.adjust id n (seq :: NonEmpty.Seq Int)
+    let f n = NonEmpty.adjust identity n (seq :: NonEmpty.Seq Int)
     in f (-1) == f (NonEmpty.length seq)
 
   log "Test that index is safe"

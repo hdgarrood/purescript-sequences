@@ -71,13 +71,12 @@ import Control.Plus (class Plus)
 import Data.Foldable (class Foldable, foldl, foldMap, foldr)
 import Data.Lazy (Lazy(), force)
 import Data.Maybe (Maybe(Just, Nothing))
-import Data.Monoid (class Monoid)
 import Data.Monoid.Additive (Additive(Additive))
 import Data.Newtype (unwrap, un)
 import Data.Profunctor.Strong ((***))
 import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple), fst, snd)
-import Data.Unfoldable (class Unfoldable, unfoldr)
+import Data.Unfoldable (class Unfoldable1, class Unfoldable, unfoldr1, unfoldr)
 import Partial.Unsafe (unsafePartial)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -120,7 +119,12 @@ instance foldableSeq :: Foldable Seq where
 
 instance traversableSeq :: Traversable Seq where
   traverse f (Seq xs) = mapSeq (traverse (traverse f) xs)
-  sequence = traverse id
+  sequence = traverse identity
+
+instance unfoldable1Seq :: Unfoldable1 Seq where
+  unfoldr1 f xs = case f xs of
+                   Tuple x (Just ys) -> cons x (unfoldr1 f ys)
+                   Tuple x Nothing   -> singleton x
 
 instance unfoldableSeq :: Unfoldable Seq where
   unfoldr f xs = case f xs of

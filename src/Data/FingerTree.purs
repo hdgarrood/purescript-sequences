@@ -49,7 +49,6 @@ import Data.Array as A
 import Data.Foldable (class Foldable, foldl, foldr)
 import Data.Lazy (Lazy, defer, force)
 import Data.Maybe (Maybe(Just, Nothing))
-import Data.Monoid (class Monoid, mempty)
 import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple))
 import Data.Unfoldable (class Unfoldable, unfoldr)
@@ -103,7 +102,7 @@ instance foldableNode :: Foldable (Node v) where
 instance traversableNode :: Traversable (Node v) where
   traverse f (Node2 v a b) = Node2 v <$> f a <*> f b
   traverse f (Node3 v a b c) = Node3 v <$> f a <*> f b <*> f c
-  sequence = traverse id
+  sequence = traverse identity
 
 instance measuredNode :: Measured (Node v a) v where
   measure (Node2 v _ _) = v
@@ -224,7 +223,7 @@ instance traversableFingerTree :: Traversable (FingerTree v) where
     l = traverse (traverse f) (force m)
     kl = const <$> l
 
-  sequence = traverse id
+  sequence = traverse identity
 
 instance measuredFingerTree :: (Monoid v, Measured a v)
                             => Measured (FingerTree v a) v where
