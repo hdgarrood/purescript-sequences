@@ -123,8 +123,8 @@ instance traversableSeq :: Traversable Seq where
 
 instance unfoldable1Seq :: Unfoldable1 Seq where
   unfoldr1 f xs = case f xs of
-                  Tuple x (Just ys) -> cons x (unfoldr1 f ys)
-                  Tuple x Nothing   -> singleton x
+                   Tuple x (Just ys) -> cons x (unfoldr1 f ys)
+                   Tuple x Nothing   -> singleton x
 
 instance unfoldableSeq :: Unfoldable Seq where
   unfoldr f xs = case f xs of
