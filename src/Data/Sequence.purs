@@ -76,7 +76,7 @@ import Data.Newtype (unwrap, un)
 import Data.Profunctor.Strong ((***))
 import Data.Traversable (class Traversable, traverse)
 import Data.Tuple (Tuple(Tuple), fst, snd)
-import Data.Unfoldable (class Unfoldable1, class Unfoldable, unfoldr1, unfoldr)
+import Data.Unfoldable (class Unfoldable, class Unfoldable1)
 import Partial.Unsafe (unsafePartial)
 import Unsafe.Coerce (unsafeCoerce)
 
@@ -122,9 +122,15 @@ instance traversableSeq :: Traversable Seq where
   sequence = traverse identity
 
 instance unfoldable1Seq :: Unfoldable1 Seq where
-  unfoldr1 f xs = case f xs of
-                   Tuple x (Just ys) -> cons x (unfoldr1 f ys)
-                   Tuple x Nothing   -> singleton x
+  unfoldr1 f xs = go xs empty
+    where
+      go source memo =
+        case f source of
+          Tuple x Nothing ->
+            snoc memo x
+
+          Tuple x (Just ys) ->
+            go ys (snoc memo x)
 
 instance unfoldableSeq :: Unfoldable Seq where
   unfoldr f xs = go xs empty
