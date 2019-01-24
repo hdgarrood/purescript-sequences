@@ -1,8 +1,8 @@
 {
   "private": true,
   "devDependencies": {
-    "pulp": "^10.0.0",
-    "benchmark": "^2.1.0"
+    "benchmark": "^2.1.4",
+    "pulp": "^12.3.1"
   },
   "scripts": {
     "postinstall": "bower install",

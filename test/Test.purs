@@ -1,26 +1,13 @@
 module Test.Main (main) where
 
-import Prelude (Unit, discard)
+import Prelude
 
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE)
-import Control.Monad.Eff.Exception (EXCEPTION)
-import Control.Monad.Eff.Random (RANDOM)
-import Test.Assert (ASSERT)
-
-import Tests.Data.Sequence          (sequenceTests)
+import Effect (Effect)
+import Tests.Data.Sequence (sequenceTests)
 import Tests.Data.Sequence.NonEmpty (nonEmptySequenceTests)
-import Tests.Data.Sequence.Ordered  (orderedSequenceTests)
+import Tests.Data.Sequence.Ordered (orderedSequenceTests)
 
-main :: forall a.
-        Eff
-          ( console :: CONSOLE
-          , random :: RANDOM
-          , exception :: EXCEPTION
-          , assert :: ASSERT
-          | a
-          )
-          Unit
+main :: Effect Unit
 main = do
   sequenceTests
   nonEmptySequenceTests

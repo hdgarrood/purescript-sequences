@@ -1,17 +1,15 @@
 module Tests.Data.Sequence.Ordered (orderedSequenceTests) where
 
-import Prelude (class Eq, class Ord, class Functor, bind, ($), (<=), show, (<>), (==), (>=), (+), (>), Unit, discard)
+import Prelude
 
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE, log)
-import Control.Monad.Eff.Exception (EXCEPTION)
-import Control.Monad.Eff.Random (RANDOM)
 import Data.Array as A
 import Data.Foldable (class Foldable, all, foldl, foldr)
 import Data.Maybe (Maybe(Just, Nothing))
-import Test.QuickCheck ((<?>), (===), quickCheck)
 import Data.Tuple (Tuple(Tuple))
 import Data.Unfoldable (class Unfoldable)
+import Effect (Effect)
+import Effect.Console (log)
+import Test.QuickCheck ((<?>), (===), quickCheck)
 
 import Data.Sequence.Ordered (OrdSeq())
 import Data.Sequence.Ordered as OrdSeq
@@ -33,14 +31,7 @@ arrDescending = OrdSeq.toUnfoldableDescending
 prx :: Proxy (ArbOSeq A)
 prx = Proxy
 
-orderedSequenceTests :: forall t.
-        Eff
-          ( console :: CONSOLE
-          , random :: RANDOM
-          , exception :: EXCEPTION
-          | t
-          )
-          Unit
+orderedSequenceTests :: Effect Unit
 orderedSequenceTests = do
   log ""
   log "Data.Sequence.Ordered"
