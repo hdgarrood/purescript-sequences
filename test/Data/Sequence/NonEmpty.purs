@@ -4,27 +4,27 @@ import Prelude
 
 import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
-import Data.Maybe (Maybe(Nothing))
-import Data.Tuple (Tuple(Tuple), fst, snd)
-import Effect (Effect)
-import Effect.Console (log)
-import Test.QuickCheck ((<?>), (===), quickCheck)
-import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2))
-
+import Data.Maybe (Maybe(..))
 import Data.Sequence as S
 import Data.Sequence.NonEmpty as NonEmpty
-import Tests.Utils (ArbNESeq(ArbNESeq), err, abs, integerBetween, foldableSize)
-
-import Test.QuickCheck.Laws (A())
-import Test.QuickCheck.Laws.Data.Eq (checkEq)
-import Test.QuickCheck.Laws.Data.Ord (checkOrd)
-import Test.QuickCheck.Laws.Data.Functor (checkFunctor)
-import Test.QuickCheck.Laws.Control.Apply (checkApply)
+import Data.Tuple (Tuple(..), fst, snd)
+import Data.Unfoldable (replicate1, unfoldr1)
+import Effect (Effect)
+import Effect.Console (log)
+import Test.Assert (assert)
+import Test.QuickCheck ((<?>), (===), quickCheck)
+import Test.QuickCheck.Laws (A)
+import Test.QuickCheck.Laws.Control.Alt (checkAlt)
 import Test.QuickCheck.Laws.Control.Applicative (checkApplicative)
+import Test.QuickCheck.Laws.Control.Apply (checkApply)
 import Test.QuickCheck.Laws.Control.Bind (checkBind)
 import Test.QuickCheck.Laws.Control.Monad (checkMonad)
+import Test.QuickCheck.Laws.Data.Eq (checkEq)
+import Test.QuickCheck.Laws.Data.Functor (checkFunctor)
+import Test.QuickCheck.Laws.Data.Ord (checkOrd)
 import Test.QuickCheck.Laws.Data.Semigroup (checkSemigroup)
-import Test.QuickCheck.Laws.Control.Alt (checkAlt)
+import Tests.Utils (ArbNESeq(..), err, abs, integerBetween, foldableSize)
+import Type.Proxy (Proxy(..), Proxy2(..))
 
 arr :: forall a. NonEmpty.Seq a -> Array a
 arr = NonEmpty.toUnfoldable
@@ -157,3 +157,13 @@ nonEmptySequenceTests = do
   log "Test last"
   quickCheck $ \(ArbNESeq seq) x ->
     NonEmpty.last (NonEmpty.snoc seq x) === (x :: Int)
+
+  log "unfoldr1 should be stack-safe"
+  assert $ 100000 == S.length (replicate1 100000 1)
+
+  log "unfoldr1 should maintain order"
+  assert $ S.fromFoldable [1, 2, 3, 4, 5] == unfoldr1 step1 1
+
+step1 :: Int -> Tuple Int (Maybe Int)
+step1 5 = Tuple 5 Nothing
+step1 n = Tuple n (Just (n + 1))

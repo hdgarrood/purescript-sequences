@@ -49,13 +49,12 @@ import Prelude
 
 import Control.Alt (class Alt)
 import Data.Foldable (class Foldable, foldl, foldMap, foldr)
-import Data.Maybe (Maybe(Just, Nothing), maybe, fromJust)
+import Data.Maybe (Maybe(..), maybe, fromJust)
+import Data.Sequence as S
 import Data.Traversable (class Traversable, sequence, traverse)
 import Data.Tuple (Tuple(Tuple), fst, uncurry)
-import Data.Unfoldable (class Unfoldable)
+import Data.Unfoldable (class Unfoldable, class Unfoldable1, unfoldr1)
 import Partial.Unsafe (unsafePartial)
-
-import Data.Sequence as S
 
 -- | A sequence which is guaranteed to contain at least one element.
 data Seq a
@@ -213,3 +212,6 @@ instance foldableSeq :: Foldable Seq where
 instance traversableSeq :: Traversable Seq where
   sequence   = unsafePartial $ toPlain >>> sequence   >>> map fromPlain
   traverse f = unsafePartial $ toPlain >>> traverse f >>> map fromPlain
+
+instance unfoldable1Seq :: Unfoldable1 Seq where
+  unfoldr1 = unsafePartial \f source -> fromPlain (unfoldr1 f source)
