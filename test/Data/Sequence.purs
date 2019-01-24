@@ -8,7 +8,7 @@ import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..), fst, snd)
-import Data.Unfoldable (replicate, unfoldr)
+import Data.Unfoldable (replicate, unfoldr, replicate1, unfoldr1)
 
 import Test.Assert (assert)
 import Test.QuickCheck ((<?>), (===), quickCheck)
@@ -187,7 +187,17 @@ sequenceTests = do
   log "unfoldr should maintain order"
   assert $ S.fromFoldable [1, 2, 3, 4, 5] == unfoldr step 1
 
+  log "unfoldr1 should be stack-safe"
+  assert $ 100000 == S.length (replicate1 100000 1)
+
+  log "unfoldr1 should maintain order"
+  assert $ S.fromFoldable [1, 2, 3, 4, 5] == unfoldr1 step1 1
+
 
 step :: Int -> Maybe (Tuple Int Int)
 step 6 = Nothing
 step n = Just (Tuple n (n + 1))
+
+step1 :: Int -> Tuple Int (Maybe Int)
+step1 5 = Tuple 5 Nothing
+step1 n = Tuple n (Just (n + 1))
