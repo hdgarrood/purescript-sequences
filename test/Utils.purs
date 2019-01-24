@@ -2,18 +2,18 @@ module Tests.Utils where
 
 import Prelude
 
+import Control.Alt (class Alt, (<|>))
+import Control.Alternative (class Alternative)
+import Control.MonadPlus (class MonadPlus)
+import Control.MonadZero (class MonadZero)
+import Control.Plus (class Plus, empty)
 import Data.Array as A
-import Data.Function (on)
 import Data.Foldable (class Foldable, intercalate, foldr, foldMap)
+import Data.Function (on)
 import Data.Maybe (Maybe(Nothing, Just))
 import Data.Monoid (class Monoid, mempty)
 import Data.Monoid.Additive (Additive(Additive))
 import Data.Newtype (un)
-import Control.Alt (class Alt, (<|>))
-import Control.Plus (class Plus, empty)
-import Control.Alternative (class Alternative)
-import Control.MonadPlus (class MonadPlus)
-import Control.MonadZero (class MonadZero)
 import Effect (Effect)
 import Test.QuickCheck (class Testable, (<?>), quickCheck', Result)
 import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)

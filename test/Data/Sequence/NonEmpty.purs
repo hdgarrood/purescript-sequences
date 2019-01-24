@@ -1,14 +1,14 @@
 module Tests.Data.Sequence.NonEmpty (nonEmptySequenceTests) where
 
-import Prelude (Unit, ($), bind, (-), show, (>=), const, (<>), (<=), (&&), (==), (+), (<$>), not, negate, identity, discard)
+import Prelude
 
-import Effect (Effect)
-import Effect.Console (log)
 import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(Nothing))
-import Test.QuickCheck ((<?>), (===), quickCheck)
 import Data.Tuple (Tuple(Tuple), fst, snd)
+import Effect (Effect)
+import Effect.Console (log)
+import Test.QuickCheck ((<?>), (===), quickCheck)
 import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2))
 
 import Data.Sequence as S
