@@ -10,14 +10,13 @@ import Control.Plus (class Plus, empty)
 import Data.Array as A
 import Data.Foldable (class Foldable, intercalate, foldr, foldMap)
 import Data.Function (on)
-import Data.Maybe (Maybe(Nothing, Just))
-import Data.Monoid (class Monoid, mempty)
+import Data.Maybe (Maybe(..))
 import Data.Monoid.Additive (Additive(Additive))
 import Data.Newtype (un)
 import Effect (Effect)
 import Test.QuickCheck (class Testable, (<?>), quickCheck', Result)
 import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
-import Test.QuickCheck.Gen (Gen())
+import Test.QuickCheck.Gen (Gen)
 
 import Data.Sequence as S
 import Data.Sequence.NonEmpty as NES
