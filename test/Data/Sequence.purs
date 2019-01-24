@@ -10,7 +10,7 @@ import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..), fst, snd)
 import Data.Unfoldable (replicate, unfoldr)
 
-import Test.Assert (ASSERT, assert)
+import Test.Assert (assert)
 import Test.QuickCheck ((<?>), (===), quickCheck)
 import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2))
 import Test.QuickCheck.Laws (A())
