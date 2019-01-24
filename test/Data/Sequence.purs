@@ -8,7 +8,9 @@ import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Tuple (Tuple(..), fst, snd)
+import Data.Unfoldable (replicate, unfoldr)
 
+import Test.Assert (ASSERT, assert)
 import Test.QuickCheck ((<?>), (===), quickCheck)
 import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2))
 import Test.QuickCheck.Laws (A())
@@ -178,3 +180,14 @@ sequenceTests = do
   log "Test last"
   quickCheck $ \(ArbSeq seq) x ->
     S.last (S.snoc seq x) === Just (x :: Number)
+
+  log "unfoldr should be stack-safe"
+  assert $ 100000 == S.length (replicate 100000 1)
+
+  log "unfoldr should maintain order"
+  assert $ S.fromFoldable [1, 2, 3, 4, 5] == unfoldr step 1
+
+
+step :: Int -> Maybe (Tuple Int Int)
+step 6 = Nothing
+step n = Just (Tuple n (n + 1))

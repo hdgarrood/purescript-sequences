@@ -127,9 +127,15 @@ instance unfoldable1Seq :: Unfoldable1 Seq where
                    Tuple x Nothing   -> singleton x
 
 instance unfoldableSeq :: Unfoldable Seq where
-  unfoldr f xs = case f xs of
-                  Just (Tuple x ys) -> cons x (unfoldr f ys)
-                  Nothing           -> empty
+  unfoldr f xs = go xs empty
+    where
+    go source memo =
+      case f source of
+        Nothing ->
+          memo
+
+        Just (Tuple x ys) ->
+          go ys (snoc memo x)
 
 instance functorSeq :: Functor Seq where
   map = map
