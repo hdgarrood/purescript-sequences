@@ -38,6 +38,7 @@
     "purescript-psci-support": "^4.0.0",
     "purescript-quickcheck": "^5.0.0",
     "purescript-quickcheck-laws": "^4.0.0",
-    "purescript-benchotron": "^7.0.0"
+    "purescript-benchotron": "^7.0.0",
+    "purescript-nonempty": "^5.0.0"
   }
 }

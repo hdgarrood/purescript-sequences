@@ -5,6 +5,7 @@ import Prelude
 import Data.Array as A
 import Data.Foldable (all, foldl, foldr, sum)
 import Data.Maybe (Maybe(..))
+import Data.Semigroup.Foldable (fold1, foldMap1)
 import Data.Sequence as S
 import Data.Sequence.NonEmpty as NonEmpty
 import Data.Tuple (Tuple(..), fst, snd)
@@ -159,10 +160,18 @@ nonEmptySequenceTests = do
     NonEmpty.last (NonEmpty.snoc seq x) === (x :: Int)
 
   log "unfoldr1 should be stack-safe"
-  assert $ 100000 == S.length (replicate1 100000 1)
+  assert $ 100000 == NonEmpty.length (replicate1 100000 1)
+
+  let oneToFive = unfoldr1 step1 1 :: NonEmpty.Seq Int
 
   log "unfoldr1 should maintain order"
-  assert $ S.fromFoldable [1, 2, 3, 4, 5] == unfoldr1 step1 1
+  assert $ NonEmpty.toUnfoldable oneToFive == [1, 2, 3, 4, 5]
+
+  log "fold1 should maintain order"
+  assert $ fold1 (map pure oneToFive) == [1, 2, 3, 4, 5]
+
+  log "foldMap1 should maintain order"
+  assert $ foldMap1 pure oneToFive == [1, 2, 3, 4, 5]
 
 step1 :: Int -> Tuple Int (Maybe Int)
 step1 5 = Tuple 5 Nothing

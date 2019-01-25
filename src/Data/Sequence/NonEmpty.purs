@@ -17,6 +17,7 @@ module Data.Sequence.NonEmpty
   , cons
   , snoc
   , append
+  , fromFoldable1
 
   -- queries
   , length
@@ -29,6 +30,8 @@ module Data.Sequence.NonEmpty
   , tail
   , init
   , last
+  , toUnfoldable
+  , toUnfoldable1
 
   , toPlain
   , splitAt
@@ -40,9 +43,6 @@ module Data.Sequence.NonEmpty
   , index
   , adjust
   , replace
-
-  -- other
-  , toUnfoldable
   ) where
 
 import Prelude
@@ -50,6 +50,7 @@ import Prelude
 import Control.Alt (class Alt)
 import Data.Foldable (class Foldable, foldl, foldMap, foldr)
 import Data.Maybe (Maybe(..), maybe, fromJust)
+import Data.Semigroup.Foldable (class Foldable1, foldMap1)
 import Data.Sequence as S
 import Data.Traversable (class Traversable, sequence, traverse)
 import Data.Tuple (Tuple(Tuple), fst, uncurry)
@@ -169,8 +170,28 @@ replace x = adjust (const x)
 toUnfoldable :: forall f. Functor f => Unfoldable f => Seq ~> f
 toUnfoldable = S.toUnfoldable <<< toPlain
 
+-- | Probably O(n), but depends on the Unfoldable instance. Turn a `Seq` into
+-- | any `Unfoldable1`.
+toUnfoldable1 :: forall f. Functor f => Unfoldable1 f => Seq ~> f
+toUnfoldable1 = unfoldr1 unconsMaybe
+  where
+  unconsMaybe (Seq x xs) =
+    case S.uncons xs of
+      Just (Tuple y ys) ->
+        Tuple x (Just (Seq y ys))
+      Nothing ->
+        Tuple x Nothing
+
 fromPlain :: Partial => S.Seq ~> Seq
 fromPlain = S.uncons >>> fromJust >>> uncurry Seq
+
+-- | Probably O(n), but depends on the Foldable1 instance. Unfold a non-empty
+-- | sequence from any Foldable1.
+-- |
+-- | Note that we cannot provide a `fromFoldable`, because the argument could
+-- | be empty.
+fromFoldable1 :: forall f. Foldable1 f => f ~> Seq
+fromFoldable1 = foldMap1 singleton
 
 instance showSeq :: (Show a) => Show (Seq a) where
   show (Seq x xs) = "(Seq " <> show x <> " " <> show xs <> ")"
@@ -208,6 +229,10 @@ instance foldableSeq :: Foldable Seq where
   foldr f z = toPlain >>> foldr f z
   foldl f z = toPlain >>> foldl f z
   foldMap f = toPlain >>> foldMap f
+
+instance foldable1Seq :: Foldable1 Seq where
+  fold1 (Seq x xs) = foldl (<>) x xs
+  foldMap1 f (Seq x xs) = foldl (\acc y -> acc <> f y) (f x) xs
 
 instance traversableSeq :: Traversable Seq where
   sequence   = unsafePartial $ toPlain >>> sequence   >>> map fromPlain

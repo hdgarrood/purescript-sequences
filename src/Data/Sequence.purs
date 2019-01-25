@@ -44,6 +44,7 @@ module Data.Sequence
   , tail
   , init
   , last
+  , toUnfoldable
 
   , splitAt
   , take
@@ -57,7 +58,6 @@ module Data.Sequence
   , replace
 
   -- other
-  , toUnfoldable
   , fullyForce
   ) where
 
