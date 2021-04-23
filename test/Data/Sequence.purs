@@ -139,7 +139,7 @@ sequenceTests = do
   -- will be 0, so we must check that the result length is less than the
   -- absolute value of the index
   quickCheck $ \(ArbSeq seq) n ->
-    let result = S.length $ S.take n $ seq :: S.Seq Number
+    let result = S.length $ S.take n (seq :: S.Seq Number)
     in (0 <= result && result <= abs n) <?> err [ "n = " <> show n
                                                 , "seq = " <> show seq
                                                 , "result = " <> show result
