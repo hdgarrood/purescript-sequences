@@ -22,23 +22,27 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-prelude": "^4.1.0",
-    "purescript-unsafe-coerce": "^4.0.0",
-    "purescript-partial": "^2.0.0",
-    "purescript-unfoldable": "^4.0.0",
-    "purescript-lazy": "^4.0.0",
-    "purescript-arrays": "^5.2.0",
-    "purescript-profunctor": "^4.0.0",
-    "purescript-maybe": "^4.0.1",
-    "purescript-tuples": "^5.1.0",
-    "purescript-newtype": "^3.0.0"
+    "purescript-arrays": "^v6.0.0",
+    "purescript-assert": "^v5.0.0",
+    "purescript-console": "^v5.0.0",
+    "purescript-effect": "^v3.0.0",
+    "purescript-lazy": "^v5.0.0",
+    "purescript-maybe": "^v5.0.0",
+    "purescript-newtype": "^v4.0.0",
+    "purescript-nonempty": "^v6.0.0",
+    "purescript-partial": "^v3.0.0",
+    "purescript-prelude": "^v5.0.0",
+    "purescript-profunctor": "^v5.0.0",
+    "purescript-psci-support": "^v5.0.0",
+    "purescript-tuples": "^v6.0.0",
+    "purescript-unfoldable": "^v5.0.0",
+    "purescript-unsafe-coerce": "^v5.0.0"
   },
   "devDependencies": {
-    "purescript-assert": "^4.0.0",
-    "purescript-psci-support": "^4.0.0",
-    "purescript-quickcheck": "^5.0.0",
-    "purescript-quickcheck-laws": "^4.0.0",
-    "purescript-benchotron": "^7.0.0",
-    "purescript-nonempty": "^5.0.0"
+    "purescript-assert": "^5.0.0",
+    "purescript-psci-support": "^5.0.0",
+    "purescript-quickcheck": "^7.0.0",
+    "purescript-quickcheck-laws": "^6.0.0",
+    "purescript-nonempty": "^6.0.0"
   }
 }
