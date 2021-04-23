@@ -231,7 +231,8 @@ instance foldableSeq :: Foldable Seq where
   foldMap f = toPlain >>> foldMap f
 
 instance foldable1Seq :: Foldable1 Seq where
-  fold1 (Seq x xs) = foldl (<>) x xs
+  foldl1 f (Seq x xs) = foldl f x xs
+  foldr1 f (Seq x xs) = foldr f x xs
   foldMap1 f (Seq x xs) = foldl (\acc y -> acc <> f y) (f x) xs
 
 instance traversableSeq :: Traversable Seq where
