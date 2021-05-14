@@ -39,10 +39,7 @@
     "purescript-unsafe-coerce": "^v5.0.0"
   },
   "devDependencies": {
-    "purescript-assert": "^5.0.0",
-    "purescript-psci-support": "^5.0.0",
     "purescript-quickcheck": "^7.0.0",
-    "purescript-quickcheck-laws": "^6.0.0",
-    "purescript-nonempty": "^6.0.0"
+    "purescript-quickcheck-laws": "^6.0.0"
   }
 }
