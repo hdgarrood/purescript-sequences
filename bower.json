@@ -23,22 +23,24 @@
   ],
   "dependencies": {
     "purescript-arrays": "^v6.0.0",
-    "purescript-assert": "^v5.0.0",
-    "purescript-console": "^v5.0.0",
-    "purescript-effect": "^v3.0.0",
+    "purescript-control": "^v6.0.0",
+    "purescript-foldable-traversable": "^v6.0.0",
     "purescript-lazy": "^v5.0.0",
     "purescript-maybe": "^v5.0.0",
     "purescript-newtype": "^v4.0.0",
-    "purescript-nonempty": "^v6.0.0",
     "purescript-partial": "^v3.0.0",
     "purescript-prelude": "^v5.0.0",
     "purescript-profunctor": "^v5.0.0",
-    "purescript-psci-support": "^v5.0.0",
     "purescript-tuples": "^v6.0.0",
     "purescript-unfoldable": "^v5.0.0",
     "purescript-unsafe-coerce": "^v5.0.0"
   },
   "devDependencies": {
+    "purescript-assert": "^v5.0.0",
+    "purescript-console": "^v5.0.0",
+    "purescript-effect": "^v3.0.0",
+    "purescript-nonempty": "^v6.0.0",
+    "purescript-psci-support": "^v5.0.0",
     "purescript-quickcheck": "^7.0.0",
     "purescript-quickcheck-laws": "^6.0.0"
   }
