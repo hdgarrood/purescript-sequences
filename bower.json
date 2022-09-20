@@ -39,7 +39,7 @@
     "purescript-assert": "^v6.0.0",
     "purescript-console": "^v6.0.0",
     "purescript-effect": "^v4.0.0",
-    "purescript-psci-support": "^v5.0.0",
+    "purescript-psci-support": "^v6.0.0",
     "purescript-quickcheck": "^8.0.1",
     "purescript-quickcheck-laws": "^7.0.0"
   }
