@@ -5,7 +5,6 @@ import Prelude
 import Control.Alt (class Alt, (<|>))
 import Control.Alternative (class Alternative)
 import Control.MonadPlus (class MonadPlus)
-import Control.MonadZero (class MonadZero)
 import Control.Plus (class Plus, empty)
 import Data.Array as A
 import Data.Foldable (class Foldable, intercalate, foldr, foldMap)
@@ -70,8 +69,6 @@ instance plusArbSeq :: Plus ArbSeq where
 instance alternativeArbseq :: Alternative ArbSeq
 
 instance monadPlusArbSeq :: MonadPlus ArbSeq
-
-instance monadZeroArbSeq :: MonadZero ArbSeq
 
 instance arbitraryArbSeq :: (Arbitrary a) => Arbitrary (ArbSeq a) where
   arbitrary = (ArbSeq <<< S.fromFoldable) <$> (arbitrary :: Gen (Array a))

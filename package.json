@@ -9,5 +9,8 @@
     "bench": "pulp build -I benchmarks --main Benchmark.Main -O --to output/benchmarks.js && (echo '*' | node output/benchmarks.js)",
     "build": "pulp build",
     "test": "pulp test"
+  },
+  "dependencies": {
+    "spago": "^0.20.9"
   }
 }
