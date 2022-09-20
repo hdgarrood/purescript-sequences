@@ -36,12 +36,11 @@
     "purescript-unsafe-coerce": "^v6.0.0"
   },
   "devDependencies": {
-    "purescript-assert": "^v5.0.0",
-    "purescript-console": "^v5.0.0",
-    "purescript-effect": "^v3.0.0",
-    "purescript-nonempty": "^v6.0.0",
+    "purescript-assert": "^v6.0.0",
+    "purescript-console": "^v6.0.0",
+    "purescript-effect": "^v4.0.0",
     "purescript-psci-support": "^v5.0.0",
-    "purescript-quickcheck": "^7.0.0",
-    "purescript-quickcheck-laws": "^6.0.0"
+    "purescript-quickcheck": "^8.0.1",
+    "purescript-quickcheck-laws": "^7.0.0"
   }
 }

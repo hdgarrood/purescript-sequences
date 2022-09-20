@@ -12,7 +12,7 @@ import Data.Unfoldable (replicate, unfoldr, replicate1, unfoldr1)
 
 import Test.Assert (assert)
 import Test.QuickCheck ((<?>), (===), quickCheck)
-import Type.Proxy (Proxy(Proxy), Proxy2(Proxy2))
+import Type.Proxy (Proxy(..))
 import Test.QuickCheck.Laws (A())
 import Test.QuickCheck.Laws.Data.Eq (checkEq)
 import Test.QuickCheck.Laws.Data.Ord (checkOrd)
@@ -37,8 +37,8 @@ arr = S.toUnfoldable
 prx :: Proxy (ArbSeq A)
 prx = Proxy
 
-prx2 :: Proxy2 ArbSeq
-prx2 = Proxy2
+prx2 :: Proxy ArbSeq
+prx2 = Proxy
 
 sequenceTests :: Effect Unit
 sequenceTests = do

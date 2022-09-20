@@ -25,7 +25,7 @@ import Test.QuickCheck.Laws.Data.Functor (checkFunctor)
 import Test.QuickCheck.Laws.Data.Ord (checkOrd)
 import Test.QuickCheck.Laws.Data.Semigroup (checkSemigroup)
 import Tests.Utils (ArbNESeq(..), err, abs, integerBetween, foldableSize)
-import Type.Proxy (Proxy(..), Proxy2(..))
+import Type.Proxy (Proxy(..))
 
 arr :: forall a. NonEmpty.Seq a -> Array a
 arr = NonEmpty.toUnfoldable
@@ -33,8 +33,8 @@ arr = NonEmpty.toUnfoldable
 prx :: Proxy (ArbNESeq A)
 prx = Proxy
 
-prx2 :: Proxy2 ArbNESeq
-prx2 = Proxy2
+prx2 :: Proxy ArbNESeq
+prx2 = Proxy
 
 nonEmptySequenceTests :: Effect Unit
 nonEmptySequenceTests = do
