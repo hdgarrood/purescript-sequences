@@ -22,24 +22,24 @@
     "package.json"
   ],
   "dependencies": {
-    "purescript-arrays": "^v6.0.0",
-    "purescript-assert": "^v5.0.0",
-    "purescript-console": "^v5.0.0",
-    "purescript-effect": "^v3.0.0",
-    "purescript-lazy": "^v5.0.0",
-    "purescript-maybe": "^v5.0.0",
-    "purescript-newtype": "^v4.0.0",
-    "purescript-nonempty": "^v6.0.0",
-    "purescript-partial": "^v3.0.0",
-    "purescript-prelude": "^v5.0.0",
-    "purescript-profunctor": "^v5.0.0",
-    "purescript-psci-support": "^v5.0.0",
-    "purescript-tuples": "^v6.0.0",
-    "purescript-unfoldable": "^v5.0.0",
-    "purescript-unsafe-coerce": "^v5.0.0"
+    "purescript-arrays": "^v7.0.0",
+    "purescript-assert": "^v6.0.0",
+    "purescript-console": "^v6.0.0",
+    "purescript-effect": "^v4.0.0",
+    "purescript-lazy": "^v6.0.0",
+    "purescript-maybe": "^v6.0.0",
+    "purescript-newtype": "^v5.0.0",
+    "purescript-nonempty": "^v7.0.0",
+    "purescript-partial": "^v4.0.0",
+    "purescript-prelude": "^v6.0.0",
+    "purescript-profunctor": "^v6.0.0",
+    "purescript-psci-support": "^v6.0.0",
+    "purescript-tuples": "^v7.0.0",
+    "purescript-unfoldable": "^v6.0.0",
+    "purescript-unsafe-coerce": "^v6.0.0"
   },
   "devDependencies": {
-    "purescript-quickcheck": "^7.0.0",
-    "purescript-quickcheck-laws": "^6.0.0"
+    "purescript-quickcheck": "^8.0.0",
+    "purescript-quickcheck-laws": "^7.0.0"
   }
 }
