@@ -1,4 +1,3 @@
-
 -- | This module provides a sequence data type, intended for the same sort of
 -- | tasks as an Array would be in JavaScript, except with better asymptotic
 -- | complexity for many operations.
@@ -80,8 +79,15 @@ import Data.Unfoldable (class Unfoldable, class Unfoldable1)
 import Partial.Unsafe (unsafePartial)
 import Unsafe.Coerce (unsafeCoerce)
 
-import Data.Sequence.Internal (Elem(Elem), mapGetElem, getElem, liftElem,
-                               lift2Elem, measure, strJoin)
+import Data.Sequence.Internal
+  ( Elem(Elem)
+  , mapGetElem
+  , getElem
+  , liftElem
+  , lift2Elem
+  , measure
+  , strJoin
+  )
 import Data.FingerTree as FT
 import Data.Sequence.Ordered as Ordered
 
@@ -124,13 +130,13 @@ instance traversableSeq :: Traversable Seq where
 instance unfoldable1Seq :: Unfoldable1 Seq where
   unfoldr1 f xs = go xs empty
     where
-      go source memo =
-        case f source of
-          Tuple x Nothing ->
-            snoc memo x
+    go source memo =
+      case f source of
+        Tuple x Nothing ->
+          snoc memo x
 
-          Tuple x (Just ys) ->
-            go ys (snoc memo x)
+        Tuple x (Just ys) ->
+          go ys (snoc memo x)
 
 instance unfoldableSeq :: Unfoldable Seq where
   unfoldr f xs = go xs empty
@@ -208,7 +214,7 @@ length (Seq xs) = un Additive (measure xs)
 -- | O(1). True if the sequence has no elements, false otherwise.
 null :: forall a. Seq a -> Boolean
 null (Seq FT.Empty) = true
-null _              = false
+null _ = false
 
 -- | O(1). If the sequence is nonempty, take one element off its left side and
 -- | return that together with the rest of the original sequence. Otherwise,
@@ -216,8 +222,8 @@ null _              = false
 uncons :: forall a. Seq a -> Maybe (Tuple a (Seq a))
 uncons (Seq xs) =
   case FT.viewL xs of
-      FT.NilL       -> Nothing
-      FT.ConsL y ys -> Just (Tuple (getElem y) (Seq (force ys)))
+    FT.NilL -> Nothing
+    FT.ConsL y ys -> Just (Tuple (getElem y) (Seq (force ys)))
 
 -- | O(1). If the sequence is nonempty, take one element off its right side and
 -- | return that together with the rest of the original sequence. Otherwise,
@@ -225,16 +231,19 @@ uncons (Seq xs) =
 unsnoc :: forall a. Seq a -> Maybe (Tuple (Seq a) a)
 unsnoc (Seq xs) =
   case FT.viewR xs of
-      FT.NilR       -> Nothing
-      FT.SnocR ys y -> Just (Tuple (Seq (force ys)) (getElem y))
+    FT.NilR -> Nothing
+    FT.SnocR ys y -> Just (Tuple (Seq (force ys)) (getElem y))
 
 splitAt' :: forall a. Int -> Seq a -> Tuple (Lazy (Seq a)) (Lazy (Seq a))
 splitAt' i (Seq xs) = seqify tuple
   where
   tuple = unsafePartial $ FT.split (\n -> i < unwrap n) xs
 
-  seqify :: forall f. (Functor f) =>
-    Tuple (f (SeqInner a)) (f (SeqInner a)) -> Tuple (f (Seq a)) (f (Seq a))
+  seqify
+    :: forall f
+     . (Functor f)
+    => Tuple (f (SeqInner a)) (f (SeqInner a))
+    -> Tuple (f (Seq a)) (f (Seq a))
   seqify = unsafeCoerce
 
 -- | O(log(min(i,n-i))). Split the sequence into two subsequences. The first
@@ -267,9 +276,8 @@ inBounds i seq = 0 <= i && i < length seq
 -- | sequence `xs` can be retrieved with `index 0 xs`.
 index :: forall a. Int -> Seq a -> Maybe a
 index i xs =
-  if inBounds i xs
-    then unsafePartial $ Just $ unsafeIndex i xs
-    else Nothing
+  if inBounds i xs then unsafePartial $ Just $ unsafeIndex i xs
+  else Nothing
 
 -- | O(log(min(i,n-i))). Like `index`, but this function will throw an error
 -- | instead of returning Nothing if the index is out of bounds.
@@ -283,9 +291,8 @@ unsafeIndex i (Seq xs) =
 -- | sequence is returned unchanged.
 adjust :: forall a. (a -> a) -> Int -> Seq a -> Seq a
 adjust f i xs =
-  if inBounds i xs
-    then unsafePartial $ unsafeAdjust f i xs
-    else xs
+  if inBounds i xs then unsafePartial $ unsafeAdjust f i xs
+  else xs
 
 -- | Adjust the element at a specified index. This function throws an error
 -- | if the index supplied is out of bounds.

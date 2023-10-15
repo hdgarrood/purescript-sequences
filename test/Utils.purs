@@ -29,6 +29,7 @@ import Data.Sequence.Ordered as OS
 -- Data.Sequence
 
 newtype ArbSeq a = ArbSeq (S.Seq a)
+
 unArbSeq :: forall b. ArbSeq b -> S.Seq b
 unArbSeq (ArbSeq xs) = xs
 
@@ -80,6 +81,7 @@ instance arbitraryArbSeq :: (Arbitrary a) => Arbitrary (ArbSeq a) where
 -- Data.Sequence.NonEmpty
 
 newtype ArbNESeq a = ArbNESeq (NES.Seq a)
+
 unArbNESeq :: forall b. ArbNESeq b -> NES.Seq b
 unArbNESeq (ArbNESeq xs) = xs
 
@@ -119,6 +121,7 @@ instance arbitraryArbNESeq :: (Arbitrary a) => Arbitrary (ArbNESeq a) where
 -- Data.Sequence.Ordered
 
 newtype ArbOSeq a = ArbOSeq (OS.OrdSeq a)
+
 unArbOSeq :: forall b. ArbOSeq b -> OS.OrdSeq b
 unArbOSeq (ArbOSeq xs) = xs
 
@@ -153,11 +156,11 @@ integerBetween lo hi x = (abs x `mod` hi - lo) + lo
 
 sorted :: forall a. Show a => Ord a => Array a -> Result
 sorted xs = xs == A.sort xs
-              <?> show xs <> " is not sorted."
+  <?> show xs <> " is not sorted."
 
 sortedRev :: forall a. Show a => Ord a => Array a -> Result
 sortedRev xs = xs == A.reverse (A.sort xs)
-                <?> show xs <> " is not sorted in reverse order."
+  <?> show xs <> " is not sorted in reverse order."
 
 -------------
 -- Min/Max
@@ -189,7 +192,7 @@ instance semigroupMin :: (Ord a) => Semigroup (Min a) where
 maybeAppend' :: forall a. Semigroup a => Maybe a -> Maybe a -> Maybe a
 maybeAppend' Nothing y = y
 maybeAppend' x Nothing = x
-maybeAppend' x y       = append <$> x <*> y
+maybeAppend' x y = append <$> x <*> y
 
 foldableMinimum :: forall f a. Ord a => Foldable f => f a -> Maybe a
 foldableMinimum = map runMin <<< foldr (maybeAppend' <<< Just <<< Min) Nothing
