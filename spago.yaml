@@ -1,0 +1,25 @@
+package:
+  dependencies:
+    - arrays
+    - assert
+    - console
+    - control
+    - effect
+    - lazy
+    - maybe
+    - newtype
+    - nonempty
+    - partial
+    - prelude
+    - profunctor
+    - psci-support
+    - quickcheck
+    - quickcheck-laws
+    - tuples
+    - unfoldable
+    - unsafe-coerce
+  name: sequences
+workspace:
+  extra_packages: {}
+  package_set:
+    registry: 50.4.0
