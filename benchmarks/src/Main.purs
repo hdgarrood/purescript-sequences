@@ -8,7 +8,8 @@ import Data.Maybe
 import Data.Array ((..))
 import Data.Array as A
 import Data.Sequence as S
-import Math (floor, sqrt)
+import Data.Int (floor)
+import Data.Number (sqrt)
 import Test.QuickCheck.Gen (Gen(), vectorOf)
 import Test.QuickCheck.Arbitrary (class Arbitrary, arbitrary)
 import Effect
