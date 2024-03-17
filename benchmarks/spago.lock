@@ -1,26 +1,9 @@
 workspace:
   packages:
-    sequences:
+    sequences-benchmarks:
       path: ./
       dependencies:
-        - arrays
-        - assert
-        - console
-        - control
-        - effect
-        - lazy
-        - maybe
-        - newtype
-        - nonempty
-        - partial
-        - prelude
-        - profunctor
-        - psci-support
-        - quickcheck
-        - quickcheck-laws
-        - tuples
-        - unfoldable
-        - unsafe-coerce
+        - sequences
       test_dependencies: []
       build_plan:
         - arrays
@@ -61,6 +44,7 @@ workspace:
         - record
         - refs
         - safe-coerce
+        - sequences
         - st
         - strings
         - tailrec
@@ -551,8 +535,8 @@ workspace:
       z3: 0.0.2
       zipperarray: 2.0.0
   extra_packages:
-    benchmark:
-      path: benchmarks
+    sequences:
+      path: ..
 packages:
   arrays:
     type: registry
@@ -932,6 +916,28 @@ packages:
     version: 2.0.0
     integrity: sha256-a1ibQkiUcbODbLE/WAq7Ttbbh9ex+x33VCQ7GngKudU=
     dependencies:
+      - unsafe-coerce
+  sequences:
+    type: local
+    path: ..
+    dependencies:
+      - arrays
+      - assert
+      - console
+      - control
+      - effect
+      - lazy
+      - maybe
+      - newtype
+      - nonempty
+      - partial
+      - prelude
+      - profunctor
+      - psci-support
+      - quickcheck
+      - quickcheck-laws
+      - tuples
+      - unfoldable
       - unsafe-coerce
   st:
     type: registry

@@ -1,0 +1,10 @@
+package:
+  name: sequences-benchmarks
+  dependencies:
+    - sequences
+workspace:
+  package_set:
+    registry: 50.4.0
+  extra_packages:
+    sequences:
+      path: ..
